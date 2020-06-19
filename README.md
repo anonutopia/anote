@@ -1,2 +1,2 @@
-# anote
-Anote Daemon
+# anonfounder
+Waves crowdfunding software.
