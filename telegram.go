@@ -27,7 +27,7 @@ func initBot() *tgbotapi.BotAPI {
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	msg := tgbotapi.NewMessage(tAnonOps, "AnonFounder successfully started. 🚀")
+	msg := tgbotapi.NewMessage(tAnonOps, "Anote daemon successfully started. 🚀")
 	bot.Send(msg)
 
 	return bot

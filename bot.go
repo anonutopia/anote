@@ -21,12 +21,8 @@ func executeBotCommand(tu TelegramUpdate) {
 		startCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/address") {
 		addressCommand(tu)
-	} else if strings.HasPrefix(tu.Message.Text, "/balance") {
-		balanceCommand(tu)
-	} else if strings.HasPrefix(tu.Message.Text, "/drop") {
+	} else if strings.HasPrefix(tu.Message.Text, "/register") {
 		dropCommand(tu)
-	} else if strings.HasPrefix(tu.Message.Text, "/freeinfo") {
-		freeinfoCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/") {
 		unknownCommand(tu)
 	} else if tu.UpdateID != 0 {
@@ -59,7 +55,7 @@ func registerNewUsers(tu TelegramUpdate) {
 	for _, user := range tu.Message.NewChatMembers {
 		messageTelegram(fmt.Sprintf(ui18n.Tr(lang, "welcome"), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))
 
-		u := &User{TelegramID: user.ID, TelegramUsername: user.Username, ReferralID: rUser.ID}
+		u := &User{TelegramID: user.ID, TelegramUsername: user.Username, ReferralID: rUser.ID, ChatID: uint(tu.Message.Chat.ID)}
 		err := db.FirstOrCreate(u, u)
 		log.Println(err)
 	}
@@ -84,14 +80,6 @@ func addressCommand(tu TelegramUpdate) {
 	bot.Send(pc)
 }
 
-func balanceCommand(tu TelegramUpdate) {
-	b, err := wnc.AddressesBalance(conf.NodeAddress)
-	if err != nil {
-		log.Printf("balanceCommand error: %s", err)
-	}
-	messageTelegram(fmt.Sprintf(ui18n.Tr(lang, "currentBalance"), float64(b.Balance)/float64(satInBtc)), int64(tu.Message.Chat.ID))
-}
-
 func dropCommand(tu TelegramUpdate) {
 	kv := &KeyValue{Key: "airdropSent"}
 	db.First(kv, kv)
@@ -101,9 +89,9 @@ func dropCommand(tu TelegramUpdate) {
 	}
 
 	msgArr := strings.Fields(tu.Message.Text)
-	if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/drop") {
+	if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/register") {
 		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), ui18n.Tr(lang, "pleaseEnter"))
-		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: true}
+		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
 		msg.ReplyToMessageID = tu.Message.MessageID
 		bot.Send(msg)
 	} else {
@@ -178,18 +166,6 @@ func dropCommand(tu TelegramUpdate) {
 			}
 		}
 	}
-}
-
-func freeinfoCommand(tu TelegramUpdate) {
-	kv := &KeyValue{Key: "airdropSent"}
-	db.First(kv, kv)
-	msg := fmt.Sprintf("Tokens dropped so far: <strong>%d ATST</strong>\nTokens left to drop: <strong>%d ATST</strong>", kv.ValueInt, (conf.Airdrop - kv.ValueInt))
-	log.Println(msg)
-	m := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), msg)
-	m.ParseMode = "HTML"
-	err, e := bot.Send(m)
-	log.Println(err)
-	log.Println(e)
 }
 
 func unknownCommand(tu TelegramUpdate) {

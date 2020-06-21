@@ -1,5 +1,3 @@
-drop - Get your 1 free token (provide your Waves address)
-price - Get current token price
-address - Get AnonFounderBot main Waves address (for buying and selling token)
-balance - Get AnonFounderBot current Waves balance
-freeinfo - Get information on token airdrop (free tokens)
+register - Get your 1 free Anote (provide your Waves address)
+price - Get current Anote price
+address - Get Anote's main Waves address (for creating new tokens)

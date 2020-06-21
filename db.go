@@ -8,7 +8,7 @@ import (
 )
 
 func initDb() *gorm.DB {
-	db, err := gorm.Open("sqlite3", "anonfounder.db")
+	db, err := gorm.Open("sqlite3", "anote.db")
 
 	if err != nil {
 		log.Printf("[initDb] error: %s", err)
