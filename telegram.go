@@ -44,12 +44,12 @@ func messageTelegram(message string, groupID int64) {
 }
 
 func sendGroupsMessageInvestment(investment float64) {
-	msg := tgbotapi.NewMessage(tAnonTaxi, fmt.Sprintf(ui18n.Tr(lang, "newPurchase"), investment))
+	msg := tgbotapi.NewMessage(tAnonOps, fmt.Sprintf(ui18n.Tr(lang, "newPurchase"), investment))
 	bot.Send(msg)
 }
 
 func sendGroupsMessagePrice(newPrice float64) {
-	msg := tgbotapi.NewMessage(tAnonTaxi, fmt.Sprintf(ui18n.Tr(lang, "priceRise"), newPrice))
+	msg := tgbotapi.NewMessage(tAnonOps, fmt.Sprintf(ui18n.Tr(lang, "priceRise"), newPrice))
 	bot.Send(msg)
 }
 
