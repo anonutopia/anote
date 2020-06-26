@@ -4,7 +4,7 @@ import (
 	"github.com/go-macaron/cache"
 	"github.com/go-macaron/i18n"
 	_ "github.com/go-macaron/session/redis"
-	"github.com/mholt/certmagic"
+	"github.com/caddyserver/certmagic"
 	macaron "gopkg.in/macaron.v1"
 )
 
@@ -19,8 +19,8 @@ func initMacaron() *macaron.Macaron {
 	}))
 
 	if conf.SSL {
-		certmagic.Default.Agreed = true
-		certmagic.Default.Email = conf.EmailAddress
+		// certmagic.Default.Agreed = true
+		certmagic.DefaultACME.Email = conf.EmailAddress
 		go certmagic.HTTPS([]string{conf.Hostname}, m)
 	} else {
 		go m.Run("0.0.0.0", 5000)
