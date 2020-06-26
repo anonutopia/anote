@@ -65,22 +65,6 @@ func (wm *WavesMonitor) purchaseAsset(t *gowaves.TransactionsAddressLimitRespons
 	amount := token.issueAmount(t.Amount, t.AssetID)
 
 	atr := &gowaves.AssetsTransferRequest{
-		Amount:    int(float64(t.Amount) * conf.FounderFactor),
-		AssetID:   "",
-		Fee:       100000,
-		Recipient: conf.FounderAddress,
-		Sender:    conf.NodeAddress,
-	}
-
-	_, err := wnc.AssetsTransfer(atr)
-	if err != nil {
-		log.Printf("[purchaseAsset] error assets transfer: %s", err)
-		logTelegram(fmt.Sprintf("[purchaseAsset] error assets transfer: %s", err))
-	} else {
-		log.Printf("Sent token: %s => %d", t.Sender, amount)
-	}
-
-	atr = &gowaves.AssetsTransferRequest{
 		Amount:    amount,
 		AssetID:   conf.TokenID,
 		Fee:       100000,
@@ -88,7 +72,7 @@ func (wm *WavesMonitor) purchaseAsset(t *gowaves.TransactionsAddressLimitRespons
 		Sender:    conf.NodeAddress,
 	}
 
-	_, err = wnc.AssetsTransfer(atr)
+	_, err := wnc.AssetsTransfer(atr)
 	if err != nil {
 		log.Printf("[purchaseAsset] error assets transfer: %s", err)
 		logTelegram(fmt.Sprintf("[purchaseAsset] error assets transfer: %s", err))
