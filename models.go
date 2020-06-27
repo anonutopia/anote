@@ -31,4 +31,5 @@ type User struct {
 	ChatID           uint
 	Referral         *User
 	MintingActivated *time.Time
+	MintedAnotes     uint
 }
