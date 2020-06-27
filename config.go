@@ -8,8 +8,10 @@ import (
 
 // Config struct holds all our configuration
 type Config struct {
+	BotName         string  `json:"bot_name"`
 	WavesNodeAPIKey string  `json:"waves_node_api_key"`
 	NodeAddress     string  `json:"node_address"`
+	Dev             bool    `json:"dev"`
 	Debug           bool    `json:"debug"`
 	SSL             bool    `json:"ssl"`
 	TelegramAPIKey  string  `json:"telegram_api_key"`

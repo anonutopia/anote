@@ -15,14 +15,16 @@ const satInBtc = uint64(100000000)
 const lang = "hr"
 
 func executeBotCommand(tu TelegramUpdate) {
-	if strings.HasPrefix(tu.Message.Text, "/price") {
+	if tu.Message.Text == "/price" || strings.HasPrefix(tu.Message.Text, "/price@"+conf.BotName) {
 		priceCommand(tu)
-	} else if strings.HasPrefix(tu.Message.Text, "/start") {
+	} else if tu.Message.Text == "/start" || strings.HasPrefix(tu.Message.Text, "/start@"+conf.BotName) {
 		startCommand(tu)
-	} else if strings.HasPrefix(tu.Message.Text, "/address") {
+	} else if tu.Message.Text == "/address" || strings.HasPrefix(tu.Message.Text, "/address@"+conf.BotName) {
 		addressCommand(tu)
-	} else if strings.HasPrefix(tu.Message.Text, "/register") {
+	} else if tu.Message.Text == "/register" || strings.HasPrefix(tu.Message.Text, "/register@"+conf.BotName) {
 		dropCommand(tu)
+	} else if tu.Message.Text == "/status" || strings.HasPrefix(tu.Message.Text, "/status@"+conf.BotName) {
+		statusCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/") {
 		unknownCommand(tu)
 	} else if tu.UpdateID != 0 {
@@ -75,7 +77,12 @@ func startCommand(tu TelegramUpdate) {
 func addressCommand(tu TelegramUpdate) {
 	messageTelegram(ui18n.Tr(lang, "myAddress"), int64(tu.Message.Chat.ID))
 	messageTelegram(conf.NodeAddress, int64(tu.Message.Chat.ID))
-	pc := tgbotapi.NewPhotoUpload(int64(tu.Message.Chat.ID), "qrcode.png")
+	var pc tgbotapi.PhotoConfig
+	if conf.Dev {
+		pc = tgbotapi.NewPhotoUpload(int64(tu.Message.Chat.ID), "qrcodedev.png")
+	} else {
+		pc = tgbotapi.NewPhotoUpload(int64(tu.Message.Chat.ID), "qrcode.png")
+	}
 	pc.Caption = "QR Code"
 	bot.Send(pc)
 }
@@ -166,6 +173,10 @@ func dropCommand(tu TelegramUpdate) {
 			}
 		}
 	}
+}
+
+func statusCommand(tu TelegramUpdate) {
+	messageTelegram("Hello and welcome to Anonutopia!", int64(tu.Message.Chat.ID))
 }
 
 func unknownCommand(tu TelegramUpdate) {

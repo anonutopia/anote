@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -28,4 +30,5 @@ type User struct {
 	ReferralID       uint
 	ChatID           uint
 	Referral         *User
+	MintingActivated *time.Time
 }
