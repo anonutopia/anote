@@ -49,7 +49,7 @@ func executeBotCommand(tu TelegramUpdate) {
 						dropCommand(tu)
 					}
 				}
-			} else {
+			} else if tu.Message.ReplyToMessage.Text == "Please enter daily code:" {
 				tu.Message.Text = fmt.Sprintf("/mine %s", tu.Message.Text)
 				mineCommand(tu)
 			}
@@ -97,13 +97,6 @@ func addressCommand(tu TelegramUpdate) {
 }
 
 func dropCommand(tu TelegramUpdate) {
-	kv := &KeyValue{Key: "airdropSent"}
-	db.First(kv, kv)
-	if kv.ValueInt >= conf.Airdrop {
-		messageTelegram(ui18n.Tr(lang, "airdropFinished"), int64(tu.Message.Chat.ID))
-		return
-	}
-
 	msgArr := strings.Fields(tu.Message.Text)
 	if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/register") {
 		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), ui18n.Tr(lang, "pleaseEnter"))
@@ -150,8 +143,6 @@ func dropCommand(tu TelegramUpdate) {
 							user.Address = msgArr[1]
 							db.Save(user)
 
-							kv.ValueInt = kv.ValueInt + 1
-
 							if user.ReferralID != 0 {
 								rUser := &User{}
 								db.First(rUser, user.ReferralID)
@@ -172,8 +163,6 @@ func dropCommand(tu TelegramUpdate) {
 									}
 								}
 							}
-
-							db.Save(kv)
 
 							messageTelegram(fmt.Sprintf(ui18n.Tr(lang, "tokenSent"), tu.Message.From.Username), int64(tu.Message.Chat.ID))
 						}

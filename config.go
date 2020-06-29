@@ -18,7 +18,6 @@ type Config struct {
 	InitialPrice    uint64  `json:"initial_price"`
 	EmailAddress    string  `json:"email_address"`
 	TokenID         string  `json:"token_id"`
-	Airdrop         uint64  `json:"airdrop"`
 	FounderAddress  string  `json:"founder_address"`
 	FounderFactor   float64 `json:"founder_factor"`
 	BuyFactor       float64 `json:"buy_factor"`
