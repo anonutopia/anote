@@ -52,7 +52,7 @@ func executeBotCommand(tu TelegramUpdate) {
 						dropCommand(tu)
 					}
 				}
-			} else if tu.Message.ReplyToMessage.Text == "Please enter daily code:" {
+			} else if tu.Message.ReplyToMessage.Text == ui18n.Tr(lang, "dailyCode") {
 				tu.Message.Text = fmt.Sprintf("/mine %s", tu.Message.Text)
 				mineCommand(tu)
 			}
@@ -91,7 +91,7 @@ func startCommand(tu TelegramUpdate) {
 		LastWithdraw:     &now}
 	db.FirstOrCreate(u, u)
 
-	messageTelegram("Hello and welcome to Anonutopia!", int64(tu.Message.Chat.ID))
+	messageTelegram(ui18n.Tr(lang, "hello"), int64(tu.Message.Chat.ID))
 }
 
 func addressCommand(tu TelegramUpdate) {
@@ -212,7 +212,7 @@ func mineCommand(tu TelegramUpdate) {
 
 	msgArr := strings.Fields(tu.Message.Text)
 	if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/mine") {
-		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), "Please enter daily code:")
+		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), ui18n.Tr(lang, "dailyCode"))
 		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
 		msg.ReplyToMessageID = tu.Message.MessageID
 		bot.Send(msg)
@@ -220,8 +220,9 @@ func mineCommand(tu TelegramUpdate) {
 		now := time.Now()
 		user.MiningActivated = &now
 		user.Mining = true
+		user.SentWarning = false
 		db.Save(user)
-		messageTelegram("Great work, you started mining! 🚀", int64(tu.Message.Chat.ID))
+		messageTelegram(ui18n.Tr(lang, "startedMining"), int64(tu.Message.Chat.ID))
 	}
 }
 
@@ -230,9 +231,9 @@ func withdrawCommand(tu TelegramUpdate) {
 	db.First(user, user)
 
 	if time.Since(*user.LastWithdraw).Hours() < float64(24) {
-		messageTelegram("You can do only one withdrawal in 24 hours.", int64(tu.Message.Chat.ID))
+		messageTelegram(ui18n.Tr(lang, "withdrawTimeLimit"), int64(tu.Message.Chat.ID))
 	} else if user.MinedAnotes == 0 {
-		messageTelegram("You don't have any anotes to withdraw.", int64(tu.Message.Chat.ID))
+		messageTelegram(ui18n.Tr(lang, "withdrawNoAnotes"), int64(tu.Message.Chat.ID))
 	} else {
 		atr := &gowaves.AssetsTransferRequest{
 			Amount:    user.MinedAnotes,
@@ -251,7 +252,7 @@ func withdrawCommand(tu TelegramUpdate) {
 			user.LastWithdraw = &now
 			user.MinedAnotes = 0
 			db.Save(user)
-			messageTelegram("I've sent you your mined Anotes. 🚀", int64(tu.Message.Chat.ID))
+			messageTelegram(ui18n.Tr(lang, "sentAnotes"), int64(tu.Message.Chat.ID))
 		}
 
 	}
