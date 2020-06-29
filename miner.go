@@ -12,9 +12,10 @@ func (mm *MinerMonitor) checkMiners() {
 	var users []*User
 	db.Find(&users)
 	for _, u := range users {
-		if time.Since(*u.MintingActivated).Hours() >= float64(24) && !u.SentWarning {
+		if time.Since(*u.MiningActivated).Hours() >= float64(24) && !u.SentWarning {
 			messageTelegram("Mining warning!", int64(u.TelegramID))
 			u.SentWarning = true
+			u.Mining = false
 			db.Save(&u)
 		}
 	}

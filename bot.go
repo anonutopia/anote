@@ -63,8 +63,8 @@ func registerNewUsers(tu TelegramUpdate) {
 
 	for _, user := range tu.Message.NewChatMembers {
 		messageTelegram(fmt.Sprintf(ui18n.Tr(lang, "welcome"), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))
-
-		u := &User{TelegramID: user.ID, TelegramUsername: user.Username, ReferralID: rUser.ID}
+		now := time.Now()
+		u := &User{TelegramID: user.ID, TelegramUsername: user.Username, ReferralID: rUser.ID, MiningActivated: &now}
 		db.FirstOrCreate(u, u)
 	}
 }
@@ -77,7 +77,8 @@ func priceCommand(tu TelegramUpdate) {
 }
 
 func startCommand(tu TelegramUpdate) {
-	u := &User{TelegramID: tu.Message.From.ID, TelegramUsername: tu.Message.From.Username}
+	now := time.Now()
+	u := &User{TelegramID: tu.Message.From.ID, TelegramUsername: tu.Message.From.Username, MiningActivated: &now}
 	db.FirstOrCreate(u, u)
 
 	messageTelegram("Hello and welcome to Anonutopia!", int64(tu.Message.Chat.ID))
@@ -177,13 +178,20 @@ func statusCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
 
+	status := user.status()
+	mining := user.isMiningStr()
+	power := user.miningPowerStr()
+	team := user.teamStr()
+	teamInactive := user.teamInactiveStr()
+
 	msg := fmt.Sprintf("⭕️  <strong><u>Your Anonutopia / Anote Status</u></strong>\n\n"+
-		"<strong>Anon Tag:</strong> Pioneer\n"+
+		"<strong>Status:</strong> %s\n"+
 		"<strong>Address:</strong> %s\n"+
-		"<strong>Mining:</strong> no\n"+
-		"<strong>Mining Power:</strong> 0 A/h\n"+
-		"<strong>Referrals:</strong> 27",
-		user.Address)
+		"<strong>Mining:</strong> %s\n"+
+		"<strong>Mining Power:</strong> %s\n"+
+		"<strong>Your Team:</strong> %s\n"+
+		"<strong>Inactive:</strong> %s",
+		status, user.Address, mining, power, team, teamInactive)
 
 	messageTelegram(msg, int64(tu.Message.Chat.ID))
 }
@@ -200,7 +208,8 @@ func mineCommand(tu TelegramUpdate) {
 		bot.Send(msg)
 	} else {
 		now := time.Now()
-		user.MintingActivated = &now
+		user.MiningActivated = &now
+		user.Mining = true
 		db.Save(user)
 		messageTelegram("Great work, you started mining! 🚀", int64(tu.Message.Chat.ID))
 	}
