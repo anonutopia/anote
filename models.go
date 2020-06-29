@@ -31,9 +31,10 @@ type User struct {
 	ReferralID       uint
 	Referral         *User
 	MiningActivated  *time.Time
-	MinedAnotes      uint
+	MinedAnotes      int
 	SentWarning      bool `sql:"DEFAULT:false"`
 	Mining           bool `sql:"DEFAULT:false"`
+	LastWithdraw     *time.Time
 }
 
 func (u *User) status() string {

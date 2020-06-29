@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -27,6 +28,8 @@ func executeBotCommand(tu TelegramUpdate) {
 		statusCommand(tu)
 	} else if tu.Message.Text == "/mine" || strings.HasPrefix(tu.Message.Text, "/mine@"+conf.BotName) {
 		mineCommand(tu)
+	} else if tu.Message.Text == "/withdraw" || strings.HasPrefix(tu.Message.Text, "/withdraw@"+conf.BotName) {
+		withdrawCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/") {
 		unknownCommand(tu)
 	} else if tu.UpdateID != 0 {
@@ -64,7 +67,11 @@ func registerNewUsers(tu TelegramUpdate) {
 	for _, user := range tu.Message.NewChatMembers {
 		messageTelegram(fmt.Sprintf(ui18n.Tr(lang, "welcome"), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))
 		now := time.Now()
-		u := &User{TelegramID: user.ID, TelegramUsername: user.Username, ReferralID: rUser.ID, MiningActivated: &now}
+		u := &User{TelegramID: user.ID,
+			TelegramUsername: user.Username,
+			ReferralID:       rUser.ID,
+			MiningActivated:  &now,
+			LastWithdraw:     &now}
 		db.FirstOrCreate(u, u)
 	}
 }
@@ -78,7 +85,10 @@ func priceCommand(tu TelegramUpdate) {
 
 func startCommand(tu TelegramUpdate) {
 	now := time.Now()
-	u := &User{TelegramID: tu.Message.From.ID, TelegramUsername: tu.Message.From.Username, MiningActivated: &now}
+	u := &User{TelegramID: tu.Message.From.ID,
+		TelegramUsername: tu.Message.From.Username,
+		MiningActivated:  &now,
+		LastWithdraw:     &now}
 	db.FirstOrCreate(u, u)
 
 	messageTelegram("Hello and welcome to Anonutopia!", int64(tu.Message.Chat.ID))
@@ -212,6 +222,38 @@ func mineCommand(tu TelegramUpdate) {
 		user.Mining = true
 		db.Save(user)
 		messageTelegram("Great work, you started mining! 🚀", int64(tu.Message.Chat.ID))
+	}
+}
+
+func withdrawCommand(tu TelegramUpdate) {
+	user := &User{TelegramID: tu.Message.From.ID}
+	db.First(user, user)
+
+	if time.Since(*user.LastWithdraw).Hours() < float64(24) {
+		messageTelegram("You can do only one withdrawal in 24 hours.", int64(tu.Message.Chat.ID))
+	} else if user.MinedAnotes == 0 {
+		messageTelegram("You don't have any anotes to withdraw.", int64(tu.Message.Chat.ID))
+	} else {
+		atr := &gowaves.AssetsTransferRequest{
+			Amount:    user.MinedAnotes,
+			AssetID:   conf.TokenID,
+			Fee:       100000,
+			Recipient: user.Address,
+			Sender:    conf.NodeAddress,
+		}
+
+		_, err := wnc.AssetsTransfer(atr)
+		if err != nil {
+			log.Printf("[withdraw] error assets transfer: %s", err)
+			logTelegram(fmt.Sprintf("[withdraw] error assets transfer: %s", err))
+		} else {
+			now := time.Now()
+			user.LastWithdraw = &now
+			user.MinedAnotes = 0
+			db.Save(user)
+			messageTelegram("I've sent you your mined Anotes. 🚀", int64(tu.Message.Chat.ID))
+		}
+
 	}
 }
 
