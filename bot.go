@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -210,19 +211,24 @@ func mineCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
 
+	ksmc := &KeyValue{Key: "miningCode"}
+	db.FirstOrCreate(ksmc, ksmc)
+
 	msgArr := strings.Fields(tu.Message.Text)
 	if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/mine") {
 		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), ui18n.Tr(lang, "dailyCode"))
 		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
 		msg.ReplyToMessageID = tu.Message.MessageID
 		bot.Send(msg)
-	} else {
+	} else if msgArr[1] == strconv.Itoa(int(ksmc.ValueInt)) {
 		now := time.Now()
 		user.MiningActivated = &now
 		user.Mining = true
 		user.SentWarning = false
 		db.Save(user)
 		messageTelegram(ui18n.Tr(lang, "startedMining"), int64(tu.Message.Chat.ID))
+	} else {
+		messageTelegram(ui18n.Tr(lang, "codeNotValid"), int64(tu.Message.Chat.ID))
 	}
 }
 
