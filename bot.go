@@ -194,13 +194,13 @@ func statusCommand(tu TelegramUpdate) {
 	team := user.teamStr()
 	teamInactive := user.teamInactiveStr()
 
-	msg := fmt.Sprintf("⭕️  <strong><u>Your Anonutopia / Anote Status</u></strong>\n\n"+
+	msg := fmt.Sprintf("⭕️  <strong><u>"+ui18n.Tr(lang, "statusTitle")+"</u></strong>\n\n"+
 		"<strong>Status:</strong> %s\n"+
-		"<strong>Address:</strong> %s\n"+
+		"<strong>"+ui18n.Tr(lang, "statusAddress")+":</strong> %s\n"+
 		"<strong>Mining:</strong> %s\n"+
-		"<strong>Mining Power:</strong> %s\n"+
-		"<strong>Your Team:</strong> %s\n"+
-		"<strong>Inactive:</strong> %s",
+		"<strong>"+ui18n.Tr(lang, "statusPower")+":</strong> %s\n"+
+		"<strong>"+ui18n.Tr(lang, "statusTeam")+":</strong> %s\n"+
+		"<strong>"+ui18n.Tr(lang, "statusInactive")+":</strong> %s",
 		status, user.Address, mining, power, team, teamInactive)
 
 	messageTelegram(msg, int64(tu.Message.Chat.ID))

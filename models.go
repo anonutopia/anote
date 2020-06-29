@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
+	ui18n "github.com/unknwon/i18n"
 )
 
 // KeyValue model is used for storing key/values
@@ -51,9 +52,9 @@ func (u *User) status() string {
 
 func (u *User) isMiningStr() string {
 	if u.Mining {
-		return "yes"
+		return ui18n.Tr(lang, "yes")
 	} else {
-		return "no"
+		return ui18n.Tr(lang, "no")
 	}
 }
 
