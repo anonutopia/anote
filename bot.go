@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strings"
+	"time"
 
 	"github.com/anonutopia/gowaves"
 	ui18n "github.com/unknwon/i18n"
@@ -25,6 +25,8 @@ func executeBotCommand(tu TelegramUpdate) {
 		dropCommand(tu)
 	} else if tu.Message.Text == "/status" || strings.HasPrefix(tu.Message.Text, "/status@"+conf.BotName) {
 		statusCommand(tu)
+	} else if tu.Message.Text == "/mine" || strings.HasPrefix(tu.Message.Text, "/mine@"+conf.BotName) {
+		mineCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/") {
 		unknownCommand(tu)
 	} else if tu.UpdateID != 0 {
@@ -34,17 +36,22 @@ func executeBotCommand(tu TelegramUpdate) {
 				registerNewUsers(tu)
 			}
 		} else {
-			avr, err := wnc.AddressValidate(tu.Message.Text)
-			if err != nil {
-				logTelegram(err.Error())
-				messageTelegram(ui18n.Tr(lang, "error"), int64(tu.Message.Chat.ID))
-			} else {
-				if !avr.Valid {
-					messageTelegram(ui18n.Tr(lang, "addressNotValid"), int64(tu.Message.Chat.ID))
+			if tu.Message.ReplyToMessage.Text == ui18n.Tr(lang, "pleaseEnter") {
+				avr, err := wnc.AddressValidate(tu.Message.Text)
+				if err != nil {
+					logTelegram(err.Error())
+					messageTelegram(ui18n.Tr(lang, "error"), int64(tu.Message.Chat.ID))
 				} else {
-					tu.Message.Text = fmt.Sprintf("/drop %s", tu.Message.Text)
-					dropCommand(tu)
+					if !avr.Valid {
+						messageTelegram(ui18n.Tr(lang, "addressNotValid"), int64(tu.Message.Chat.ID))
+					} else {
+						tu.Message.Text = fmt.Sprintf("/drop %s", tu.Message.Text)
+						dropCommand(tu)
+					}
 				}
+			} else {
+				tu.Message.Text = fmt.Sprintf("/mine %s", tu.Message.Text)
+				mineCommand(tu)
 			}
 		}
 	}
@@ -57,9 +64,8 @@ func registerNewUsers(tu TelegramUpdate) {
 	for _, user := range tu.Message.NewChatMembers {
 		messageTelegram(fmt.Sprintf(ui18n.Tr(lang, "welcome"), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))
 
-		u := &User{TelegramID: user.ID, TelegramUsername: user.Username, ReferralID: rUser.ID, ChatID: uint(tu.Message.Chat.ID)}
-		err := db.FirstOrCreate(u, u)
-		log.Println(err)
+		u := &User{TelegramID: user.ID, TelegramUsername: user.Username, ReferralID: rUser.ID}
+		db.FirstOrCreate(u, u)
 	}
 }
 
@@ -71,6 +77,9 @@ func priceCommand(tu TelegramUpdate) {
 }
 
 func startCommand(tu TelegramUpdate) {
+	u := &User{TelegramID: tu.Message.From.ID, TelegramUsername: tu.Message.From.Username}
+	db.FirstOrCreate(u, u)
+
 	messageTelegram("Hello and welcome to Anonutopia!", int64(tu.Message.Chat.ID))
 }
 
@@ -176,7 +185,36 @@ func dropCommand(tu TelegramUpdate) {
 }
 
 func statusCommand(tu TelegramUpdate) {
-	messageTelegram("Hello and welcome to Anonutopia!", int64(tu.Message.Chat.ID))
+	user := &User{TelegramID: tu.Message.From.ID}
+	db.First(user, user)
+
+	msg := fmt.Sprintf("⭕️  <strong><u>Your Anonutopia / Anote Status</u></strong>\n\n"+
+		"<strong>Anon Tag:</strong> Pioneer\n"+
+		"<strong>Address:</strong> %s\n"+
+		"<strong>Mining:</strong> no\n"+
+		"<strong>Mining Power:</strong> 0 A/h\n"+
+		"<strong>Referrals:</strong> 27",
+		user.Address)
+
+	messageTelegram(msg, int64(tu.Message.Chat.ID))
+}
+
+func mineCommand(tu TelegramUpdate) {
+	user := &User{TelegramID: tu.Message.From.ID}
+	db.First(user, user)
+
+	msgArr := strings.Fields(tu.Message.Text)
+	if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/mine") {
+		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), "Please enter daily code:")
+		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
+		msg.ReplyToMessageID = tu.Message.MessageID
+		bot.Send(msg)
+	} else {
+		now := time.Now()
+		user.MintingActivated = &now
+		db.Save(user)
+		messageTelegram("Great work, you started mining! 🚀", int64(tu.Message.Chat.ID))
+	}
 }
 
 func unknownCommand(tu TelegramUpdate) {

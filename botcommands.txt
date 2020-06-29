@@ -2,3 +2,4 @@ register - Get your 1 free Anote (provide your Waves address)
 price - Get current Anote price
 address - Get Anote's main Waves address (for creating new tokens)
 status - Get your Anonutopia / Anote status
+mine - Start generating new Anotes

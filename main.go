@@ -38,5 +38,7 @@ func main() {
 	m = initMacaron()
 	m.Post("/", binding.Json(TelegramUpdate{}), pageView)
 
+	initMinerMonitor()
+
 	initMonitor()
 }

@@ -28,8 +28,8 @@ type User struct {
 	TelegramUsername string `sql:"size:255"`
 	TelegramID       int    `sql:"unique_index"`
 	ReferralID       uint
-	ChatID           uint
 	Referral         *User
 	MintingActivated *time.Time
 	MintedAnotes     uint
+	SentWarning      bool `sql:"DEFAULT:false"`
 }
