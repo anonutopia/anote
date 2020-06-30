@@ -15,6 +15,7 @@ const (
 	tAnonTaxi    = -1001422544298
 	tAnonTaxiPrv = -1001271198034
 	tAnonOps     = -1001213539865
+	tAnonShout   = -1001453693349
 )
 
 func initBot() *tgbotapi.BotAPI {

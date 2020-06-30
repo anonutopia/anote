@@ -53,9 +53,9 @@ func (u *User) status() string {
 func (u *User) isMiningStr() string {
 	if u.Mining {
 		return ui18n.Tr(lang, "yes")
-	} else {
-		return ui18n.Tr(lang, "no")
 	}
+
+	return ui18n.Tr(lang, "no")
 }
 
 func (u *User) miningPower() float64 {

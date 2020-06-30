@@ -40,5 +40,7 @@ func main() {
 
 	initMinerMonitor()
 
+	initShoutService()
+
 	initMonitor()
 }
