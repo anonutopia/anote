@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/caddyserver/certmagic"
 	"github.com/go-macaron/cache"
 	"github.com/go-macaron/i18n"
 	_ "github.com/go-macaron/session/redis"
-	"github.com/caddyserver/certmagic"
 	macaron "gopkg.in/macaron.v1"
 )
 
@@ -18,7 +18,7 @@ func initMacaron() *macaron.Macaron {
 		Names: []string{"Hrvatski", "Srpski", "English"},
 	}))
 
-	if conf.SSL {
+	if !conf.Dev {
 		// certmagic.Default.Agreed = true
 		certmagic.DefaultACME.Email = conf.EmailAddress
 		go certmagic.HTTPS([]string{conf.Hostname}, m)

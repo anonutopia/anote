@@ -29,12 +29,11 @@ func (ss *ShoutService) start() {
 		db.FirstOrCreate(kslsd, kslsd)
 
 		if uint64(time.Now().Day()) != kslsd.ValueInt &&
-			int(time.Now().Hour()) == 23 {
+			int(time.Now().Hour()) == conf.ShoutTime {
 
 			code := rand.Intn(999-100) + 100
 
-			ss.sendMessage("Kriptokuna ima 10-20%% kamate na godišnju štednju. <a href=\"http://www.kriptokuna.com/\">više &gt;&gt;</a>")
-			ss.sendMessage(fmt.Sprintf("Mining Code: %d", code))
+			ss.sendMessage(fmt.Sprintf("Kriptokuna ima 10-20%% kamate na godišnju štednju. <a href=\"https://www.kriptokuna.com/\">više &gt;&gt;</a>\n\nMining Code: %d", code))
 
 			ksmc := &KeyValue{Key: "miningCode"}
 			db.FirstOrCreate(ksmc, ksmc)

@@ -13,7 +13,6 @@ type Config struct {
 	NodeAddress     string  `json:"node_address"`
 	Dev             bool    `json:"dev"`
 	Debug           bool    `json:"debug"`
-	SSL             bool    `json:"ssl"`
 	TelegramAPIKey  string  `json:"telegram_api_key"`
 	InitialPrice    uint64  `json:"initial_price"`
 	EmailAddress    string  `json:"email_address"`
@@ -22,6 +21,7 @@ type Config struct {
 	FounderFactor   float64 `json:"founder_factor"`
 	BuyFactor       float64 `json:"buy_factor"`
 	Hostname        string  `json:"hostname"`
+	ShoutTime       int     `json:"shout_time"`
 }
 
 // Load method loads configuration file to Config struct

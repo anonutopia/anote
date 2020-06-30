@@ -1,6 +1,5 @@
 {
     "debug": false,
-    "ssl": false,
     "waves_node_api_key": "",
     "node_address": "",
     "initial_price": 0,
