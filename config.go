@@ -22,6 +22,7 @@ type Config struct {
 	BuyFactor       float64 `json:"buy_factor"`
 	Hostname        string  `json:"hostname"`
 	ShoutTime       int     `json:"shout_time"`
+	PostgreSQL      string  `json:"postgre_sql"`
 }
 
 // Load method loads configuration file to Config struct

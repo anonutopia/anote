@@ -194,6 +194,7 @@ func statusCommand(tu TelegramUpdate) {
 	power := user.miningPowerStr()
 	team := user.teamStr()
 	teamInactive := user.teamInactiveStr()
+	mined := float64(user.MinedAnotes) / float64(satInBtc)
 
 	msg := fmt.Sprintf("⭕️  <strong><u>"+ui18n.Tr(lang, "statusTitle")+"</u></strong>\n\n"+
 		"<strong>Status:</strong> %s\n"+
@@ -201,8 +202,9 @@ func statusCommand(tu TelegramUpdate) {
 		"<strong>Mining:</strong> %s\n"+
 		"<strong>"+ui18n.Tr(lang, "statusPower")+":</strong> %s\n"+
 		"<strong>"+ui18n.Tr(lang, "statusTeam")+":</strong> %s\n"+
-		"<strong>"+ui18n.Tr(lang, "statusInactive")+":</strong> %s",
-		status, user.Address, mining, power, team, teamInactive)
+		"<strong>"+ui18n.Tr(lang, "statusInactive")+":</strong> %s\n"+
+		"<strong>"+ui18n.Tr(lang, "mined")+":</strong> %.8f",
+		status, user.Address, mining, power, team, teamInactive, mined)
 
 	messageTelegram(msg, int64(tu.Message.Chat.ID))
 }
@@ -221,11 +223,11 @@ func mineCommand(tu TelegramUpdate) {
 		msg.ReplyToMessageID = tu.Message.MessageID
 		bot.Send(msg)
 	} else if msgArr[1] == strconv.Itoa(int(ksmc.ValueInt)) {
-		mined := user.MinedAnotes
-		mined += int((time.Since(*user.MiningActivated).Hours() * user.miningPower()) * float64(satInBtc))
-		log.Println(mined)
-		log.Println(time.Since(*user.MiningActivated).Hours())
-		user.MinedAnotes = mined
+		if user.MiningActivated != nil {
+			mined := user.MinedAnotes
+			mined += int((time.Since(*user.MiningActivated).Hours() * user.miningPower()) * float64(satInBtc))
+			user.MinedAnotes = mined
+		}
 		now := time.Now()
 		user.MiningActivated = &now
 		user.Mining = true
@@ -241,7 +243,7 @@ func withdrawCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
 
-	if time.Since(*user.LastWithdraw).Hours() < float64(24) {
+	if user.LastWithdraw != nil && time.Since(*user.LastWithdraw).Hours() < float64(24) {
 		messageTelegram(ui18n.Tr(lang, "withdrawTimeLimit"), int64(tu.Message.Chat.ID))
 	} else if user.MinedAnotes == 0 {
 		messageTelegram(ui18n.Tr(lang, "withdrawNoAnotes"), int64(tu.Message.Chat.ID))
