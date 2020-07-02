@@ -92,7 +92,7 @@ func startCommand(tu TelegramUpdate) {
 		LastWithdraw:     &now}
 	db.FirstOrCreate(u, u)
 
-	messageTelegram(ui18n.Tr(lang, "hello"), int64(tu.Message.Chat.ID))
+	messageTelegram(strings.Replace(ui18n.Tr(lang, "hello"), "\\n", "\n", -1), int64(tu.Message.Chat.ID))
 }
 
 func addressCommand(tu TelegramUpdate) {
@@ -247,6 +247,8 @@ func withdrawCommand(tu TelegramUpdate) {
 		messageTelegram(ui18n.Tr(lang, "withdrawTimeLimit"), int64(tu.Message.Chat.ID))
 	} else if user.MinedAnotes == 0 {
 		messageTelegram(ui18n.Tr(lang, "withdrawNoAnotes"), int64(tu.Message.Chat.ID))
+	} else if len(user.Address) == 0 {
+		messageTelegram(ui18n.Tr(lang, "notRegistered"), int64(tu.Message.Chat.ID))
 	} else {
 		atr := &gowaves.AssetsTransferRequest{
 			Amount:    user.MinedAnotes,

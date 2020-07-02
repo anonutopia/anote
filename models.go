@@ -40,7 +40,7 @@ type User struct {
 
 func (u *User) status() string {
 	if len(u.Address) == 0 {
-		return "Not Registered"
+		return "Guest"
 	} else if u.team() >= 5 {
 		return "Miner"
 	} else if u.Mining {
