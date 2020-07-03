@@ -12,6 +12,7 @@ func initMacaron() *macaron.Macaron {
 	m := macaron.Classic()
 
 	m.Use(cache.Cacher())
+	m.Use(macaron.Renderer())
 
 	m.Use(i18n.I18n(i18n.Options{
 		Langs: []string{"hr", "sr", "en-US"},
