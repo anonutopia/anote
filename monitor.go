@@ -17,16 +17,16 @@ func (wm *WavesMonitor) start() {
 	wm.StartedTime = time.Now().Unix() * 1000
 	for {
 		// todo - make sure that everything is ok with 100 here
-		pages, err := wnc.TransactionsAddressLimit(conf.NodeAddress, 100)
-		if err != nil {
-			log.Println(err)
-		}
+		// pages, err := wnc.TransactionsAddressLimit(conf.NodeAddress, 100)
+		// if err != nil {
+		// 	log.Println(err)
+		// }
 
-		if len(pages) > 0 {
-			for _, t := range pages[0] {
-				wm.checkTransaction(&t)
-			}
-		}
+		// if len(pages) > 0 {
+		// 	for _, t := range pages[0] {
+		// 		wm.checkTransaction(&t)
+		// 	}
+		// }
 
 		time.Sleep(time.Second)
 	}

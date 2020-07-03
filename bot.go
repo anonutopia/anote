@@ -92,6 +92,17 @@ func startCommand(tu TelegramUpdate) {
 		LastWithdraw:     &now}
 	db.FirstOrCreate(u, u)
 
+	log.Println(u)
+	log.Println(u.ReferralID)
+
+	if u.ReferralID == 0 {
+		r := &User{}
+		db.First(r, 1)
+		log.Println(r)
+		u.Referral = r
+		db.Save(u)
+	}
+
 	messageTelegram(strings.Replace(ui18n.Tr(lang, "hello"), "\\n", "\n", -1), int64(tu.Message.Chat.ID))
 }
 
