@@ -185,7 +185,7 @@ func dropCommand(tu TelegramUpdate) {
 									if err != nil {
 										logTelegram(err.Error())
 									} else {
-										messageTelegram(fmt.Sprintf(ui18n.Tr(lang, "tokenSentR"), rUser.TelegramUsername), int64(tu.Message.Chat.ID))
+										messageTelegram(fmt.Sprintf(ui18n.Tr(lang, "tokenSentR"), rUser.TelegramUsername), int64(rUser.TelegramID))
 									}
 								}
 							}

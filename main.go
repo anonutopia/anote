@@ -39,9 +39,9 @@ func main() {
 	m.Get("/:address", addressView)
 	m.Post("/", binding.Json(TelegramUpdate{}), webhookView)
 
-	// initMinerMonitor()
+	initMinerMonitor()
 
-	// initShoutService()
+	initShoutService()
 
 	initMonitor()
 }
