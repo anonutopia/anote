@@ -144,9 +144,9 @@ func dropCommand(tu TelegramUpdate) {
 					} else {
 						messageTelegram(ui18n.Tr(lang, "hacker"), int64(tu.Message.Chat.ID))
 					}
-					// } else if user.ReferralID == 0 {
-					// 	link := fmt.Sprintf("https://%s/%s", conf.Hostname, msgArr[1])
-					// 	messageTelegram(fmt.Sprintf(ui18n.Tr(lang, "clickLink"), link), int64(tu.Message.Chat.ID))
+				} else if user.ReferralID == 0 {
+					link := fmt.Sprintf("https://%s/%s/%d", conf.Hostname, msgArr[1], tu.Message.From.ID)
+					messageTelegram(fmt.Sprintf(ui18n.Tr(lang, "clickLink"), link), int64(tu.Message.Chat.ID))
 				} else {
 					if msgArr[1] == conf.NodeAddress {
 						messageTelegram(ui18n.Tr(lang, "yourAddress"), int64(tu.Message.Chat.ID))
@@ -202,7 +202,7 @@ func dropCommand(tu TelegramUpdate) {
 func statusCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
-	// var link string
+	var link string
 
 	status := user.status()
 	mining := user.isMiningStr()
@@ -211,11 +211,11 @@ func statusCommand(tu TelegramUpdate) {
 	teamInactive := user.teamInactiveStr()
 	mined := float64(user.MinedAnotes) / float64(satInBtc)
 
-	// if len(user.Address) == 0 {
-	// 	link = ui18n.Tr(lang, "regRequired")
-	// } else {
-	// 	link = fmt.Sprintf("<a href=\"https://www.anonutopia.com/anote?r=%s\">%s</a>", user.Address, ui18n.Tr(lang, "holdToCopy"))
-	// }
+	if len(user.Address) == 0 {
+		link = ui18n.Tr(lang, "regRequired")
+	} else {
+		link = ""
+	}
 
 	msg := fmt.Sprintf("⭕️  <strong><u>"+ui18n.Tr(lang, "statusTitle")+"</u></strong>\n\n"+
 		"<strong>Status:</strong> %s\n"+
@@ -224,12 +224,16 @@ func statusCommand(tu TelegramUpdate) {
 		"<strong>"+ui18n.Tr(lang, "statusPower")+":</strong> %s\n"+
 		"<strong>"+ui18n.Tr(lang, "statusTeam")+":</strong> %s\n"+
 		"<strong>"+ui18n.Tr(lang, "statusInactive")+":</strong> %s\n"+
-		"<strong>"+ui18n.Tr(lang, "mined")+":</strong> %.8f\n",
-		// "<strong>Referral Link: %s</strong>",
-		// status, user.Address, mining, power, team, teamInactive, mined, link)
-		status, user.Address, mining, power, team, teamInactive, mined)
+		"<strong>"+ui18n.Tr(lang, "mined")+":</strong> %.8f\n"+
+		"<strong>Referral Link: %s</strong>",
+		status, user.Address, mining, power, team, teamInactive, mined, link)
 
 	messageTelegram(msg, int64(tu.Message.Chat.ID))
+
+	if len(user.Address) > 0 {
+		msg := fmt.Sprintf("https://www.anonutopia.com/anote?r=%s", user.Address)
+		messageTelegram(msg, int64(tu.Message.Chat.ID))
+	}
 }
 
 func mineCommand(tu TelegramUpdate) {
