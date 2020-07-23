@@ -204,6 +204,19 @@ func statusCommand(tu TelegramUpdate) {
 	db.First(user, user)
 	var link string
 
+	if user.MiningActivated != nil {
+		mined := user.MinedAnotes
+		timeSince := time.Since(*user.MiningActivated).Hours()
+		if timeSince > float64(24) {
+			timeSince = float64(24)
+		}
+		mined += int((timeSince * user.miningPower()) * float64(satInBtc))
+		user.MinedAnotes = mined
+		now := time.Now()
+		user.MiningActivated = &now
+		db.Save(user)
+	}
+
 	status := user.status()
 	mining := user.isMiningStr()
 	power := user.miningPowerStr()
@@ -250,15 +263,6 @@ func mineCommand(tu TelegramUpdate) {
 		msg.ReplyToMessageID = tu.Message.MessageID
 		bot.Send(msg)
 	} else if msgArr[1] == strconv.Itoa(int(ksmc.ValueInt)) {
-		if user.MiningActivated != nil {
-			mined := user.MinedAnotes
-			timeSince := time.Since(*user.MiningActivated).Hours()
-			if timeSince > float64(24) {
-				timeSince = float64(24)
-			}
-			mined += int((timeSince * user.miningPower()) * float64(satInBtc))
-			user.MinedAnotes = mined
-		}
 		now := time.Now()
 		user.MiningActivated = &now
 		user.Mining = true
@@ -296,6 +300,7 @@ func withdrawCommand(tu TelegramUpdate) {
 		} else {
 			now := time.Now()
 			user.LastWithdraw = &now
+			user.MiningActivated = &now
 			user.MinedAnotes = 0
 			db.Save(user)
 			messageTelegram(ui18n.Tr(lang, "sentAnotes"), int64(tu.Message.Chat.ID))

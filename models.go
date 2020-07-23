@@ -61,9 +61,7 @@ func (u *User) isMiningStr() string {
 func (u *User) miningPower() float64 {
 	power := float64(0)
 
-	if u.Mining {
-		power += 0.2
-	}
+	power += 0.2
 
 	if u.teamActive() > 0 {
 		power += float64(u.teamActive()) * 0.05
