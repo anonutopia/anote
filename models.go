@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	ui18n "github.com/unknwon/i18n"
 )
 
 // KeyValue model is used for storing key/values
@@ -36,6 +35,7 @@ type User struct {
 	SentWarning      bool `sql:"DEFAULT:false"`
 	Mining           bool `sql:"DEFAULT:false"`
 	LastWithdraw     *time.Time
+	Language         string `sql:"size:255;"`
 }
 
 func (u *User) status() string {
@@ -52,10 +52,10 @@ func (u *User) status() string {
 
 func (u *User) isMiningStr() string {
 	if u.Mining {
-		return ui18n.Tr(lang, "yes")
+		return trUser(u, "yes")
 	}
 
-	return ui18n.Tr(lang, "no")
+	return trUser(u, "no")
 }
 
 func (u *User) miningPower() float64 {

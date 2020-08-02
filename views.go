@@ -27,6 +27,8 @@ func addressView(ctx *macaron.Context) {
 	db.First(user, user)
 	referral := ctx.GetCookie("referral")
 
+	log.Println(user.ID)
+
 	if user.ID != 0 && user.ReferralID == 0 && len(referral) > 0 {
 		log.Println(telegramID)
 		rUser := &User{Address: referral}
@@ -38,14 +40,17 @@ func addressView(ctx *macaron.Context) {
 			user.ReferralID = 1
 			db.Save(user)
 		}
-
-		tu := TelegramUpdate{}
-		tu.Message.From.ID = user.TelegramID
-		tu.Message.Chat.ID = user.TelegramID
-		tu.Message.From.Username = user.TelegramUsername
-		tu.Message.Text = fmt.Sprintf("/register %s", address)
-		dropCommand(tu)
+	} else {
+		user.ReferralID = 1
+		db.Save(user)
 	}
+
+	tu := TelegramUpdate{}
+	tu.Message.From.ID = user.TelegramID
+	tu.Message.Chat.ID = user.TelegramID
+	tu.Message.From.Username = user.TelegramUsername
+	tu.Message.Text = fmt.Sprintf("/register %s", address)
+	dropCommand(tu)
 
 	ctx.HTML(200, "address")
 }
