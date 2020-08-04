@@ -208,7 +208,7 @@ func statusCommand(tu TelegramUpdate) {
 	db.First(user, user)
 	var link string
 
-	if user.MiningActivated != nil {
+	if user.MiningActivated != nil && user.Mining {
 		mined := user.MinedAnotes
 		timeSince := time.Since(*user.MiningActivated).Hours()
 		if timeSince > float64(24) {
