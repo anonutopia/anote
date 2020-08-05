@@ -67,9 +67,15 @@ func registerNewUsers(tu TelegramUpdate) {
 
 	for _, user := range tu.Message.NewChatMembers {
 		messageTelegram(fmt.Sprintf(trGroup(tu.Message.Chat.ID, "welcome"), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))
+		var name string
+		if len(user.Username) > 0 {
+			name = user.Username
+		} else {
+			name = user.FirstName
+		}
 		now := time.Now()
 		u := &User{TelegramID: user.ID,
-			TelegramUsername: user.Username,
+			TelegramUsername: name,
 			ReferralID:       rUser.ID,
 			MiningActivated:  &now,
 			LastWithdraw:     &now}

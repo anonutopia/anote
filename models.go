@@ -25,7 +25,7 @@ type Transaction struct {
 // User represents Telegram user
 type User struct {
 	gorm.Model
-	Address          string `sql:"size:255;unique_index"`
+	Address          string `sql:"size:255"`
 	TelegramUsername string `sql:"size:255"`
 	TelegramID       int    `sql:"unique_index"`
 	ReferralID       uint
