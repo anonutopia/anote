@@ -96,5 +96,12 @@ func (u *User) teamActive() int {
 // Shout models is used for storing shouts and auctions for ads
 type Shout struct {
 	gorm.Model
-	Message string
+	Message   string
+	Link      string `sql:"size:255"`
+	Price     int
+	OwnerID   uint
+	Owner     *User
+	ChatID    int
+	Finished  bool `sql:"DEFAULT:false"`
+	Published bool `sql:"DEFAULT:false"`
 }

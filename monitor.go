@@ -115,6 +115,6 @@ func (wm *WavesMonitor) purchaseAsset(t *gowaves.TransactionsAddressLimitRespons
 }
 
 func initMonitor() {
-	wm := &WavesMonitor{}
+	wm = &WavesMonitor{}
 	wm.start()
 }

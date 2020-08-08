@@ -22,6 +22,10 @@ var pc *PriceClient
 
 var token *Token
 
+var ss *ShoutService
+
+var wm *WavesMonitor
+
 func main() {
 	conf = initConfig()
 
@@ -41,7 +45,7 @@ func main() {
 
 	initMinerMonitor()
 
-	initShoutService()
+	ss = initShoutService()
 
 	initMonitor()
 }

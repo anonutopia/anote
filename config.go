@@ -22,6 +22,7 @@ type Config struct {
 	ShoutTime       int    `json:"shout_time"`
 	PostgreSQL      string `json:"postgre_sql"`
 	NodeHost        string `json:"node_host"`
+	ShoutAddress    string `json:"shout_address"`
 }
 
 // Load method loads configuration file to Config struct
