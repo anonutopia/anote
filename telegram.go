@@ -41,6 +41,7 @@ func logTelegram(message string) {
 
 func messageTelegram(message string, groupID int64) {
 	msg := tgbotapi.NewMessage(groupID, message)
+	msg.DisableWebPagePreview = true
 	msg.ParseMode = "HTML"
 	bot.Send(msg)
 }

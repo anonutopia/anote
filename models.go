@@ -31,6 +31,7 @@ type User struct {
 	ReferralID       uint
 	Referral         *User
 	MiningActivated  *time.Time
+	LastStatus       *time.Time
 	MinedAnotes      int
 	SentWarning      bool `sql:"DEFAULT:false"`
 	Mining           bool `sql:"DEFAULT:false"`
@@ -52,10 +53,10 @@ func (u *User) status() string {
 
 func (u *User) isMiningStr() string {
 	if u.Mining {
-		return trUser(u, "yes")
+		return tr(u.TelegramID, "yes")
 	}
 
-	return trUser(u, "no")
+	return tr(u.TelegramID, "no")
 }
 
 func (u *User) miningPower() float64 {
@@ -75,28 +76,25 @@ func (u *User) miningPowerStr() string {
 }
 
 func (u *User) team() int {
+	var users []*User
 	count := 0
-	db.Where(&User{ReferralID: u.ID}).Find(&User{}).Count(&count)
+	db.Where(&User{ReferralID: u.ID}).Find(&users).Count(&count)
 	return count
 }
 
-func (u *User) teamStr() string {
-	return fmt.Sprintf("%d", u.team())
-}
-
 func (u *User) teamInactive() int {
-	team := u.team()
-	active := 0
-	db.Where(&User{ReferralID: u.ID, Mining: true}).Find(&User{}).Count(&active)
-	return team - active
+	return u.team() - u.teamActive()
 }
 
 func (u *User) teamActive() int {
+	var users []*User
 	active := 0
-	db.Where(&User{ReferralID: u.ID, Mining: true}).Find(&User{}).Count(&active)
+	db.Where(&User{ReferralID: u.ID, Mining: true}).Find(&users).Count(&active)
 	return active
 }
 
-func (u *User) teamInactiveStr() string {
-	return fmt.Sprintf("%d", u.teamInactive())
+// Shout models is used for storing shouts and auctions for ads
+type Shout struct {
+	gorm.Model
+	Message string
 }

@@ -10,12 +10,22 @@ func trUser(user *User, message string) string {
 	}
 }
 
-func trGroup(groupID int, message string) string {
+func tr(chatId int, message string) string {
 	var lng string
-	if groupID == tAnonBalkan {
-		lng = langHr
+	u := &User{TelegramID: chatId}
+	db.First(u, u)
+	if u.ID != 0 {
+		if len(u.Language) > 0 {
+			return ui18n.Tr(u.Language, message)
+		} else {
+			return ui18n.Tr(lang, message)
+		}
 	} else {
-		lng = lang
+		if chatId == tAnonBalkan {
+			lng = langHr
+		} else {
+			lng = lang
+		}
 	}
 	return ui18n.Tr(lng, message)
 }

@@ -40,20 +40,20 @@ func executeBotCommand(tu TelegramUpdate) {
 				registerNewUsers(tu)
 			}
 		} else {
-			if tu.Message.ReplyToMessage.Text == trGroup(tu.Message.Chat.ID, "pleaseEnter") {
+			if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "pleaseEnter") {
 				avr, err := wnc.AddressValidate(tu.Message.Text)
 				if err != nil {
 					logTelegram(err.Error())
-					messageTelegram(trGroup(tu.Message.Chat.ID, "error"), int64(tu.Message.Chat.ID))
+					messageTelegram(tr(tu.Message.Chat.ID, "error"), int64(tu.Message.Chat.ID))
 				} else {
 					if !avr.Valid {
-						messageTelegram(trGroup(tu.Message.Chat.ID, "addressNotValid"), int64(tu.Message.Chat.ID))
+						messageTelegram(tr(tu.Message.Chat.ID, "addressNotValid"), int64(tu.Message.Chat.ID))
 					} else {
 						tu.Message.Text = fmt.Sprintf("/drop %s", tu.Message.Text)
 						dropCommand(tu)
 					}
 				}
-			} else if tu.Message.ReplyToMessage.Text == trGroup(tu.Message.Chat.ID, "dailyCode") {
+			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "dailyCode") {
 				tu.Message.Text = fmt.Sprintf("/mine %s", tu.Message.Text)
 				mineCommand(tu)
 			}
@@ -66,8 +66,14 @@ func registerNewUsers(tu TelegramUpdate) {
 	db.First(rUser, rUser)
 
 	for _, user := range tu.Message.NewChatMembers {
-		messageTelegram(fmt.Sprintf(trGroup(tu.Message.Chat.ID, "welcome"), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))
+		messageTelegram(fmt.Sprintf(tr(tu.Message.Chat.ID, "welcome"), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))
 		var name string
+		var lng string
+		if tu.Message.Chat.ID == tAnonBalkan {
+			lng = langHr
+		} else {
+			lng = lang
+		}
 		if len(user.Username) > 0 {
 			name = user.Username
 		} else {
@@ -78,7 +84,9 @@ func registerNewUsers(tu TelegramUpdate) {
 			TelegramUsername: name,
 			ReferralID:       rUser.ID,
 			MiningActivated:  &now,
-			LastWithdraw:     &now}
+			LastStatus:       &now,
+			LastWithdraw:     &now,
+			Language:         lng}
 		db.FirstOrCreate(u, u)
 	}
 }
@@ -89,7 +97,7 @@ func priceCommand(tu TelegramUpdate) {
 	kv := &KeyValue{Key: "tokenPrice"}
 	db.First(kv, kv)
 	price := float64(kv.ValueInt) / float64(satInBtc)
-	messageTelegram(fmt.Sprintf(trUser(u, "currentPrice"), price), int64(tu.Message.Chat.ID))
+	messageTelegram(fmt.Sprintf(tr(u.TelegramID, "currentPrice"), price), int64(tu.Message.Chat.ID))
 }
 
 func startCommand(tu TelegramUpdate) {
@@ -97,6 +105,7 @@ func startCommand(tu TelegramUpdate) {
 	u := &User{TelegramID: tu.Message.From.ID,
 		TelegramUsername: tu.Message.From.Username,
 		MiningActivated:  &now,
+		LastStatus:       &now,
 		LastWithdraw:     &now,
 		Language:         "en-US"}
 	db.FirstOrCreate(u, u)
@@ -112,13 +121,13 @@ func startCommand(tu TelegramUpdate) {
 		db.Save(u)
 	}
 
-	messageTelegram(strings.Replace(trUser(u, "hello"), "\\n", "\n", -1), int64(tu.Message.Chat.ID))
+	messageTelegram(strings.Replace(tr(u.TelegramID, "hello"), "\\n", "\n", -1), int64(tu.Message.Chat.ID))
 }
 
 func addressCommand(tu TelegramUpdate) {
 	u := &User{TelegramID: tu.Message.From.ID}
 	db.First(u, u)
-	messageTelegram(trUser(u, "myAddress"), int64(tu.Message.Chat.ID))
+	messageTelegram(tr(u.TelegramID, "myAddress"), int64(tu.Message.Chat.ID))
 	messageTelegram(conf.NodeAddress, int64(tu.Message.Chat.ID))
 	var pc tgbotapi.PhotoConfig
 	if conf.Dev {
@@ -135,7 +144,7 @@ func dropCommand(tu TelegramUpdate) {
 	db.First(user, user)
 	msgArr := strings.Fields(tu.Message.Text)
 	if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/register") {
-		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), trUser(user, "pleaseEnter"))
+		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "pleaseEnter"))
 		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
 		msg.ReplyToMessageID = tu.Message.MessageID
 		bot.Send(msg)
@@ -143,23 +152,23 @@ func dropCommand(tu TelegramUpdate) {
 		avr, err := wnc.AddressValidate(msgArr[1])
 		if err != nil {
 			logTelegram(err.Error())
-			messageTelegram(trUser(user, "error"), int64(tu.Message.Chat.ID))
+			messageTelegram(tr(user.TelegramID, "error"), int64(tu.Message.Chat.ID))
 		} else {
 			if !avr.Valid {
-				messageTelegram(trUser(user, "addressNotValid"), int64(tu.Message.Chat.ID))
+				messageTelegram(tr(user.TelegramID, "addressNotValid"), int64(tu.Message.Chat.ID))
 			} else {
 				if len(user.Address) > 0 {
 					if user.Address == msgArr[1] {
-						messageTelegram(trUser(user, "alreadyActivated"), int64(tu.Message.Chat.ID))
+						messageTelegram(tr(user.TelegramID, "alreadyActivated"), int64(tu.Message.Chat.ID))
 					} else {
-						messageTelegram(trUser(user, "hacker"), int64(tu.Message.Chat.ID))
+						messageTelegram(tr(user.TelegramID, "hacker"), int64(tu.Message.Chat.ID))
 					}
 				} else if user.ReferralID == 0 {
 					link := fmt.Sprintf("https://%s/%s/%d", conf.Hostname, msgArr[1], tu.Message.From.ID)
-					messageTelegram(fmt.Sprintf(trUser(user, "clickLink"), link), int64(tu.Message.Chat.ID))
+					messageTelegram(fmt.Sprintf(tr(user.TelegramID, "clickLink"), link), int64(tu.Message.Chat.ID))
 				} else {
 					if msgArr[1] == conf.NodeAddress {
-						messageTelegram(trUser(user, "yourAddress"), int64(tu.Message.Chat.ID))
+						messageTelegram(tr(user.TelegramID, "yourAddress"), int64(tu.Message.Chat.ID))
 					} else {
 						atr := &gowaves.AssetsTransferRequest{
 							Amount:    100000000,
@@ -171,7 +180,7 @@ func dropCommand(tu TelegramUpdate) {
 
 						_, err := wnc.AssetsTransfer(atr)
 						if err != nil {
-							messageTelegram(trUser(user, "error"), int64(tu.Message.Chat.ID))
+							messageTelegram(tr(user.TelegramID, "error"), int64(tu.Message.Chat.ID))
 							logTelegram(err.Error())
 						} else {
 							user.TelegramID = tu.Message.From.ID
@@ -195,12 +204,12 @@ func dropCommand(tu TelegramUpdate) {
 									if err != nil {
 										logTelegram(err.Error())
 									} else {
-										messageTelegram(fmt.Sprintf(trUser(user, "tokenSentR"), rUser.TelegramUsername), int64(rUser.TelegramID))
+										messageTelegram(fmt.Sprintf(tr(user.TelegramID, "tokenSentR"), rUser.TelegramUsername), int64(rUser.TelegramID))
 									}
 								}
 							}
 
-							messageTelegram(fmt.Sprintf(trUser(user, "tokenSent"), tu.Message.From.Username), int64(tu.Message.Chat.ID))
+							messageTelegram(fmt.Sprintf(tr(user.TelegramID, "tokenSent"), tu.Message.From.Username), int64(tu.Message.Chat.ID))
 						}
 					}
 				}
@@ -216,38 +225,38 @@ func statusCommand(tu TelegramUpdate) {
 
 	if user.MiningActivated != nil && user.Mining {
 		mined := user.MinedAnotes
-		timeSince := time.Since(*user.MiningActivated).Hours()
+		timeSince := time.Since(*user.LastStatus).Hours()
 		if timeSince > float64(24) {
 			timeSince = float64(24)
 		}
 		mined += int((timeSince * user.miningPower()) * float64(satInBtc))
 		user.MinedAnotes = mined
 		now := time.Now()
-		user.MiningActivated = &now
+		user.LastStatus = &now
 		db.Save(user)
 	}
 
 	status := user.status()
 	mining := user.isMiningStr()
 	power := user.miningPowerStr()
-	team := user.teamStr()
-	teamInactive := user.teamInactiveStr()
+	team := user.team()
+	teamInactive := user.teamInactive()
 	mined := float64(user.MinedAnotes) / float64(satInBtc)
 
 	if len(user.Address) == 0 {
-		link = trUser(user, "regRequired")
+		link = tr(user.TelegramID, "regRequired")
 	} else {
 		link = ""
 	}
 
-	msg := fmt.Sprintf("⭕️  <strong><u>"+trUser(user, "statusTitle")+"</u></strong>\n\n"+
+	msg := fmt.Sprintf("⭕️  <strong><u>"+tr(user.TelegramID, "statusTitle")+"</u></strong>\n\n"+
 		"<strong>Status:</strong> %s\n"+
-		"<strong>"+trUser(user, "statusAddress")+":</strong> %s\n"+
+		"<strong>"+tr(user.TelegramID, "statusAddress")+":</strong> %s\n"+
 		"<strong>Mining:</strong> %s\n"+
-		"<strong>"+trUser(user, "statusPower")+":</strong> %s\n"+
-		"<strong>"+trUser(user, "statusTeam")+":</strong> %s\n"+
-		"<strong>"+trUser(user, "statusInactive")+":</strong> %s\n"+
-		"<strong>"+trUser(user, "mined")+":</strong> %.8f\n"+
+		"<strong>"+tr(user.TelegramID, "statusPower")+":</strong> %s\n"+
+		"<strong>"+tr(user.TelegramID, "statusTeam")+":</strong> %d\n"+
+		"<strong>"+tr(user.TelegramID, "statusInactive")+":</strong> %d\n"+
+		"<strong>"+tr(user.TelegramID, "mined")+":</strong> %.8f\n"+
 		"<strong>Referral Link: %s</strong>",
 		status, user.Address, mining, power, team, teamInactive, mined, link)
 
@@ -268,7 +277,7 @@ func mineCommand(tu TelegramUpdate) {
 
 	msgArr := strings.Fields(tu.Message.Text)
 	if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/mine") {
-		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), trUser(user, "dailyCode"))
+		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "dailyCode"))
 		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
 		msg.ReplyToMessageID = tu.Message.MessageID
 		bot.Send(msg)
@@ -278,9 +287,9 @@ func mineCommand(tu TelegramUpdate) {
 		user.Mining = true
 		user.SentWarning = false
 		db.Save(user)
-		messageTelegram(trUser(user, "startedMining"), int64(tu.Message.Chat.ID))
+		messageTelegram(tr(user.TelegramID, "startedMining"), int64(tu.Message.Chat.ID))
 	} else {
-		messageTelegram(trUser(user, "codeNotValid"), int64(tu.Message.Chat.ID))
+		messageTelegram(tr(user.TelegramID, "codeNotValid"), int64(tu.Message.Chat.ID))
 	}
 }
 
@@ -289,11 +298,11 @@ func withdrawCommand(tu TelegramUpdate) {
 	db.First(user, user)
 
 	if user.LastWithdraw != nil && time.Since(*user.LastWithdraw).Hours() < float64(24) {
-		messageTelegram(trUser(user, "withdrawTimeLimit"), int64(tu.Message.Chat.ID))
+		messageTelegram(tr(user.TelegramID, "withdrawTimeLimit"), int64(tu.Message.Chat.ID))
 	} else if user.MinedAnotes == 0 {
-		messageTelegram(trUser(user, "withdrawNoAnotes"), int64(tu.Message.Chat.ID))
+		messageTelegram(tr(user.TelegramID, "withdrawNoAnotes"), int64(tu.Message.Chat.ID))
 	} else if len(user.Address) == 0 {
-		messageTelegram(trUser(user, "notRegistered"), int64(tu.Message.Chat.ID))
+		messageTelegram(tr(user.TelegramID, "notRegistered"), int64(tu.Message.Chat.ID))
 	} else {
 		atr := &gowaves.AssetsTransferRequest{
 			Amount:    user.MinedAnotes,
@@ -311,9 +320,10 @@ func withdrawCommand(tu TelegramUpdate) {
 			now := time.Now()
 			user.LastWithdraw = &now
 			user.MiningActivated = &now
+			user.LastStatus = &now
 			user.MinedAnotes = 0
 			db.Save(user)
-			messageTelegram(trUser(user, "sentAnotes"), int64(tu.Message.Chat.ID))
+			messageTelegram(tr(user.TelegramID, "sentAnotes"), int64(tu.Message.Chat.ID))
 		}
 
 	}
@@ -322,5 +332,5 @@ func withdrawCommand(tu TelegramUpdate) {
 func unknownCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
-	messageTelegram(trUser(user, "commandNotAvailable"), int64(tu.Message.Chat.ID))
+	messageTelegram(tr(user.TelegramID, "commandNotAvailable"), int64(tu.Message.Chat.ID))
 }
