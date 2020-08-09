@@ -72,7 +72,6 @@ func shoutinfoCommand(tu TelegramUpdate) {
 	db.First(user, user)
 	var shout Shout
 	db.Where("finished = true and published = false").Order("price desc").First(&shout)
-	log.Println(shout)
 	price := float64(shout.Price) / float64(satInBtc)
 	messageTelegram(fmt.Sprintf(tr(user.TelegramID, "shoutInfo"), price), int64(tu.Message.Chat.ID))
 }
