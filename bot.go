@@ -254,6 +254,17 @@ func statusCommand(tu TelegramUpdate) {
 	team := user.team()
 	teamInactive := user.teamInactive()
 	mined := float64(user.MinedAnotes) / float64(satInBtc)
+	sinceMine := time.Since(*user.MiningActivated)
+	sinceHour := 23 - int(sinceMine.Hours())
+	sinceMin := 0
+	sinceSec := 0
+	if sinceHour < 0 {
+		sinceHour = 0
+	} else {
+		sinceMin = 59 - (int(sinceMine.Minutes()) - (int(sinceMine.Hours()) * 60))
+		sinceSec = 59 - (int(sinceMine.Seconds()) - (int(sinceMine.Minutes()) * 60))
+	}
+	cycle := fmt.Sprintf("%.2d:%.2d:%.2d", sinceHour, sinceMin, sinceSec)
 
 	if len(user.Address) == 0 {
 		link = tr(user.TelegramID, "regRequired")
@@ -269,8 +280,9 @@ func statusCommand(tu TelegramUpdate) {
 		"<strong>"+tr(user.TelegramID, "statusTeam")+":</strong> %d\n"+
 		"<strong>"+tr(user.TelegramID, "statusInactive")+":</strong> %d\n"+
 		"<strong>"+tr(user.TelegramID, "mined")+":</strong> %.8f\n"+
+		"<strong>"+tr(user.TelegramID, "miningCycle")+":</strong> %s\n"+
 		"<strong>Referral Link: %s</strong>",
-		status, user.Address, mining, power, team, teamInactive, mined, link)
+		status, user.Address, mining, power, team, teamInactive, mined, cycle, link)
 
 	messageTelegram(msg, int64(tu.Message.Chat.ID))
 
