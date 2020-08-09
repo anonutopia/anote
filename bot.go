@@ -31,6 +31,8 @@ func executeBotCommand(tu TelegramUpdate) {
 		mineCommand(tu)
 	} else if tu.Message.Text == "/withdraw" || strings.HasPrefix(tu.Message.Text, "/withdraw@"+conf.BotName) {
 		withdrawCommand(tu)
+	} else if tu.Message.Text == "/shoutinfo" || strings.HasPrefix(tu.Message.Text, "/shoutinfo@"+conf.BotName) {
+		shoutinfoCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/") {
 		unknownCommand(tu)
 	} else if tu.UpdateID != 0 {
@@ -63,6 +65,16 @@ func executeBotCommand(tu TelegramUpdate) {
 			}
 		}
 	}
+}
+
+func shoutinfoCommand(tu TelegramUpdate) {
+	user := &User{TelegramID: tu.Message.From.ID}
+	db.First(user, user)
+	var shout Shout
+	db.Where("finished = true and published = false").Order("price desc").First(&shout)
+	log.Println(shout)
+	price := float64(shout.Price) / float64(satInBtc)
+	messageTelegram(fmt.Sprintf(tr(user.TelegramID, "shoutInfo"), price), int64(tu.Message.Chat.ID))
 }
 
 func registerNewUsers(tu TelegramUpdate) {
