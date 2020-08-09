@@ -294,6 +294,18 @@ func mineCommand(tu TelegramUpdate) {
 		msg.ReplyToMessageID = tu.Message.MessageID
 		bot.Send(msg)
 	} else if msgArr[1] == strconv.Itoa(int(ksmc.ValueInt)) {
+		var timeSince float64
+		mined := user.MinedAnotes
+		if user.LastStatus != nil {
+			timeSince = time.Since(*user.LastStatus).Hours()
+		} else {
+			timeSince = float64(0)
+		}
+		if timeSince > float64(24) {
+			timeSince = float64(24)
+		}
+		mined += int((timeSince * user.miningPower()) * float64(satInBtc))
+		user.MinedAnotes = mined
 		now := time.Now()
 		user.MiningActivated = &now
 		user.LastStatus = &now
