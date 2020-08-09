@@ -84,6 +84,9 @@ func registerNewUsers(tu TelegramUpdate) {
 			name = user.FirstName
 		}
 		now := time.Now()
+		if rUser.ID == 0 {
+			rUser.ID = 1
+		}
 		u := &User{TelegramID: user.ID,
 			TelegramUsername: name,
 			ReferralID:       rUser.ID,

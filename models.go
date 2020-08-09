@@ -42,7 +42,7 @@ type User struct {
 func (u *User) status() string {
 	if len(u.Address) == 0 {
 		return "Guest"
-	} else if u.team() >= 5 {
+	} else if u.team() >= 3 {
 		return "Miner"
 	} else if u.Mining {
 		return "Pioneer"
@@ -62,17 +62,21 @@ func (u *User) isMiningStr() string {
 func (u *User) miningPower() float64 {
 	power := float64(0)
 
-	power += 0.2
+	power += 0.02
 
 	if u.teamActive() > 0 {
-		power += float64(u.teamActive()) * 0.05
+		power += float64(u.teamActive()) * 0.005
+	}
+
+	if u.team() >= 3 {
+		power *= 10
 	}
 
 	return power
 }
 
 func (u *User) miningPowerStr() string {
-	return fmt.Sprintf("%.2f A/h", u.miningPower())
+	return fmt.Sprintf("%.3f A/h", u.miningPower())
 }
 
 func (u *User) team() int {
