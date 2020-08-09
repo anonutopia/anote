@@ -29,7 +29,7 @@ func addressView(ctx *macaron.Context) {
 
 	log.Println(user.ID)
 
-	if user.ID != 0 && user.ReferralID == 0 && len(referral) > 0 {
+	if user.ID != 0 && (user.ReferralID == 0 || user.ReferralID == 1) && len(referral) > 0 {
 		log.Println(telegramID)
 		rUser := &User{Address: referral}
 		db.First(rUser, rUser)
