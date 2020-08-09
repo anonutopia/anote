@@ -296,6 +296,7 @@ func mineCommand(tu TelegramUpdate) {
 	} else if msgArr[1] == strconv.Itoa(int(ksmc.ValueInt)) {
 		now := time.Now()
 		user.MiningActivated = &now
+		user.LastStatus = &now
 		user.Mining = true
 		user.SentWarning = false
 		db.Save(user)
