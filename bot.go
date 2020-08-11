@@ -352,6 +352,20 @@ func withdrawCommand(tu TelegramUpdate) {
 	} else if len(user.Address) == 0 {
 		messageTelegram(tr(user.TelegramID, "notRegistered"), int64(tu.Message.Chat.ID))
 	} else {
+		var timeSince float64
+		mined := user.MinedAnotes
+		if user.LastStatus != nil {
+			timeSince = time.Since(*user.LastStatus).Hours()
+		} else {
+			timeSince = float64(0)
+		}
+		if timeSince > float64(24) {
+			timeSince = float64(24)
+		}
+		mined += int((timeSince * user.miningPower()) * float64(satInBtc))
+		user.MinedAnotes = mined
+		db.Save(user)
+
 		atr := &gowaves.AssetsTransferRequest{
 			Amount:    user.MinedAnotes,
 			AssetID:   conf.TokenID,
