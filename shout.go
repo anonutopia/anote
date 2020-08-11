@@ -17,6 +17,7 @@ type ShoutService struct {
 func (ss *ShoutService) sendMessage(message string) {
 	msg := tgbotapi.NewMessage(tAnonShout, message)
 	msg.ParseMode = "HTML"
+	msg.DisableWebPagePreview = true
 	bot.Send(msg)
 
 	kslsd := &KeyValue{Key: "lastShoutDay"}
@@ -39,7 +40,7 @@ func (ss *ShoutService) start() {
 			db.Where("finished = true and published = false").Order("price desc").First(&shout)
 
 			if shout.ID != 0 {
-				ss.sendMessage(fmt.Sprintf("%s <a href=\"%s\">more &gt;&gt;</a>\n\nMining Code: %d", shout.Message, shout.Link, code))
+				ss.sendMessage(fmt.Sprintf("%s <a href=\"%s\">more &gt;&gt;</a>\n\n@AnonsRobot Mining Code: %d", shout.Message, shout.Link, code))
 
 				ksmc := &KeyValue{Key: "miningCode"}
 				db.FirstOrCreate(ksmc, ksmc)
