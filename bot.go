@@ -24,10 +24,18 @@ func executeBotCommand(tu TelegramUpdate) {
 	} else if tu.Message.Text == "/address" || strings.HasPrefix(tu.Message.Text, "/address@"+conf.BotName) {
 		addressCommand(tu)
 	} else if tu.Message.Text == "/register" || strings.HasPrefix(tu.Message.Text, "/register@"+conf.BotName) {
+		if tu.Message.Chat.Type != "private" {
+			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
+			return
+		}
 		dropCommand(tu)
 	} else if tu.Message.Text == "/status" || strings.HasPrefix(tu.Message.Text, "/status@"+conf.BotName) {
 		statusCommand(tu)
 	} else if tu.Message.Text == "/mine" || strings.HasPrefix(tu.Message.Text, "/mine@"+conf.BotName) {
+		if tu.Message.Chat.Type != "private" {
+			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
+			return
+		}
 		mineCommand(tu)
 	} else if tu.Message.Text == "/withdraw" || strings.HasPrefix(tu.Message.Text, "/withdraw@"+conf.BotName) {
 		withdrawCommand(tu)
@@ -381,8 +389,6 @@ func withdrawCommand(tu TelegramUpdate) {
 		} else {
 			now := time.Now()
 			user.LastWithdraw = &now
-			user.MiningActivated = &now
-			user.LastStatus = &now
 			user.MinedAnotes = 0
 			db.Save(user)
 			messageTelegram(tr(user.TelegramID, "sentAnotes"), int64(tu.Message.Chat.ID))
