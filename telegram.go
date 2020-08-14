@@ -65,7 +65,7 @@ func sendInvestmentMessages(investment float64, newPrice float64) {
 	msgHr += ui18n.Tr(langHr, "purchaseHowto")
 
 	messageTelegram(msg, tAnonOps)
-	messageTelegram(msg, tAno)
+	messageTelegram(msg, tAnon)
 	messageTelegram(msgHr, tAnonBalkan)
 }
 

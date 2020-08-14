@@ -109,7 +109,6 @@ func registerNewUsers(tu TelegramUpdate) {
 		u := &User{TelegramID: user.ID,
 			TelegramUsername: name,
 			ReferralID:       rUser.ID,
-			MiningActivated:  &now,
 			LastStatus:       &now,
 			LastWithdraw:     &now,
 			Language:         lng}
@@ -130,7 +129,6 @@ func startCommand(tu TelegramUpdate) {
 	now := time.Now()
 	u := &User{TelegramID: tu.Message.From.ID,
 		TelegramUsername: tu.Message.From.Username,
-		MiningActivated:  &now,
 		LastStatus:       &now,
 		LastWithdraw:     &now,
 		Language:         "en-US"}
@@ -248,6 +246,7 @@ func statusCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
 	var link string
+	var cycle string
 
 	if user.MiningActivated != nil && user.Mining {
 		var timeSince float64
@@ -273,17 +272,21 @@ func statusCommand(tu TelegramUpdate) {
 	team := user.team()
 	teamInactive := user.teamInactive()
 	mined := float64(user.MinedAnotes) / float64(satInBtc)
-	sinceMine := time.Since(*user.MiningActivated)
-	sinceHour := 23 - int(sinceMine.Hours())
-	sinceMin := 0
-	sinceSec := 0
-	if sinceHour < 0 {
-		sinceHour = 0
+	if user.MiningActivated != nil {
+		sinceMine := time.Since(*user.MiningActivated)
+		sinceHour := 23 - int(sinceMine.Hours())
+		sinceMin := 0
+		sinceSec := 0
+		if sinceHour < 0 {
+			sinceHour = 0
+		} else {
+			sinceMin = 59 - (int(sinceMine.Minutes()) - (int(sinceMine.Hours()) * 60))
+			sinceSec = 59 - (int(sinceMine.Seconds()) - (int(sinceMine.Minutes()) * 60))
+		}
+		cycle = fmt.Sprintf("%.2d:%.2d:%.2d", sinceHour, sinceMin, sinceSec)
 	} else {
-		sinceMin = 59 - (int(sinceMine.Minutes()) - (int(sinceMine.Hours()) * 60))
-		sinceSec = 59 - (int(sinceMine.Seconds()) - (int(sinceMine.Minutes()) * 60))
+		cycle = "00:00:00"
 	}
-	cycle := fmt.Sprintf("%.2d:%.2d:%.2d", sinceHour, sinceMin, sinceSec)
 
 	if len(user.Address) == 0 {
 		link = tr(user.TelegramID, "regRequired")

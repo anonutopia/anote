@@ -62,15 +62,13 @@ func (u *User) isMiningStr() string {
 func (u *User) miningPower() float64 {
 	power := float64(0)
 
-	if u.Mining {
-		power += 0.02
-	}
+	power += 0.02
 
 	if u.teamActive() > 0 {
 		power += float64(u.teamActive()) * 0.005
 	}
 
-	if u.team() >= 3 {
+	if u.teamActive() >= 3 {
 		power *= 10
 	}
 
@@ -95,7 +93,7 @@ func (u *User) teamInactive() int {
 func (u *User) teamActive() int {
 	var users []*User
 	active := 0
-	db.Where(&User{ReferralID: u.ID, Mining: true}).Find(&users).Count(&active)
+	db.Where("referral_id = ? AND mining_activated IS NOT NULL", u.ID).Find(&users).Count(&active)
 	return active
 }
 
