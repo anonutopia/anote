@@ -46,22 +46,27 @@ func messageTelegram(message string, groupID int64) {
 	bot.Send(msg)
 }
 
-func sendGroupsMessageInvestment(investment float64) {
-	msg := tgbotapi.NewMessage(tAnonOps, fmt.Sprintf(ui18n.Tr(lang, "newPurchase"), investment))
-	bot.Send(msg)
-	msg = tgbotapi.NewMessage(tAnon, fmt.Sprintf(ui18n.Tr(lang, "newPurchase"), investment))
-	bot.Send(msg)
-	msg = tgbotapi.NewMessage(tAnonBalkan, fmt.Sprintf(ui18n.Tr(langHr, "newPurchase"), investment))
-	bot.Send(msg)
-}
+func sendInvestmentMessages(investment float64, newPrice float64) {
+	msg := fmt.Sprintf(ui18n.Tr(lang, "newPurchase"), investment)
+	msgHr := fmt.Sprintf(ui18n.Tr(langHr, "newPurchase"), investment)
 
-func sendGroupsMessagePrice(newPrice float64) {
-	msg := tgbotapi.NewMessage(tAnonOps, fmt.Sprintf(ui18n.Tr(lang, "priceRise"), newPrice))
-	bot.Send(msg)
-	msg = tgbotapi.NewMessage(tAnon, fmt.Sprintf(ui18n.Tr(lang, "priceRise"), newPrice))
-	bot.Send(msg)
-	msg = tgbotapi.NewMessage(tAnonBalkan, fmt.Sprintf(ui18n.Tr(langHr, "priceRise"), newPrice))
-	bot.Send(msg)
+	if newPrice > float64(0) {
+		msg += "\n\n"
+		msg += fmt.Sprintf(ui18n.Tr(lang, "priceRise"), newPrice)
+
+		msgHr += "\n\n"
+		msgHr += fmt.Sprintf(ui18n.Tr(langHr, "priceRise"), newPrice)
+	}
+
+	msg += "\n\n"
+	msg += ui18n.Tr(lang, "purchaseHowto")
+
+	msgHr += "\n\n"
+	msgHr += ui18n.Tr(langHr, "purchaseHowto")
+
+	messageTelegram(msg, tAnonOps)
+	messageTelegram(msg, tAno)
+	messageTelegram(msgHr, tAnonBalkan)
 }
 
 // TelegramUpdate struct represent webhook update data from Telegram
