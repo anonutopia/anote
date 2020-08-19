@@ -112,7 +112,9 @@ func registerNewUsers(tu TelegramUpdate) {
 			LastStatus:       &now,
 			LastWithdraw:     &now,
 			Language:         lng}
-		db.FirstOrCreate(u, u)
+		if err := db.FirstOrCreate(u, u).Error; err != nil {
+			logTelegram(err.Error())
+		}
 	}
 }
 
@@ -132,17 +134,19 @@ func startCommand(tu TelegramUpdate) {
 		LastStatus:       &now,
 		LastWithdraw:     &now,
 		Language:         "en-US"}
-	db.FirstOrCreate(u, u)
 
-	log.Println(u)
-	log.Println(u.ReferralID)
+	if err := db.FirstOrCreate(u, u).Error; err != nil {
+		logTelegram(err.Error())
+	}
 
 	if u.ReferralID == 0 {
 		r := &User{}
 		db.First(r, 1)
 		log.Println(r)
 		u.Referral = r
-		db.Save(u)
+		if err := db.Save(u).Error; err != nil {
+			logTelegram(err.Error())
+		}
 	}
 
 	messageTelegram(strings.Replace(tr(u.TelegramID, "hello"), "\\n", "\n", -1), int64(tu.Message.Chat.ID))
@@ -210,7 +214,9 @@ func dropCommand(tu TelegramUpdate) {
 							user.TelegramID = tu.Message.From.ID
 							user.TelegramUsername = tu.Message.From.Username
 							user.Address = msgArr[1]
-							db.Save(user)
+							if err := db.Save(user).Error; err != nil {
+								logTelegram(err.Error())
+							}
 
 							if user.ReferralID != 0 {
 								rUser := &User{}
@@ -263,7 +269,9 @@ func statusCommand(tu TelegramUpdate) {
 		user.MinedAnotes = mined
 		now := time.Now()
 		user.LastStatus = &now
-		db.Save(user)
+		if err := db.Save(user).Error; err != nil {
+			logTelegram(err.Error())
+		}
 	}
 
 	status := user.status()
@@ -345,7 +353,9 @@ func mineCommand(tu TelegramUpdate) {
 		user.LastStatus = &now
 		user.Mining = true
 		user.SentWarning = false
-		db.Save(user)
+		if err := db.Save(user).Error; err != nil {
+			logTelegram(err.Error())
+		}
 		messageTelegram(tr(user.TelegramID, "startedMining"), int64(tu.Message.Chat.ID))
 	} else {
 		messageTelegram(tr(user.TelegramID, "codeNotValid"), int64(tu.Message.Chat.ID))
@@ -375,7 +385,9 @@ func withdrawCommand(tu TelegramUpdate) {
 		}
 		mined += int((timeSince * user.miningPower()) * float64(satInBtc))
 		user.MinedAnotes = mined
-		db.Save(user)
+		if err := db.Save(user).Error; err != nil {
+			logTelegram(err.Error())
+		}
 
 		atr := &gowaves.AssetsTransferRequest{
 			Amount:    user.MinedAnotes,
@@ -393,7 +405,9 @@ func withdrawCommand(tu TelegramUpdate) {
 			now := time.Now()
 			user.LastWithdraw = &now
 			user.MinedAnotes = 0
-			db.Save(user)
+			if err := db.Save(user).Error; err != nil {
+				logTelegram(err.Error())
+			}
 			messageTelegram(tr(user.TelegramID, "sentAnotes"), int64(tu.Message.Chat.ID))
 		}
 

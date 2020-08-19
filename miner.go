@@ -19,7 +19,9 @@ func (mm *MinerMonitor) checkMiners() {
 			messageTelegram(msg, int64(u.TelegramID))
 			u.SentWarning = true
 			u.Mining = false
-			db.Save(&u)
+			if err := db.Save(&u).Error; err != nil {
+				logTelegram(err.Error())
+			}
 		}
 	}
 }

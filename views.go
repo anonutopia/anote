@@ -21,6 +21,7 @@ func addressView(ctx *macaron.Context) {
 	telegramID, err := strconv.Atoi(ctx.Params(":tid"))
 	if err != nil {
 		log.Printf("Error in telegramID: %s", err)
+		logTelegram(fmt.Sprintf("Error in telegramID: %s", err))
 		return
 	}
 	user := &User{TelegramID: telegramID}
@@ -32,14 +33,15 @@ func addressView(ctx *macaron.Context) {
 		db.First(rUser, rUser)
 		if rUser.ID != 0 {
 			user.ReferralID = rUser.ID
-			db.Save(user)
 		} else {
 			user.ReferralID = 1
-			db.Save(user)
 		}
 	} else {
 		user.ReferralID = 1
-		db.Save(user)
+	}
+
+	if err := db.Save(user).Error; err != nil {
+		logTelegram(err.Error())
 	}
 
 	tu := TelegramUpdate{}

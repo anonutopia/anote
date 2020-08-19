@@ -23,7 +23,9 @@ func (ss *ShoutService) sendMessage(message string) {
 	kslsd := &KeyValue{Key: "lastShoutDay"}
 	db.FirstOrCreate(kslsd, kslsd)
 	kslsd.ValueInt = uint64(time.Now().Day())
-	db.Save(kslsd)
+	if err := db.Save(kslsd).Error; err != nil {
+		logTelegram(err.Error())
+	}
 }
 
 func (ss *ShoutService) start() {
@@ -45,13 +47,17 @@ func (ss *ShoutService) start() {
 				ksmc := &KeyValue{Key: "miningCode"}
 				db.FirstOrCreate(ksmc, ksmc)
 				ksmc.ValueInt = uint64(code)
-				db.Save(ksmc)
+				if err := db.Save(ksmc).Error; err != nil {
+					logTelegram(err.Error())
+				}
 
 				if shout.ID != 1 {
 					shout.Published = true
 				}
 
-				db.Save(&shout)
+				if err := db.Save(&shout).Error; err != nil {
+					logTelegram(err.Error())
+				}
 			}
 		}
 
@@ -59,6 +65,7 @@ func (ss *ShoutService) start() {
 		pages, err := wnc.TransactionsAddressLimit(conf.ShoutAddress, 100)
 		if err != nil {
 			log.Println(err)
+			logTelegram(err.Error())
 		}
 
 		if len(pages) > 0 {
@@ -90,7 +97,9 @@ func (ss *ShoutService) processTransaction(tr *Transaction, t *gowaves.Transacti
 	}
 
 	tr.Processed = true
-	db.Save(tr)
+	if err := db.Save(tr).Error; err != nil {
+		logTelegram(err.Error())
+	}
 }
 
 func (ss *ShoutService) processBid(t *gowaves.TransactionsAddressLimitResponse) {
@@ -105,14 +114,18 @@ func (ss *ShoutService) processBid(t *gowaves.TransactionsAddressLimitResponse) 
 
 	shout.ChatID = int(msg.ChatID)
 	shout.Price = t.Amount
-	db.Save(shout)
+	if err := db.Save(shout).Error; err != nil {
+		logTelegram(err.Error())
+	}
 }
 
 func (ss *ShoutService) setMessage(tu TelegramUpdate) {
 	shout := &Shout{ChatID: tu.Message.Chat.ID}
 	db.First(shout, shout)
 	shout.Message = tu.Message.Text
-	db.Save(shout)
+	if err := db.Save(shout).Error; err != nil {
+		logTelegram(err.Error())
+	}
 
 	user := &User{}
 	db.First(user, shout.OwnerID)
@@ -126,7 +139,9 @@ func (ss *ShoutService) setLink(tu TelegramUpdate) {
 	db.First(shout, shout)
 	shout.Link = tu.Message.Text
 	shout.Finished = true
-	db.Save(shout)
+	if err := db.Save(shout).Error; err != nil {
+		logTelegram(err.Error())
+	}
 
 	user := &User{}
 	db.First(user, shout.OwnerID)

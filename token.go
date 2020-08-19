@@ -1,6 +1,9 @@
 package main
 
-import "log"
+import (
+	"fmt"
+	"log"
+)
 
 const priceFactorLimit = uint64(0.0001 * float64(satInBtc))
 
@@ -18,6 +21,7 @@ func (t *Token) issueAmount(investment int, assetID string) int {
 	p, err := pc.DoRequest()
 	if err != nil {
 		log.Printf("[token.issueAmount] error pc.DoRequest: %s", err)
+		logTelegram(fmt.Sprintf("[token.issueAmount] error pc.DoRequest: %s", err))
 		return 0
 	}
 
@@ -100,22 +104,30 @@ func (t *Token) saveState() {
 	ksip := &KeyValue{Key: "tokenPrice"}
 	db.FirstOrCreate(ksip, ksip)
 	ksip.ValueInt = t.Price
-	db.Save(ksip)
+	if err := db.Save(ksip).Error; err != nil {
+		logTelegram(err.Error())
+	}
 
 	ksipf := &KeyValue{Key: "tokenPriceFactor"}
 	db.FirstOrCreate(ksipf, ksipf)
 	ksipf.ValueInt = t.PriceFactor
-	db.Save(ksipf)
+	if err := db.Save(ksipf).Error; err != nil {
+		logTelegram(err.Error())
+	}
 
 	ksitp := &KeyValue{Key: "tokenTierPrice"}
 	db.FirstOrCreate(ksitp, ksitp)
 	ksitp.ValueInt = t.TierPrice
-	db.Save(ksitp)
+	if err := db.Save(ksitp).Error; err != nil {
+		logTelegram(err.Error())
+	}
 
 	ksitpf := &KeyValue{Key: "tokenTierPriceFactor"}
 	db.FirstOrCreate(ksitpf, ksitpf)
 	ksitpf.ValueInt = t.TierPriceFactor
-	db.Save(ksitpf)
+	if err := db.Save(ksitpf).Error; err != nil {
+		logTelegram(err.Error())
+	}
 }
 
 func (t *Token) loadState() {
@@ -126,7 +138,9 @@ func (t *Token) loadState() {
 		t.Price = ksip.ValueInt
 	} else {
 		ksip.ValueInt = t.Price
-		db.Save(ksip)
+		if err := db.Save(ksip).Error; err != nil {
+			logTelegram(err.Error())
+		}
 	}
 
 	ksipf := &KeyValue{Key: "tokenPriceFactor"}
@@ -136,7 +150,9 @@ func (t *Token) loadState() {
 		t.PriceFactor = ksipf.ValueInt
 	} else {
 		ksipf.ValueInt = t.PriceFactor
-		db.Save(ksipf)
+		if err := db.Save(ksipf).Error; err != nil {
+			logTelegram(err.Error())
+		}
 	}
 
 	ksitp := &KeyValue{Key: "tokenTierPrice"}
@@ -146,7 +162,9 @@ func (t *Token) loadState() {
 		t.TierPrice = ksitp.ValueInt
 	} else {
 		ksitp.ValueInt = t.TierPrice
-		db.Save(ksitp)
+		if err := db.Save(ksitp).Error; err != nil {
+			logTelegram(err.Error())
+		}
 	}
 
 	ksitpf := &KeyValue{Key: "tokenTierPriceFactor"}
@@ -156,7 +174,9 @@ func (t *Token) loadState() {
 		t.TierPriceFactor = ksitpf.ValueInt
 	} else {
 		ksitpf.ValueInt = t.TierPriceFactor
-		db.Save(ksitpf)
+		if err := db.Save(ksitpf).Error; err != nil {
+			logTelegram(err.Error())
+		}
 	}
 }
 
