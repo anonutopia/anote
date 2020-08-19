@@ -1,7 +1,7 @@
-register - Get your 1 free Anote (provide your Waves address)
+mine - Start generating new Anotes
+register - Register your Waves address
+status - Get your Anonutopia / Anote status
+withdraw - Withdraw your mined Anotes
 price - Get current Anote price
 address - Get Anote's main Waves address (for creating new tokens)
-status - Get your Anonutopia / Anote status
-mine - Start generating new Anotes
-withdraw - Withdraw your mined Anotes
 shoutinfo - Info on AnonShout ad auctions

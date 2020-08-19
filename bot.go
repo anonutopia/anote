@@ -28,7 +28,7 @@ func executeBotCommand(tu TelegramUpdate) {
 			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
 			return
 		}
-		dropCommand(tu)
+		registerCommand(tu)
 	} else if tu.Message.Text == "/status" || strings.HasPrefix(tu.Message.Text, "/status@"+conf.BotName) {
 		statusCommand(tu)
 	} else if tu.Message.Text == "/mine" || strings.HasPrefix(tu.Message.Text, "/mine@"+conf.BotName) {
@@ -59,8 +59,8 @@ func executeBotCommand(tu TelegramUpdate) {
 					if !avr.Valid {
 						messageTelegram(tr(tu.Message.Chat.ID, "addressNotValid"), int64(tu.Message.Chat.ID))
 					} else {
-						tu.Message.Text = fmt.Sprintf("/drop %s", tu.Message.Text)
-						dropCommand(tu)
+						tu.Message.Text = fmt.Sprintf("/register %s", tu.Message.Text)
+						registerCommand(tu)
 					}
 				}
 			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "dailyCode") {
@@ -84,40 +84,6 @@ func shoutinfoCommand(tu TelegramUpdate) {
 	messageTelegram(fmt.Sprintf(tr(user.TelegramID, "shoutInfo"), price), int64(tu.Message.Chat.ID))
 }
 
-func registerNewUsers(tu TelegramUpdate) {
-	rUser := &User{TelegramID: tu.Message.From.ID}
-	db.First(rUser, rUser)
-
-	for _, user := range tu.Message.NewChatMembers {
-		messageTelegram(fmt.Sprintf(tr(tu.Message.Chat.ID, "welcome"), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))
-		var name string
-		var lng string
-		if tu.Message.Chat.ID == tAnonBalkan {
-			lng = langHr
-		} else {
-			lng = lang
-		}
-		if len(user.Username) > 0 {
-			name = user.Username
-		} else {
-			name = user.FirstName
-		}
-		now := time.Now()
-		if rUser.ID == 0 {
-			rUser.ID = 1
-		}
-		u := &User{TelegramID: user.ID,
-			TelegramUsername: name,
-			ReferralID:       rUser.ID,
-			LastStatus:       &now,
-			LastWithdraw:     &now,
-			Language:         lng}
-		if err := db.FirstOrCreate(u, u).Error; err != nil {
-			logTelegram(err.Error())
-		}
-	}
-}
-
 func priceCommand(tu TelegramUpdate) {
 	u := &User{TelegramID: tu.Message.From.ID}
 	db.First(u, u)
@@ -128,28 +94,35 @@ func priceCommand(tu TelegramUpdate) {
 }
 
 func startCommand(tu TelegramUpdate) {
-	now := time.Now()
-	u := &User{TelegramID: tu.Message.From.ID,
-		TelegramUsername: tu.Message.From.Username,
-		LastStatus:       &now,
-		LastWithdraw:     &now,
-		Language:         "en-US"}
+	u := &User{TelegramID: tu.Message.From.ID}
 
 	if err := db.FirstOrCreate(u, u).Error; err != nil {
 		logTelegram(err.Error())
 	}
 
-	if u.ReferralID == 0 {
-		r := &User{}
-		db.First(r, 1)
-		log.Println(r)
-		u.Referral = r
-		if err := db.Save(u).Error; err != nil {
-			logTelegram(err.Error())
-		}
+	if u.Language == "" {
+		u.Language = lang
 	}
 
-	messageTelegram(strings.Replace(tr(u.TelegramID, "hello"), "\\n", "\n", -1), int64(tu.Message.Chat.ID))
+	if u.TelegramUsername == "" {
+		u.TelegramUsername = tu.Message.From.Username
+	}
+
+	if u.ReferralCode == "" {
+		u.ReferralCode = randString(10)
+		u.MinedAnotes = int(satInBtc)
+	}
+
+	if u.ReferralID == 0 {
+		link := fmt.Sprintf("https://%s/r/%d", conf.Hostname, tu.Message.From.ID)
+		messageTelegram(fmt.Sprintf(tr(u.TelegramID, "clickLink"), link), int64(tu.Message.Chat.ID))
+	} else {
+		messageTelegram(strings.Replace(tr(u.TelegramID, "hello"), "\\n", "\n", -1), int64(tu.Message.Chat.ID))
+	}
+
+	if err := db.Save(u).Error; err != nil {
+		logTelegram(err.Error())
+	}
 }
 
 func addressCommand(tu TelegramUpdate) {
@@ -167,7 +140,7 @@ func addressCommand(tu TelegramUpdate) {
 	bot.Send(pc)
 }
 
-func dropCommand(tu TelegramUpdate) {
+func registerCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
 	msgArr := strings.Fields(tu.Message.Text)
@@ -185,62 +158,14 @@ func dropCommand(tu TelegramUpdate) {
 			if !avr.Valid {
 				messageTelegram(tr(user.TelegramID, "addressNotValid"), int64(tu.Message.Chat.ID))
 			} else {
-				if len(user.Address) > 0 {
-					if user.Address == msgArr[1] {
-						messageTelegram(tr(user.TelegramID, "alreadyActivated"), int64(tu.Message.Chat.ID))
-					} else {
-						messageTelegram(tr(user.TelegramID, "hacker"), int64(tu.Message.Chat.ID))
-					}
-				} else if user.ReferralID == 0 {
-					link := fmt.Sprintf("https://%s/%s/%d", conf.Hostname, msgArr[1], tu.Message.From.ID)
-					messageTelegram(fmt.Sprintf(tr(user.TelegramID, "clickLink"), link), int64(tu.Message.Chat.ID))
+				if msgArr[1] == conf.NodeAddress {
+					messageTelegram(tr(user.TelegramID, "yourAddress"), int64(tu.Message.Chat.ID))
 				} else {
-					if msgArr[1] == conf.NodeAddress {
-						messageTelegram(tr(user.TelegramID, "yourAddress"), int64(tu.Message.Chat.ID))
+					user.Address = msgArr[1]
+					if err := db.Save(user).Error; err != nil {
+						logTelegram(err.Error())
 					} else {
-						atr := &gowaves.AssetsTransferRequest{
-							Amount:    100000000,
-							AssetID:   conf.TokenID,
-							Fee:       100000,
-							Recipient: msgArr[1],
-							Sender:    conf.NodeAddress,
-						}
-
-						_, err := wnc.AssetsTransfer(atr)
-						if err != nil {
-							messageTelegram(tr(user.TelegramID, "error"), int64(tu.Message.Chat.ID))
-							logTelegram(err.Error())
-						} else {
-							user.TelegramID = tu.Message.From.ID
-							user.TelegramUsername = tu.Message.From.Username
-							user.Address = msgArr[1]
-							if err := db.Save(user).Error; err != nil {
-								logTelegram(err.Error())
-							}
-
-							if user.ReferralID != 0 {
-								rUser := &User{}
-								db.First(rUser, user.ReferralID)
-								if len(rUser.Address) > 0 {
-									atr := &gowaves.AssetsTransferRequest{
-										Amount:    50000000,
-										AssetID:   conf.TokenID,
-										Fee:       100000,
-										Recipient: rUser.Address,
-										Sender:    conf.NodeAddress,
-									}
-
-									_, err := wnc.AssetsTransfer(atr)
-									if err != nil {
-										logTelegram(err.Error())
-									} else {
-										messageTelegram(fmt.Sprintf(tr(user.TelegramID, "tokenSentR"), rUser.TelegramUsername), int64(rUser.TelegramID))
-									}
-								}
-							}
-
-							messageTelegram(fmt.Sprintf(tr(user.TelegramID, "tokenSent"), tu.Message.From.Username), int64(tu.Message.Chat.ID))
-						}
+						messageTelegram(tr(user.TelegramID, "registered"), int64(tu.Message.Chat.ID))
 					}
 				}
 			}
@@ -296,7 +221,7 @@ func statusCommand(tu TelegramUpdate) {
 		cycle = "00:00:00"
 	}
 
-	if len(user.Address) == 0 {
+	if len(user.ReferralCode) == 0 {
 		link = tr(user.TelegramID, "regRequired")
 	} else {
 		link = ""
@@ -316,8 +241,8 @@ func statusCommand(tu TelegramUpdate) {
 
 	messageTelegram(msg, int64(tu.Message.Chat.ID))
 
-	if len(user.Address) > 0 {
-		msg := fmt.Sprintf("https://www.anonutopia.com/anote?r=%s", user.Address)
+	if len(user.ReferralCode) > 0 {
+		msg := fmt.Sprintf("https://www.anonutopia.com/anote?r=%s", user.ReferralCode)
 		messageTelegram(msg, int64(tu.Message.Chat.ID))
 	}
 }
@@ -418,4 +343,29 @@ func unknownCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
 	messageTelegram(tr(user.TelegramID, "commandNotAvailable"), int64(tu.Message.Chat.ID))
+}
+
+func registerNewUsers(tu TelegramUpdate) {
+	var lng string
+
+	rUser := &User{TelegramID: tu.Message.From.ID}
+	db.First(rUser, rUser)
+
+	for _, user := range tu.Message.NewChatMembers {
+		messageTelegram(fmt.Sprintf(tr(tu.Message.Chat.ID, "welcome"), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))
+
+		if tu.Message.Chat.ID == tAnonBalkan {
+			lng = langHr
+		} else {
+			lng = lang
+		}
+
+		u := &User{TelegramID: user.ID,
+			ReferralID: rUser.ID,
+			Language:   lng}
+
+		if err := db.FirstOrCreate(u, u).Error; err != nil {
+			logTelegram(err.Error())
+		}
+	}
 }
