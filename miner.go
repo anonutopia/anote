@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -22,11 +23,22 @@ func (mm *MinerMonitor) checkMiners() {
 			msg := tr(u.TelegramID, "miningWarning")
 			msg += "\n\n"
 			msg += tr(u.TelegramID, "purchaseHowto")
-			messageTelegram(msg, int64(u.TelegramID))
+
 			u.MiningWarning = &now
 			u.Mining = false
 			if err := db.Save(&u).Error; err != nil {
 				logTelegram(err.Error())
+			}
+
+			if u.team() >= 3 {
+				messageTelegram(msg, int64(u.TelegramID))
+			} else {
+				minerMsg := strings.Replace(tr(u.TelegramID, "minerWarning"), "\\n", "\n", -1)
+				messageTelegram(minerMsg, int64(u.TelegramID))
+				go func() {
+					time.Sleep(time.Minute * 5)
+					messageTelegram(msg, int64(u.TelegramID))
+				}()
 			}
 		} else if u.MiningActivated == nil &&
 			(u.MiningWarning == nil || time.Since(*u.MiningWarning).Hours() >= float64(24)) &&
