@@ -18,6 +18,11 @@ type Token struct {
 func (t *Token) issueAmount(investment int, assetID string, dryRun bool) int {
 	amount := int(0)
 
+	oldPrice := t.Price
+	oldPriceFactor := t.PriceFactor
+	oldTierPrice := t.TierPrice
+	oldTierPriceFactor := t.TierPriceFactor
+
 	p, err := pc.DoRequest()
 	if err != nil {
 		log.Printf("[token.issueAmount] error pc.DoRequest: %s", err)
@@ -98,6 +103,11 @@ func (t *Token) issueAmount(investment int, assetID string, dryRun bool) int {
 
 	if !dryRun {
 		sendInvestmentMessages(investmentEur, newPrice)
+	} else {
+		t.Price = oldPrice
+		t.PriceFactor = oldPriceFactor
+		t.TierPrice = oldTierPrice
+		t.TierPriceFactor = oldTierPriceFactor
 	}
 
 	return amount
