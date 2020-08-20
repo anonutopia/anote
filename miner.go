@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -12,28 +13,41 @@ func (mm *MinerMonitor) checkMiners() {
 	var users []*User
 	db.Find(&users)
 	for _, u := range users {
-		if u.MiningActivated != nil && time.Since(*u.MiningActivated).Hours() >= float64(24) && !u.SentWarning {
+		now := time.Now()
+		if u.MiningActivated != nil &&
+			u.MiningWarning != nil &&
+			time.Since(*u.MiningActivated).Hours() >= float64(24) &&
+			time.Since(*u.MiningWarning).Hours() >= float64(24) {
+
 			msg := tr(u.TelegramID, "miningWarning")
 			msg += "\n\n"
 			msg += tr(u.TelegramID, "purchaseHowto")
 			messageTelegram(msg, int64(u.TelegramID))
-			u.SentWarning = true
+			u.MiningWarning = &now
+			u.Mining = false
+			if err := db.Save(&u).Error; err != nil {
+				logTelegram(err.Error())
+			}
+		} else if u.MiningActivated == nil &&
+			(u.MiningWarning == nil || time.Since(*u.MiningWarning).Hours() >= float64(24)) &&
+			time.Since(u.CreatedAt).Hours() >= float64(24) {
+
+			if u.ReferralID == 0 {
+				link := fmt.Sprintf("https://%s/r/%d", conf.Hostname, u.TelegramID)
+				messageTelegram(fmt.Sprintf(tr(u.TelegramID, "clickLink"), link), int64(u.TelegramID))
+			} else {
+				msg := tr(u.TelegramID, "miningWarningFirst")
+				msg += "\n\n"
+				msg += tr(u.TelegramID, "purchaseHowto")
+				messageTelegram(msg, int64(u.TelegramID))
+			}
+
+			u.MiningWarning = &now
 			u.Mining = false
 			if err := db.Save(&u).Error; err != nil {
 				logTelegram(err.Error())
 			}
 		}
-		// } else if time.Since(u.CreatedAt).Hours() >= float64(24) && !u.SentWarning {
-		// 	msg := tr(u.TelegramID, "miningWarningFirst")
-		// 	msg += "\n\n"
-		// 	msg += tr(u.TelegramID, "purchaseHowto")
-		// 	messageTelegram(msg, int64(u.TelegramID))
-		// 	u.SentWarning = true
-		// 	u.Mining = false
-		// 	if err := db.Save(&u).Error; err != nil {
-		// 		logTelegram(err.Error())
-		// 	}
-		// }
 	}
 }
 

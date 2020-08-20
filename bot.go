@@ -264,7 +264,7 @@ func statusCommand(tu TelegramUpdate) {
 		"<strong>"+tr(user.TelegramID, "statusPower")+":</strong> %s\n"+
 		"<strong>"+tr(user.TelegramID, "statusTeam")+":</strong> %d\n"+
 		"<strong>"+tr(user.TelegramID, "statusInactive")+":</strong> %d\n"+
-		"<strong>"+tr(user.TelegramID, "mined")+":</strong> %.8f\n"+
+		"<strong>"+tr(user.TelegramID, "mined")+":</strong> <u>%.8f</u>\n"+
 		"<strong>"+tr(user.TelegramID, "miningCycle")+":</strong> %s\n"+
 		"<strong>Referral Link: %s</strong>",
 		status, user.Address, mining, power, team, teamInactive, mined, cycle, link)
@@ -307,7 +307,7 @@ func mineCommand(tu TelegramUpdate) {
 		user.MiningActivated = &now
 		user.LastStatus = &now
 		user.Mining = true
-		user.SentWarning = false
+		user.MiningWarning = &now
 		if err := db.Save(user).Error; err != nil {
 			logTelegram(err.Error())
 		}
