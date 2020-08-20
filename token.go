@@ -15,7 +15,7 @@ type Token struct {
 	TierPriceFactor uint64
 }
 
-func (t *Token) issueAmount(investment int, assetID string) int {
+func (t *Token) issueAmount(investment int, assetID string, dryRun bool) int {
 	amount := int(0)
 
 	p, err := pc.DoRequest()
@@ -83,9 +83,10 @@ func (t *Token) issueAmount(investment int, assetID string) int {
 			}
 		}
 
-		t.saveState()
-
-		log.Printf("token: %d %d %d %d", t.Price, t.PriceFactor, t.TierPrice, t.TierPriceFactor)
+		if !dryRun {
+			t.saveState()
+			log.Printf("token: %d %d %d %d", t.Price, t.PriceFactor, t.TierPrice, t.TierPriceFactor)
+		}
 	}
 
 	newPrice := float64(0)
@@ -95,7 +96,9 @@ func (t *Token) issueAmount(investment int, assetID string) int {
 		log.Println(newPrice)
 	}
 
-	sendInvestmentMessages(investmentEur, newPrice)
+	if !dryRun {
+		sendInvestmentMessages(investmentEur, newPrice)
+	}
 
 	return amount
 }

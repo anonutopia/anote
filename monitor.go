@@ -58,7 +58,7 @@ func (wm *WavesMonitor) processTransaction(tr *Transaction, t *gowaves.Transacti
 }
 
 func (wm *WavesMonitor) purchaseAsset(t *gowaves.TransactionsAddressLimitResponse) {
-	amount := token.issueAmount(t.Amount, t.AssetID)
+	amount := token.issueAmount(t.Amount, t.AssetID, false)
 	user := &User{Address: t.Sender}
 	db.First(user, user)
 

@@ -37,7 +37,7 @@ type User struct {
 	Mining           bool `sql:"DEFAULT:false"`
 	LastWithdraw     *time.Time
 	Language         string `sql:"size:255;"`
-	ReferralCode     string `sql:"size:255";unique_index`
+	ReferralCode     string `sql:"size:255;unique_index"`
 }
 
 func (u *User) status() string {

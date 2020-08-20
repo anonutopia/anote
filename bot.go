@@ -29,6 +29,12 @@ func executeBotCommand(tu TelegramUpdate) {
 			return
 		}
 		registerCommand(tu)
+	} else if tu.Message.Text == "/calculate" || strings.HasPrefix(tu.Message.Text, "/calculate@"+conf.BotName) {
+		if tu.Message.Chat.Type != "private" {
+			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
+			return
+		}
+		calculateCommand(tu)
 	} else if tu.Message.Text == "/status" || strings.HasPrefix(tu.Message.Text, "/status@"+conf.BotName) {
 		statusCommand(tu)
 	} else if tu.Message.Text == "/mine" || strings.HasPrefix(tu.Message.Text, "/mine@"+conf.BotName) {
@@ -63,6 +69,9 @@ func executeBotCommand(tu TelegramUpdate) {
 						registerCommand(tu)
 					}
 				}
+			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "pleaseEnterAmount") {
+				tu.Message.Text = fmt.Sprintf("/calculate %s", tu.Message.Text)
+				calculateCommand(tu)
 			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "dailyCode") {
 				tu.Message.Text = fmt.Sprintf("/mine %s", tu.Message.Text)
 				mineCommand(tu)
@@ -169,6 +178,27 @@ func registerCommand(tu TelegramUpdate) {
 					}
 				}
 			}
+		}
+	}
+}
+
+func calculateCommand(tu TelegramUpdate) {
+	user := &User{TelegramID: tu.Message.From.ID}
+	db.First(user, user)
+	msgArr := strings.Fields(tu.Message.Text)
+	if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/calculate") {
+		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "pleaseEnterAmount"))
+		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
+		msg.ReplyToMessageID = tu.Message.MessageID
+		bot.Send(msg)
+	} else {
+		if waves, err := strconv.ParseFloat(msgArr[1], 8); err == nil {
+			wAmount := int(waves * float64(satInBtc))
+			amount := token.issueAmount(wAmount, "", true)
+			result := float64(amount) / float64(satInBtc)
+			messageTelegram(fmt.Sprintf(tr(user.TelegramID, "amountResult"), result), int64(tu.Message.Chat.ID))
+		} else {
+			messageTelegram(fmt.Sprintf(tr(user.TelegramID, "amountError"), err.Error()), int64(tu.Message.Chat.ID))
 		}
 	}
 }
