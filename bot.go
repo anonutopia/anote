@@ -397,5 +397,14 @@ func registerNewUsers(tu TelegramUpdate) {
 		if err := db.FirstOrCreate(u, u).Error; err != nil {
 			logTelegram(err.Error())
 		}
+
+		if u.ReferralCode == "" {
+			u.ReferralCode = randString(10)
+			u.MinedAnotes = int(satInBtc)
+		}
+
+		if err := db.Save(u).Error; err != nil {
+			logTelegram(err.Error())
+		}
 	}
 }

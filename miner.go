@@ -22,17 +22,18 @@ func (mm *MinerMonitor) checkMiners() {
 			if err := db.Save(&u).Error; err != nil {
 				logTelegram(err.Error())
 			}
-		} else if time.Since(u.CreatedAt).Hours() >= float64(24) && !u.SentWarning {
-			msg := tr(u.TelegramID, "miningWarningFirst")
-			msg += "\n\n"
-			msg += tr(u.TelegramID, "purchaseHowto")
-			messageTelegram(msg, int64(u.TelegramID))
-			u.SentWarning = true
-			u.Mining = false
-			if err := db.Save(&u).Error; err != nil {
-				logTelegram(err.Error())
-			}
 		}
+		// } else if time.Since(u.CreatedAt).Hours() >= float64(24) && !u.SentWarning {
+		// 	msg := tr(u.TelegramID, "miningWarningFirst")
+		// 	msg += "\n\n"
+		// 	msg += tr(u.TelegramID, "purchaseHowto")
+		// 	messageTelegram(msg, int64(u.TelegramID))
+		// 	u.SentWarning = true
+		// 	u.Mining = false
+		// 	if err := db.Save(&u).Error; err != nil {
+		// 		logTelegram(err.Error())
+		// 	}
+		// }
 	}
 }
 
