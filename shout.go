@@ -24,7 +24,7 @@ func (ss *ShoutService) sendMessage(message string) {
 	db.FirstOrCreate(kslsd, kslsd)
 	kslsd.ValueInt = uint64(time.Now().Day())
 	if err := db.Save(kslsd).Error; err != nil {
-		logTelegram(err.Error())
+		logTelegram("[shout.go - 27] " + err.Error())
 	}
 }
 
@@ -48,7 +48,7 @@ func (ss *ShoutService) start() {
 				db.FirstOrCreate(ksmc, ksmc)
 				ksmc.ValueInt = uint64(code)
 				if err := db.Save(ksmc).Error; err != nil {
-					logTelegram(err.Error())
+					logTelegram("[shout.go - 51] " + err.Error())
 				}
 
 				if shout.ID != 1 {
@@ -56,7 +56,7 @@ func (ss *ShoutService) start() {
 				}
 
 				if err := db.Save(&shout).Error; err != nil {
-					logTelegram(err.Error())
+					logTelegram("[shout.go - 59] " + err.Error())
 				}
 			}
 		}
@@ -65,7 +65,7 @@ func (ss *ShoutService) start() {
 		pages, err := wnc.TransactionsAddressLimit(conf.ShoutAddress, 100)
 		if err != nil {
 			log.Println(err)
-			logTelegram(err.Error())
+			logTelegram("[shout.go - 68] " + err.Error())
 		}
 
 		if len(pages) > 0 {
@@ -98,7 +98,7 @@ func (ss *ShoutService) processTransaction(tr *Transaction, t *gowaves.Transacti
 
 	tr.Processed = true
 	if err := db.Save(tr).Error; err != nil {
-		logTelegram(err.Error())
+		logTelegram("[shout.go - 101] " + err.Error())
 	}
 }
 
@@ -115,7 +115,7 @@ func (ss *ShoutService) processBid(t *gowaves.TransactionsAddressLimitResponse) 
 	shout.ChatID = int(msg.ChatID)
 	shout.Price = t.Amount
 	if err := db.Save(shout).Error; err != nil {
-		logTelegram(err.Error())
+		logTelegram("[shout.go - 118] " + err.Error())
 	}
 }
 
@@ -124,7 +124,7 @@ func (ss *ShoutService) setMessage(tu TelegramUpdate) {
 	db.First(shout, shout)
 	shout.Message = tu.Message.Text
 	if err := db.Save(shout).Error; err != nil {
-		logTelegram(err.Error())
+		logTelegram("[shout.go - 127] " + err.Error())
 	}
 
 	user := &User{}
@@ -140,7 +140,7 @@ func (ss *ShoutService) setLink(tu TelegramUpdate) {
 	shout.Link = tu.Message.Text
 	shout.Finished = true
 	if err := db.Save(shout).Error; err != nil {
-		logTelegram(err.Error())
+		logTelegram("[shout.go - 143] " + err.Error())
 	}
 
 	user := &User{}

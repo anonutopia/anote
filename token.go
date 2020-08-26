@@ -118,28 +118,28 @@ func (t *Token) saveState() {
 	db.FirstOrCreate(ksip, ksip)
 	ksip.ValueInt = t.Price
 	if err := db.Save(ksip).Error; err != nil {
-		logTelegram(err.Error())
+		logTelegram("[token.go - 121] " + err.Error())
 	}
 
 	ksipf := &KeyValue{Key: "tokenPriceFactor"}
 	db.FirstOrCreate(ksipf, ksipf)
 	ksipf.ValueInt = t.PriceFactor
 	if err := db.Save(ksipf).Error; err != nil {
-		logTelegram(err.Error())
+		logTelegram("[token.go - 128] " + err.Error())
 	}
 
 	ksitp := &KeyValue{Key: "tokenTierPrice"}
 	db.FirstOrCreate(ksitp, ksitp)
 	ksitp.ValueInt = t.TierPrice
 	if err := db.Save(ksitp).Error; err != nil {
-		logTelegram(err.Error())
+		logTelegram("[token.go - 135] " + err.Error())
 	}
 
 	ksitpf := &KeyValue{Key: "tokenTierPriceFactor"}
 	db.FirstOrCreate(ksitpf, ksitpf)
 	ksitpf.ValueInt = t.TierPriceFactor
 	if err := db.Save(ksitpf).Error; err != nil {
-		logTelegram(err.Error())
+		logTelegram("[token.go - 142] " + err.Error())
 	}
 }
 
@@ -152,7 +152,7 @@ func (t *Token) loadState() {
 	} else {
 		ksip.ValueInt = t.Price
 		if err := db.Save(ksip).Error; err != nil {
-			logTelegram(err.Error())
+			logTelegram("[token.go - 155] " + err.Error())
 		}
 	}
 
@@ -164,7 +164,7 @@ func (t *Token) loadState() {
 	} else {
 		ksipf.ValueInt = t.PriceFactor
 		if err := db.Save(ksipf).Error; err != nil {
-			logTelegram(err.Error())
+			logTelegram("[token.go - 167] " + err.Error())
 		}
 	}
 
@@ -176,7 +176,7 @@ func (t *Token) loadState() {
 	} else {
 		ksitp.ValueInt = t.TierPrice
 		if err := db.Save(ksitp).Error; err != nil {
-			logTelegram(err.Error())
+			logTelegram("[token.go - 179] " + err.Error())
 		}
 	}
 
@@ -188,7 +188,7 @@ func (t *Token) loadState() {
 	} else {
 		ksitpf.ValueInt = t.TierPriceFactor
 		if err := db.Save(ksitpf).Error; err != nil {
-			logTelegram(err.Error())
+			logTelegram("[token.go - 191] " + err.Error())
 		}
 	}
 }
