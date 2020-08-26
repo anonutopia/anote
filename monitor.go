@@ -20,7 +20,7 @@ func (wm *WavesMonitor) start() {
 		pages, err := wnc.TransactionsAddressLimit(conf.NodeAddress, 100)
 		if err != nil {
 			log.Println(err)
-			logTelegram(err.Error())
+			logTelegram("[wm.start - wnc.TransactionsAddressLimit]" + err.Error())
 		}
 
 		if len(pages) > 0 {
@@ -53,7 +53,7 @@ func (wm *WavesMonitor) processTransaction(tr *Transaction, t *gowaves.Transacti
 
 	tr.Processed = true
 	if err := db.Save(tr).Error; err != nil {
-		logTelegram(err.Error())
+		logTelegram("[wm.processTransaction - db.Save] " + err.Error())
 	}
 }
 

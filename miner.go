@@ -27,7 +27,7 @@ func (mm *MinerMonitor) checkMiners() {
 			u.MiningWarning = &now
 			u.Mining = false
 			if err := db.Save(&u).Error; err != nil {
-				logTelegram(err.Error())
+				logTelegram("[mm.checkMiners - db.Save - 30] " + err.Error())
 			}
 
 			if u.team() >= 3 {
@@ -35,10 +35,10 @@ func (mm *MinerMonitor) checkMiners() {
 			} else {
 				minerMsg := strings.Replace(tr(u.TelegramID, "minerWarning"), "\\n", "\n", -1)
 				messageTelegram(minerMsg, int64(u.TelegramID))
-				go func() {
+				go func(u *User) {
 					time.Sleep(time.Minute * 5)
 					messageTelegram(msg, int64(u.TelegramID))
-				}()
+				}(u)
 			}
 		} else if u.MiningActivated == nil &&
 			(u.MiningWarning == nil || time.Since(*u.MiningWarning).Hours() >= float64(24)) &&
@@ -57,7 +57,7 @@ func (mm *MinerMonitor) checkMiners() {
 			u.MiningWarning = &now
 			u.Mining = false
 			if err := db.Save(&u).Error; err != nil {
-				logTelegram(err.Error())
+				logTelegram("[mm.checkMiners - db.Save - 30] " + err.Error())
 			}
 		}
 	}

@@ -59,7 +59,7 @@ func executeBotCommand(tu TelegramUpdate) {
 			if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "pleaseEnter") {
 				avr, err := wnc.AddressValidate(tu.Message.Text)
 				if err != nil {
-					logTelegram(err.Error())
+					logTelegram("[bot.go - 62]" + err.Error())
 					messageTelegram(tr(tu.Message.Chat.ID, "error"), int64(tu.Message.Chat.ID))
 				} else {
 					if !avr.Valid {
@@ -106,7 +106,7 @@ func startCommand(tu TelegramUpdate) {
 	u := &User{TelegramID: tu.Message.From.ID}
 
 	if err := db.FirstOrCreate(u, u).Error; err != nil {
-		logTelegram(err.Error())
+		logTelegram("[bot.go - 109]" + err.Error())
 	}
 
 	if u.Language == "" {
@@ -130,7 +130,7 @@ func startCommand(tu TelegramUpdate) {
 	}
 
 	if err := db.Save(u).Error; err != nil {
-		logTelegram(err.Error())
+		logTelegram("[bot.go - 133]" + err.Error())
 	}
 }
 
@@ -161,7 +161,7 @@ func registerCommand(tu TelegramUpdate) {
 	} else {
 		avr, err := wnc.AddressValidate(msgArr[1])
 		if err != nil {
-			logTelegram(err.Error())
+			logTelegram("[bot.go - 164]" + err.Error())
 			messageTelegram(tr(user.TelegramID, "error"), int64(tu.Message.Chat.ID))
 		} else {
 			if !avr.Valid {
@@ -172,7 +172,7 @@ func registerCommand(tu TelegramUpdate) {
 				} else {
 					user.Address = msgArr[1]
 					if err := db.Save(user).Error; err != nil {
-						logTelegram(err.Error())
+						logTelegram("[bot.go - 175]" + err.Error())
 					} else {
 						messageTelegram(tr(user.TelegramID, "registered"), int64(tu.Message.Chat.ID))
 					}
@@ -225,7 +225,7 @@ func statusCommand(tu TelegramUpdate) {
 		now := time.Now()
 		user.LastStatus = &now
 		if err := db.Save(user).Error; err != nil {
-			logTelegram(err.Error())
+			logTelegram("[bot.go - 228]" + err.Error())
 		}
 	}
 
@@ -309,7 +309,7 @@ func mineCommand(tu TelegramUpdate) {
 		user.Mining = true
 		user.MiningWarning = &now
 		if err := db.Save(user).Error; err != nil {
-			logTelegram(err.Error())
+			logTelegram("[bot.go - 312]" + err.Error())
 		}
 		messageTelegram(tr(user.TelegramID, "startedMining"), int64(tu.Message.Chat.ID))
 	} else {
@@ -341,7 +341,7 @@ func withdrawCommand(tu TelegramUpdate) {
 		mined += int((timeSince * user.miningPower()) * float64(satInBtc))
 		user.MinedAnotes = mined
 		if err := db.Save(user).Error; err != nil {
-			logTelegram(err.Error())
+			logTelegram("[bot.go - 344]" + err.Error())
 		}
 
 		atr := &gowaves.AssetsTransferRequest{
@@ -361,7 +361,7 @@ func withdrawCommand(tu TelegramUpdate) {
 			user.LastWithdraw = &now
 			user.MinedAnotes = 0
 			if err := db.Save(user).Error; err != nil {
-				logTelegram(err.Error())
+				logTelegram("[bot.go - 364]" + err.Error())
 			}
 			messageTelegram(tr(user.TelegramID, "sentAnotes"), int64(tu.Message.Chat.ID))
 		}
@@ -395,7 +395,7 @@ func registerNewUsers(tu TelegramUpdate) {
 			Language:   lng}
 
 		if err := db.FirstOrCreate(u, u).Error; err != nil {
-			logTelegram(err.Error())
+			logTelegram("[bot.go - 398]" + err.Error())
 		}
 
 		if u.ReferralCode == "" {
@@ -404,7 +404,7 @@ func registerNewUsers(tu TelegramUpdate) {
 		}
 
 		if err := db.Save(u).Error; err != nil {
-			logTelegram(err.Error())
+			logTelegram("[bot.go - 407]" + err.Error())
 		}
 	}
 }

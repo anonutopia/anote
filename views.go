@@ -44,7 +44,7 @@ func addressView(ctx *macaron.Context) {
 	}
 
 	if err := db.Save(user).Error; err != nil {
-		logTelegram(err.Error())
+		logTelegram("[addressView - db.Save] " + err.Error())
 	} else {
 		messageTelegram(strings.Replace(tr(user.TelegramID, "hello"), "\\n", "\n", -1), int64(user.TelegramID))
 	}
