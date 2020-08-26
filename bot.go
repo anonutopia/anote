@@ -123,8 +123,7 @@ func startCommand(tu TelegramUpdate) {
 	}
 
 	if u.ReferralID == 0 {
-		link := fmt.Sprintf("https://%s/r/%d", conf.Hostname, tu.Message.From.ID)
-		messageTelegram(fmt.Sprintf(tr(u.TelegramID, "clickLink"), link), int64(tu.Message.Chat.ID))
+		// todo
 	} else {
 		messageTelegram(strings.Replace(tr(u.TelegramID, "hello"), "\\n", "\n", -1), int64(tu.Message.Chat.ID))
 	}

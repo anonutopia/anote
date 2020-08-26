@@ -40,7 +40,6 @@ func main() {
 	token = initToken()
 
 	m = initMacaron()
-	m.Get("/r/:tid", addressView)
 	m.Post("/", binding.Json(TelegramUpdate{}), webhookView)
 
 	initMinerMonitor()

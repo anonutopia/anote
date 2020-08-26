@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 	"time"
 )
@@ -45,8 +44,7 @@ func (mm *MinerMonitor) checkMiners() {
 			time.Since(u.CreatedAt).Hours() >= float64(24) {
 
 			if u.ReferralID == 0 {
-				link := fmt.Sprintf("https://%s/r/%d", conf.Hostname, u.TelegramID)
-				messageTelegram(fmt.Sprintf(tr(u.TelegramID, "clickLink"), link), int64(u.TelegramID))
+				// todo
 			} else {
 				msg := tr(u.TelegramID, "miningWarningFirst")
 				msg += "\n\n"
