@@ -23,13 +23,19 @@ func executeBotCommand(tu TelegramUpdate) {
 		startCommand(tu)
 	} else if tu.Message.Text == "/address" || strings.HasPrefix(tu.Message.Text, "/address@"+conf.BotName) {
 		addressCommand(tu)
-	} else if tu.Message.Text == "/register" || strings.HasPrefix(tu.Message.Text, "/register@"+conf.BotName) {
+	} else if strings.HasPrefix(tu.Message.Text, "/register") || strings.HasPrefix(tu.Message.Text, "/register@"+conf.BotName) {
 		if tu.Message.Chat.Type != "private" {
 			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
 			return
 		}
 		registerCommand(tu)
-	} else if tu.Message.Text == "/calculate" || strings.HasPrefix(tu.Message.Text, "/calculate@"+conf.BotName) {
+	} else if strings.HasPrefix(tu.Message.Text, "/nick") || strings.HasPrefix(tu.Message.Text, "/nick@"+conf.BotName) {
+		if tu.Message.Chat.Type != "private" {
+			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
+			return
+		}
+		nickCommand(tu)
+	} else if strings.HasPrefix(tu.Message.Text, "/calculate") || strings.HasPrefix(tu.Message.Text, "/calculate@"+conf.BotName) {
 		if tu.Message.Chat.Type != "private" {
 			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
 			return
@@ -37,7 +43,7 @@ func executeBotCommand(tu TelegramUpdate) {
 		calculateCommand(tu)
 	} else if tu.Message.Text == "/status" || strings.HasPrefix(tu.Message.Text, "/status@"+conf.BotName) {
 		statusCommand(tu)
-	} else if tu.Message.Text == "/mine" || strings.HasPrefix(tu.Message.Text, "/mine@"+conf.BotName) {
+	} else if strings.HasPrefix(tu.Message.Text, "/mine") || strings.HasPrefix(tu.Message.Text, "/mine@"+conf.BotName) {
 		if tu.Message.Chat.Type != "private" {
 			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
 			return
@@ -72,6 +78,9 @@ func executeBotCommand(tu TelegramUpdate) {
 			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "pleaseEnterAmount") {
 				tu.Message.Text = fmt.Sprintf("/calculate %s", tu.Message.Text)
 				calculateCommand(tu)
+			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "enterNick") {
+				tu.Message.Text = fmt.Sprintf("/nick %s", tu.Message.Text)
+				nickCommand(tu)
 			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "dailyCode") {
 				tu.Message.Text = fmt.Sprintf("/mine %s", tu.Message.Text)
 				mineCommand(tu)
@@ -113,13 +122,13 @@ func startCommand(tu TelegramUpdate) {
 		u.Language = lang
 	}
 
-	if u.TelegramUsername == "" {
-		u.TelegramUsername = tu.Message.From.Username
+	if u.Nickname == "" {
+		u.Nickname = tu.Message.From.Username
+		u.MinedAnotes = int(satInBtc)
 	}
 
-	if u.ReferralCode == "" {
-		u.ReferralCode = randString(10)
-		u.MinedAnotes = int(satInBtc)
+	if u.Nickname == "" {
+		u.Nickname = randString(10)
 	}
 
 	if u.ReferralID == 0 {
@@ -177,6 +186,31 @@ func registerCommand(tu TelegramUpdate) {
 					}
 				}
 			}
+		}
+	}
+}
+
+func nickCommand(tu TelegramUpdate) {
+	user := &User{TelegramID: tu.Message.From.ID}
+	db.First(user, user)
+	msgArr := strings.Fields(tu.Message.Text)
+	if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/nick") {
+		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "enterNick"))
+		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
+		msg.ReplyToMessageID = tu.Message.MessageID
+		bot.Send(msg)
+	} else {
+		userNick := &User{Nickname: msgArr[1]}
+		db.First(userNick, userNick)
+		if userNick.ID == 0 {
+			user.Nickname = msgArr[1]
+			if err := db.Save(user).Error; err != nil {
+				logTelegram("[bot.go - 208]" + err.Error())
+			} else {
+				messageTelegram(tr(user.TelegramID, "nickSaved"), int64(tu.Message.Chat.ID))
+			}
+		} else {
+			messageTelegram(tr(user.TelegramID, "nickUsed"), int64(tu.Message.Chat.ID))
 		}
 	}
 }
@@ -250,13 +284,8 @@ func statusCommand(tu TelegramUpdate) {
 		cycle = "00:00:00"
 	}
 
-	if len(user.ReferralCode) == 0 {
-		link = tr(user.TelegramID, "regRequired")
-	} else {
-		link = ""
-	}
-
 	msg := fmt.Sprintf("⭕️  <strong><u>"+tr(user.TelegramID, "statusTitle")+"</u></strong>\n\n"+
+		"<strong>"+tr(user.TelegramID, "nickname")+":</strong> %s\n"+
 		"<strong>Status:</strong> %s\n"+
 		"<strong>"+tr(user.TelegramID, "statusAddress")+":</strong> %s\n"+
 		"<strong>Mining:</strong> %s\n"+
@@ -266,14 +295,12 @@ func statusCommand(tu TelegramUpdate) {
 		"<strong>"+tr(user.TelegramID, "mined")+":</strong> <u>%.8f</u>\n"+
 		"<strong>"+tr(user.TelegramID, "miningCycle")+":</strong> %s\n"+
 		"<strong>Referral Link: %s</strong>",
-		status, user.Address, mining, power, team, teamInactive, mined, cycle, link)
+		user.Nickname, status, user.Address, mining, power, team, teamInactive, mined, cycle, link)
 
 	messageTelegram(msg, int64(tu.Message.Chat.ID))
 
-	if len(user.ReferralCode) > 0 {
-		msg := fmt.Sprintf("https://www.anonutopia.com/anote?r=%s", user.ReferralCode)
-		messageTelegram(msg, int64(tu.Message.Chat.ID))
-	}
+	msg = fmt.Sprintf("https://www.anonutopia.com/anote?r=%s", user.Nickname)
+	messageTelegram(msg, int64(tu.Message.Chat.ID))
 }
 
 func mineCommand(tu TelegramUpdate) {
@@ -397,8 +424,8 @@ func registerNewUsers(tu TelegramUpdate) {
 			logTelegram("[bot.go - 398]" + err.Error())
 		}
 
-		if u.ReferralCode == "" {
-			u.ReferralCode = randString(10)
+		if u.Nickname == "" {
+			u.Nickname = randString(10)
 			u.MinedAnotes = int(satInBtc)
 		}
 

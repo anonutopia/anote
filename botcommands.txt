@@ -6,3 +6,4 @@ calculate - Calculate amount of Anotes you will get for some amount of Waves
 price - Get current Anote price
 address - Get Anote's main Waves address (for creating new tokens)
 shoutinfo - Info on AnonShout ad auctions
+nick - Setup your Anonutopia nickname
