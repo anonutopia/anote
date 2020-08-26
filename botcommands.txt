@@ -7,3 +7,4 @@ price - Get current Anote price
 address - Get Anote's main Waves address (for creating new tokens)
 shoutinfo - Info on AnonShout ad auctions
 nick - Setup your Anonutopia nickname
+team - List your Anonutopia team

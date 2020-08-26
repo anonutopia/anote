@@ -19,6 +19,8 @@ const lang = "en-US"
 func executeBotCommand(tu TelegramUpdate) {
 	if tu.Message.Text == "/price" || strings.HasPrefix(tu.Message.Text, "/price@"+conf.BotName) {
 		priceCommand(tu)
+	} else if tu.Message.Text == "/team" || strings.HasPrefix(tu.Message.Text, "/team@"+conf.BotName) {
+		teamCommand(tu)
 	} else if tu.Message.Text == "/start" || strings.HasPrefix(tu.Message.Text, "/start@"+conf.BotName) {
 		startCommand(tu)
 	} else if tu.Message.Text == "/address" || strings.HasPrefix(tu.Message.Text, "/address@"+conf.BotName) {
@@ -399,6 +401,25 @@ func unknownCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
 	messageTelegram(tr(user.TelegramID, "commandNotAvailable"), int64(tu.Message.Chat.ID))
+}
+
+func teamCommand(tu TelegramUpdate) {
+	user := &User{TelegramID: tu.Message.From.ID}
+	db.First(user, user)
+	msg := fmt.Sprintf("⭕️  <strong><u>" + tr(user.TelegramID, "teamTitle") + "</u></strong>\n\n")
+
+	var users []*User
+	db.Where(&User{ReferralID: user.ID}).Find(&users)
+
+	for _, u := range users {
+		msg += u.Nickname
+	}
+
+	if len(users) == 0 {
+		msg += tr(user.TelegramID, "noTeam")
+	}
+
+	messageTelegram(msg, int64(tu.Message.Chat.ID))
 }
 
 func registerNewUsers(tu TelegramUpdate) {
