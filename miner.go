@@ -43,14 +43,10 @@ func (mm *MinerMonitor) checkMiners() {
 			(u.MiningWarning == nil || time.Since(*u.MiningWarning).Hours() >= float64(24)) &&
 			time.Since(u.CreatedAt).Hours() >= float64(24) {
 
-			if u.ReferralID == 0 {
-				// todo
-			} else {
-				msg := tr(u.TelegramID, "miningWarningFirst")
-				msg += "\n\n"
-				msg += tr(u.TelegramID, "purchaseHowto")
-				messageTelegram(msg, int64(u.TelegramID))
-			}
+			msg := tr(u.TelegramID, "miningWarningFirst")
+			msg += "\n\n"
+			msg += tr(u.TelegramID, "purchaseHowto")
+			messageTelegram(msg, int64(u.TelegramID))
 
 			u.MiningWarning = &now
 			u.Mining = false

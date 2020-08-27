@@ -21,7 +21,11 @@ func executeBotCommand(tu TelegramUpdate) {
 		priceCommand(tu)
 	} else if tu.Message.Text == "/team" || strings.HasPrefix(tu.Message.Text, "/team@"+conf.BotName) {
 		teamCommand(tu)
-	} else if tu.Message.Text == "/start" || strings.HasPrefix(tu.Message.Text, "/start@"+conf.BotName) {
+	} else if strings.HasPrefix(tu.Message.Text, "/start") || strings.HasPrefix(tu.Message.Text, "/start@"+conf.BotName) {
+		if tu.Message.Chat.Type != "private" {
+			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
+			return
+		}
 		startCommand(tu)
 	} else if tu.Message.Text == "/address" || strings.HasPrefix(tu.Message.Text, "/address@"+conf.BotName) {
 		addressCommand(tu)
@@ -143,10 +147,17 @@ func startCommand(tu TelegramUpdate) {
 	}
 
 	if u.ReferralID == 0 {
-		// todo
-	} else {
-		messageTelegram(strings.Replace(tr(u.TelegramID, "hello"), "\\n", "\n", -1), int64(tu.Message.Chat.ID))
+		msgArr := strings.Fields(tu.Message.Text)
+		if len(msgArr) == 2 && strings.HasPrefix(tu.Message.Text, "/start") {
+			ref := &User{Nickname: msgArr[1]}
+			db.First(ref, ref)
+			if ref.ID != 0 {
+				u.ReferralID = ref.ID
+			}
+		}
 	}
+
+	messageTelegram(strings.Replace(tr(u.TelegramID, "hello"), "\\n", "\n", -1), int64(tu.Message.Chat.ID))
 
 	if err := db.Save(u).Error; err != nil {
 		logTelegram("[bot.go - 133]" + err.Error())
