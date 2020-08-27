@@ -37,6 +37,12 @@ func executeBotCommand(tu TelegramUpdate) {
 			return
 		}
 		nickCommand(tu)
+	} else if strings.HasPrefix(tu.Message.Text, "/ref") || strings.HasPrefix(tu.Message.Text, "/ref@"+conf.BotName) {
+		if tu.Message.Chat.Type != "private" {
+			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
+			return
+		}
+		refCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/calculate") || strings.HasPrefix(tu.Message.Text, "/calculate@"+conf.BotName) {
 		if tu.Message.Chat.Type != "private" {
 			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
@@ -83,6 +89,9 @@ func executeBotCommand(tu TelegramUpdate) {
 			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "enterNick") {
 				tu.Message.Text = fmt.Sprintf("/nick %s", tu.Message.Text)
 				nickCommand(tu)
+			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "enterRefNick") {
+				tu.Message.Text = fmt.Sprintf("/ref %s", tu.Message.Text)
+				refCommand(tu)
 			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "dailyCode") {
 				tu.Message.Text = fmt.Sprintf("/mine %s", tu.Message.Text)
 				mineCommand(tu)
@@ -213,6 +222,31 @@ func nickCommand(tu TelegramUpdate) {
 			}
 		} else {
 			messageTelegram(tr(user.TelegramID, "nickUsed"), int64(tu.Message.Chat.ID))
+		}
+	}
+}
+
+func refCommand(tu TelegramUpdate) {
+	user := &User{TelegramID: tu.Message.From.ID}
+	db.First(user, user)
+	msgArr := strings.Fields(tu.Message.Text)
+	if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/ref") {
+		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "enterRefNick"))
+		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
+		msg.ReplyToMessageID = tu.Message.MessageID
+		bot.Send(msg)
+	} else {
+		userRef := &User{Nickname: msgArr[1]}
+		db.First(userRef, userRef)
+		if userRef.ID != 0 {
+			user.ReferralID = userRef.ID
+			if err := db.Save(user).Error; err != nil {
+				logTelegram("[bot.go - 208]" + err.Error())
+			} else {
+				messageTelegram(tr(user.TelegramID, "refSaved"), int64(tu.Message.Chat.ID))
+			}
+		} else {
+			messageTelegram(tr(user.TelegramID, "refNotExisting"), int64(tu.Message.Chat.ID))
 		}
 	}
 }
@@ -412,7 +446,7 @@ func teamCommand(tu TelegramUpdate) {
 	db.Where(&User{ReferralID: user.ID}).Find(&users)
 
 	for _, u := range users {
-		msg += u.Nickname
+		msg += u.Nickname + "\n"
 	}
 
 	if len(users) == 0 {
