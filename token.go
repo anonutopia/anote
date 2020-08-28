@@ -15,7 +15,7 @@ type Token struct {
 	TierPriceFactor uint64
 }
 
-func (t *Token) issueAmount(investment int, assetID string, dryRun bool) int {
+func (t *Token) issueAmount(investment int, assetID string, dryRun bool) (int, float64) {
 	amount := int(0)
 
 	oldPrice := t.Price
@@ -27,7 +27,7 @@ func (t *Token) issueAmount(investment int, assetID string, dryRun bool) int {
 	if err != nil {
 		log.Printf("[token.issueAmount] error pc.DoRequest: %s", err)
 		logTelegram(fmt.Sprintf("[token.issueAmount] error pc.DoRequest: %s", err))
-		return 0
+		return 0, 0
 	}
 
 	var cryptoPrice float64
@@ -36,7 +36,7 @@ func (t *Token) issueAmount(investment int, assetID string, dryRun bool) int {
 	if len(assetID) == 0 {
 		cryptoPrice = p.WAVES
 	} else {
-		return amount
+		return amount, float64(t.Price) / float64(satInBtc)
 	}
 
 	priceChanged := false
@@ -110,7 +110,7 @@ func (t *Token) issueAmount(investment int, assetID string, dryRun bool) int {
 		t.TierPriceFactor = oldTierPriceFactor
 	}
 
-	return amount
+	return amount, newPrice
 }
 
 func (t *Token) saveState() {

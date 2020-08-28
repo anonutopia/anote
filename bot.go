@@ -274,9 +274,9 @@ func calculateCommand(tu TelegramUpdate) {
 	} else {
 		if waves, err := strconv.ParseFloat(msgArr[1], 8); err == nil {
 			wAmount := int(waves * float64(satInBtc))
-			amount := token.issueAmount(wAmount, "", true)
-			result := float64(amount) / float64(satInBtc)
-			messageTelegram(fmt.Sprintf(tr(user.TelegramID, "amountResult"), result), int64(tu.Message.Chat.ID))
+			amount, newPrice := token.issueAmount(wAmount, "", true)
+			amountF := float64(amount) / float64(satInBtc)
+			messageTelegram(fmt.Sprintf(strings.Replace(tr(user.TelegramID, "amountResult"), "\\n", "\n", -1), amountF, newPrice), int64(tu.Message.Chat.ID))
 		} else {
 			messageTelegram(fmt.Sprintf(tr(user.TelegramID, "amountError"), err.Error()), int64(tu.Message.Chat.ID))
 		}
