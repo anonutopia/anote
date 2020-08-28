@@ -474,7 +474,7 @@ func registerNewUsers(tu TelegramUpdate) {
 	db.First(rUser, rUser)
 
 	for _, user := range tu.Message.NewChatMembers {
-		messageTelegram(fmt.Sprintf(tr(tu.Message.Chat.ID, "welcome"), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))
+		messageTelegram(fmt.Sprintf(strings.Replace(tr(tu.Message.Chat.ID, "welcome"), "\\n", "\n", -1), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))
 
 		if tu.Message.Chat.ID == tAnonBalkan {
 			lng = langHr
