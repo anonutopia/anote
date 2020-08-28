@@ -35,6 +35,10 @@ func (t *Token) issueAmount(investment int, assetID string, dryRun bool) (int, f
 
 	if len(assetID) == 0 {
 		cryptoPrice = p.WAVES
+	} else if assetID == "8LQW8f7P5d5PZM7GtZEBgaqRPGSzS3DfPuiXrURJ4AJS" {
+		cryptoPrice = p.BTC
+	} else if assetID == "474jTeYx2r2Va35794tCScAXWJG9hU2HcgxzMowaZUnu" {
+		cryptoPrice = p.ETH
 	} else {
 		return amount, float64(t.Price) / float64(satInBtc)
 	}
