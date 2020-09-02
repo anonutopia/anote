@@ -46,7 +46,10 @@ func (wm *WavesMonitor) processTransaction(tr *Transaction, t *gowaves.Transacti
 		t.Timestamp >= wm.StartedTime &&
 		t.Sender != conf.NodeAddress &&
 		t.Recipient == conf.NodeAddress &&
-		len(t.AssetID) == 0 {
+		(len(t.AssetID) == 0 ||
+			t.AssetID == "8LQW8f7P5d5PZM7GtZEBgaqRPGSzS3DfPuiXrURJ4AJS" ||
+			t.AssetID == "474jTeYx2r2Va35794tCScAXWJG9hU2HcgxzMowaZUnu") &&
+		len(t.Attachment) == 0 {
 
 		wm.purchaseAsset(t)
 	}
@@ -85,7 +88,7 @@ func (wm *WavesMonitor) purchaseAsset(t *gowaves.TransactionsAddressLimitRespons
 
 		atr = &gowaves.AssetsTransferRequest{
 			Amount:    amountR,
-			AssetID:   "",
+			AssetID:   t.AssetID,
 			Fee:       100000,
 			Recipient: r.Address,
 			Sender:    conf.NodeAddress,
@@ -100,7 +103,7 @@ func (wm *WavesMonitor) purchaseAsset(t *gowaves.TransactionsAddressLimitRespons
 
 			atr = &gowaves.AssetsTransferRequest{
 				Amount:    amountF,
-				AssetID:   "",
+				AssetID:   t.AssetID,
 				Fee:       100000,
 				Recipient: conf.FounderAddress,
 				Sender:    conf.NodeAddress,

@@ -482,12 +482,18 @@ func registerNewUsers(tu TelegramUpdate) {
 			lng = lang
 		}
 
-		u := &User{TelegramID: user.ID,
-			ReferralID: rUser.ID,
-			Language:   lng}
+		u := &User{TelegramID: user.ID}
 
 		if err := db.FirstOrCreate(u, u).Error; err != nil {
-			logTelegram("[bot.go - 398]" + err.Error())
+			logTelegram("[bot.go - 490]" + err.Error())
+		}
+
+		if u.Language == "" {
+			u.Language = lng
+		}
+
+		if u.ReferralID == 0 && rUser.TelegramID != u.TelegramID {
+			u.ReferralID = rUser.ID
 		}
 
 		if u.Nickname == "" {
@@ -496,7 +502,7 @@ func registerNewUsers(tu TelegramUpdate) {
 		}
 
 		if err := db.Save(u).Error; err != nil {
-			logTelegram("[bot.go - 407]" + err.Error())
+			logTelegram("[bot.go - 499]" + err.Error())
 		}
 	}
 }

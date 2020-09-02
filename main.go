@@ -46,5 +46,7 @@ func main() {
 
 	ss = initShoutService()
 
+	// send()
+
 	initMonitor()
 }
