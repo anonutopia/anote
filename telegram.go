@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	ui18n "github.com/unknwon/i18n"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
@@ -40,6 +41,7 @@ func logTelegram(message string) {
 }
 
 func messageTelegram(message string, groupID int64) {
+	message = strings.Replace(message, "\\n", "\n", -1)
 	msg := tgbotapi.NewMessage(groupID, message)
 	msg.DisableWebPagePreview = true
 	msg.ParseMode = "HTML"
