@@ -42,15 +42,19 @@ func (wm *WavesMonitor) checkTransaction(t *gowaves.TransactionsAddressLimitResp
 }
 
 func (wm *WavesMonitor) processTransaction(tr *Transaction, t *gowaves.TransactionsAddressLimitResponse) {
+	if t.Recipient == conf.NodeAddress {
+		log.Println(t)
+	}
 	if t.Type == 4 &&
 		t.Timestamp >= wm.StartedTime &&
 		t.Sender != conf.NodeAddress &&
 		t.Recipient == conf.NodeAddress &&
-		(len(t.AssetID) == 0 ||
+		(t.AssetID == "" ||
 			t.AssetID == "8LQW8f7P5d5PZM7GtZEBgaqRPGSzS3DfPuiXrURJ4AJS" ||
 			t.AssetID == "474jTeYx2r2Va35794tCScAXWJG9hU2HcgxzMowaZUnu") &&
 		len(t.Attachment) == 0 {
 
+		log.Println("purchase")
 		wm.purchaseAsset(t)
 	}
 
@@ -62,6 +66,7 @@ func (wm *WavesMonitor) processTransaction(tr *Transaction, t *gowaves.Transacti
 
 func (wm *WavesMonitor) purchaseAsset(t *gowaves.TransactionsAddressLimitResponse) {
 	amount, _ := token.issueAmount(t.Amount, t.AssetID, false)
+	log.Println(amount)
 	user := &User{Address: t.Sender}
 	db.First(user, user)
 

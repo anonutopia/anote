@@ -33,7 +33,9 @@ func (t *Token) issueAmount(investment int, assetID string, dryRun bool) (int, f
 	var cryptoPrice float64
 	var investmentEur float64
 
-	if len(assetID) == 0 {
+	log.Println(assetID)
+
+	if assetID == "" {
 		cryptoPrice = p.WAVES
 	} else if assetID == "8LQW8f7P5d5PZM7GtZEBgaqRPGSzS3DfPuiXrURJ4AJS" {
 		cryptoPrice = p.BTC
@@ -45,39 +47,39 @@ func (t *Token) issueAmount(investment int, assetID string, dryRun bool) (int, f
 
 	priceChanged := false
 	investmentEur = float64(investment) / float64(satInBtc) / cryptoPrice
-	log.Println(investmentEur)
+	// log.Println(investmentEur)
 
-	for investment > 10 {
-		log.Printf("token: %d %d %d %d", t.Price, t.PriceFactor, t.TierPrice, t.TierPriceFactor)
-		log.Printf("cryptoPrice: %f", cryptoPrice)
-		log.Printf("investment: %d", investment)
+	if investment > 10 {
+		// log.Printf("token: %d %d %d %d", t.Price, t.PriceFactor, t.TierPrice, t.TierPriceFactor)
+		// log.Printf("cryptoPrice: %f", cryptoPrice)
+		// log.Printf("investment: %d", investment)
 
 		tierAmount := uint64(float64(investment) / cryptoPrice / float64(t.Price) * float64(satInBtc))
 
-		log.Printf("tierAmount: %d", tierAmount)
+		// log.Printf("tierAmount: %d", tierAmount)
 
 		if tierAmount > t.TierPrice {
 			tierAmount = t.TierPrice
 		}
 
-		log.Printf("tierAmount: %d", tierAmount)
+		// log.Printf("tierAmount: %d", tierAmount)
 
 		tierInvestment := int(float64(tierAmount) * float64(t.Price) * cryptoPrice / float64(satInBtc))
 
-		log.Printf("tierInvestment: %d", tierInvestment)
+		// log.Printf("tierInvestment: %d", tierInvestment)
 
 		amount = amount + int(tierAmount)
 
-		log.Printf("amount: %d", amount)
+		// log.Printf("amount: %d", amount)
 
 		investment = investment - tierInvestment
 
-		log.Printf("investment: %d", investment)
+		// log.Printf("investment: %d", investment)
 
 		t.TierPrice = t.TierPrice - tierAmount
 		t.TierPriceFactor = t.TierPriceFactor - tierAmount
 
-		log.Printf("token: %d %d %d %d", t.Price, t.PriceFactor, t.TierPrice, t.TierPriceFactor)
+		// log.Printf("token: %d %d %d %d", t.Price, t.PriceFactor, t.TierPrice, t.TierPriceFactor)
 
 		if t.TierPrice == 0 {
 			t.TierPrice = 1000 * satInBtc
@@ -94,7 +96,7 @@ func (t *Token) issueAmount(investment int, assetID string, dryRun bool) (int, f
 
 		if !dryRun {
 			t.saveState()
-			log.Printf("token: %d %d %d %d", t.Price, t.PriceFactor, t.TierPrice, t.TierPriceFactor)
+			// log.Printf("token: %d %d %d %d", t.Price, t.PriceFactor, t.TierPrice, t.TierPriceFactor)
 		}
 	}
 
@@ -113,6 +115,8 @@ func (t *Token) issueAmount(investment int, assetID string, dryRun bool) (int, f
 		t.TierPrice = oldTierPrice
 		t.TierPriceFactor = oldTierPriceFactor
 	}
+
+	log.Println(dryRun)
 
 	return amount, newPrice
 }

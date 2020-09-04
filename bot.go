@@ -492,13 +492,13 @@ func registerNewUsers(tu TelegramUpdate) {
 		db.First(u, u)
 
 		if u.ID == 0 {
-			u.Nickname = tu.Message.From.Username
+			u.Nickname = user.Username
 			if u.Nickname == "" {
 				u.Nickname = randString(10)
 			}
 			u.MinedAnotes = int(satInBtc)
 			if err := db.Create(u).Error; err != nil {
-				logTelegram("[bot.go - 499]" + err.Error() + " nick - " + u.Nickname)
+				logTelegram("[bot.go - 501]" + err.Error() + " nick - " + u.Nickname)
 			}
 		}
 
@@ -516,7 +516,7 @@ func registerNewUsers(tu TelegramUpdate) {
 		}
 
 		if err := db.Save(u).Error; err != nil {
-			logTelegram("[bot.go - 518]" + err.Error() + " nick - " + u.Nickname)
+			logTelegram("[bot.go - 520]" + err.Error() + " nick - " + u.Nickname)
 		}
 	}
 }

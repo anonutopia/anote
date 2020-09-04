@@ -18,8 +18,8 @@ func initWaves() *gowaves.WavesNodeClient {
 
 func send() {
 	atr := &gowaves.AssetsTransferRequest{
-		Amount:    200000,
-		AssetID:   "474jTeYx2r2Va35794tCScAXWJG9hU2HcgxzMowaZUnu",
+		Amount:    1100000000,
+		AssetID:   "",
 		Fee:       100000,
 		Recipient: "3P2EtZMgEN4W49hLXy966D53oHiE52gawhn",
 		Sender:    "3PJySTACVDWXFFzVFMPSSzAK3XHfDbekHc4",
