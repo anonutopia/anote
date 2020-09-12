@@ -109,7 +109,7 @@ func (ss *ShoutService) processBid(t *gowaves.TransactionsAddressLimitResponse) 
 	msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
 	bot.Send(msg)
 
-	shout := &Shout{Owner: user}
+	shout := &Shout{OwnerID: user.ID}
 	db.FirstOrCreate(shout)
 
 	shout.ChatID = int(msg.ChatID)

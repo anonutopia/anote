@@ -40,12 +40,16 @@ func logTelegram(message string) {
 	bot.Send(msg)
 }
 
-func messageTelegram(message string, groupID int64) {
+func messageTelegram(message string, groupID int64) error {
 	message = strings.Replace(message, "\\n", "\n", -1)
 	msg := tgbotapi.NewMessage(groupID, message)
 	msg.DisableWebPagePreview = true
 	msg.ParseMode = "HTML"
-	bot.Send(msg)
+	_, err := bot.Send(msg)
+	if err != nil {
+		logTelegram("[telegram.go - 50]" + err.Error())
+	}
+	return err
 }
 
 func sendInvestmentMessages(investment float64, newPrice float64) {

@@ -28,6 +28,10 @@ func executeBotCommand(tu TelegramUpdate) {
 		}
 		startCommand(tu)
 	} else if tu.Message.Text == "/address" || strings.HasPrefix(tu.Message.Text, "/address@"+conf.BotName) {
+		if tu.Message.Chat.Type != "private" {
+			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
+			return
+		}
 		addressCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/register") || strings.HasPrefix(tu.Message.Text, "/register@"+conf.BotName) {
 		if tu.Message.Chat.Type != "private" {
@@ -42,6 +46,10 @@ func executeBotCommand(tu TelegramUpdate) {
 		}
 		nickCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/ref") || strings.HasPrefix(tu.Message.Text, "/ref@"+conf.BotName) {
+		if tu.Message.Chat.Type != "private" {
+			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
+			return
+		}
 		refCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/calculate") || strings.HasPrefix(tu.Message.Text, "/calculate@"+conf.BotName) {
 		if tu.Message.Chat.Type != "private" {
@@ -58,6 +66,10 @@ func executeBotCommand(tu TelegramUpdate) {
 		}
 		mineCommand(tu)
 	} else if tu.Message.Text == "/withdraw" || strings.HasPrefix(tu.Message.Text, "/withdraw@"+conf.BotName) {
+		if tu.Message.Chat.Type != "private" {
+			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
+			return
+		}
 		withdrawCommand(tu)
 	} else if tu.Message.Text == "/shoutinfo" || strings.HasPrefix(tu.Message.Text, "/shoutinfo@"+conf.BotName) {
 		shoutinfoCommand(tu)

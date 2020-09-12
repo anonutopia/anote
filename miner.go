@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"strings"
 	"time"
 )
@@ -11,8 +12,13 @@ type MinerMonitor struct {
 
 func (mm *MinerMonitor) checkMiners() {
 	var users []*User
+	counter := 1
 	db.Find(&users)
+	log.Println(len(users))
 	for _, u := range users {
+		var err error
+		log.Println(counter)
+		counter++
 		now := time.Now()
 		if u.MiningActivated != nil &&
 			u.MiningWarning != nil &&
@@ -30,13 +36,19 @@ func (mm *MinerMonitor) checkMiners() {
 			}
 
 			if u.team() >= 3 {
-				messageTelegram(msg, int64(u.TelegramID))
+				err = messageTelegram(msg, int64(u.TelegramID))
+				if err != nil {
+					db.Delete(u)
+				}
 			} else {
 				minerMsg := strings.Replace(tr(u.TelegramID, "minerWarning"), "\\n", "\n", -1)
-				messageTelegram(minerMsg, int64(u.TelegramID))
+				err = messageTelegram(minerMsg, int64(u.TelegramID))
+				if err != nil {
+					db.Delete(u)
+				}
 				go func(u *User) {
 					time.Sleep(time.Minute * 5)
-					messageTelegram(msg, int64(u.TelegramID))
+					err = messageTelegram(msg, int64(u.TelegramID))
 				}(u)
 			}
 		} else if u.MiningActivated == nil &&
@@ -46,12 +58,15 @@ func (mm *MinerMonitor) checkMiners() {
 			msg := tr(u.TelegramID, "miningWarningFirst")
 			msg += "\n\n"
 			msg += tr(u.TelegramID, "purchaseHowto")
-			messageTelegram(msg, int64(u.TelegramID))
-
-			u.MiningWarning = &now
-			u.Mining = false
-			if err := db.Save(&u).Error; err != nil {
-				logTelegram("[mm.checkMiners - db.Save - 30] " + err.Error())
+			err = messageTelegram(msg, int64(u.TelegramID))
+			if err != nil {
+				db.Delete(u)
+			} else {
+				u.MiningWarning = &now
+				u.Mining = false
+				if err := db.Save(&u).Error; err != nil {
+					logTelegram("[mm.checkMiners - db.Save - 30] " + err.Error())
+				}
 			}
 		}
 	}
