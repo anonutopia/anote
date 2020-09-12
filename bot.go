@@ -75,44 +75,44 @@ func executeBotCommand(tu TelegramUpdate) {
 		shoutinfoCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/") {
 		unknownCommand(tu)
-	} else if tu.UpdateID != 0 {
-		if tu.Message.ReplyToMessage.MessageID == 0 {
-			if tu.Message.NewChatMember.ID != 0 &&
-				!tu.Message.NewChatMember.IsBot {
-				registerNewUsers(tu)
-			}
-		} else {
-			if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "pleaseEnter") {
-				avr, err := wnc.AddressValidate(tu.Message.Text)
-				if err != nil {
-					logTelegram("[bot.go - 62]" + err.Error())
-					messageTelegram(tr(tu.Message.Chat.ID, "error"), int64(tu.Message.Chat.ID))
+	} else if tu.UpdateID != 0 && tu.Message.ReplyToMessage.MessageID != 0 {
+		// if tu.Message.ReplyToMessage.MessageID == 0 {
+		// 	if tu.Message.NewChatMember.ID != 0 &&
+		// 		!tu.Message.NewChatMember.IsBot {
+		// 		registerNewUsers(tu)
+		// 	}
+		// } else {
+		if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "pleaseEnter") {
+			avr, err := wnc.AddressValidate(tu.Message.Text)
+			if err != nil {
+				logTelegram("[bot.go - 62]" + err.Error())
+				messageTelegram(tr(tu.Message.Chat.ID, "error"), int64(tu.Message.Chat.ID))
+			} else {
+				if !avr.Valid {
+					messageTelegram(tr(tu.Message.Chat.ID, "addressNotValid"), int64(tu.Message.Chat.ID))
 				} else {
-					if !avr.Valid {
-						messageTelegram(tr(tu.Message.Chat.ID, "addressNotValid"), int64(tu.Message.Chat.ID))
-					} else {
-						tu.Message.Text = fmt.Sprintf("/register %s", tu.Message.Text)
-						registerCommand(tu)
-					}
+					tu.Message.Text = fmt.Sprintf("/register %s", tu.Message.Text)
+					registerCommand(tu)
 				}
-			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "pleaseEnterAmount") {
-				tu.Message.Text = fmt.Sprintf("/calculate %s", tu.Message.Text)
-				calculateCommand(tu)
-			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "enterNick") {
-				tu.Message.Text = fmt.Sprintf("/nick %s", tu.Message.Text)
-				nickCommand(tu)
-			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "dailyCode") {
-				tu.Message.Text = fmt.Sprintf("/mine %s", tu.Message.Text)
-				mineCommand(tu)
-			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "shoutMessage") {
-				ss.setMessage(tu)
-			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "shoutLink") {
-				ss.setLink(tu)
-			} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "refEnter") {
-				tu.Message.Text = fmt.Sprintf("/start %s", tu.Message.Text)
-				startCommand(tu)
 			}
+		} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "pleaseEnterAmount") {
+			tu.Message.Text = fmt.Sprintf("/calculate %s", tu.Message.Text)
+			calculateCommand(tu)
+		} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "enterNick") {
+			tu.Message.Text = fmt.Sprintf("/nick %s", tu.Message.Text)
+			nickCommand(tu)
+		} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "dailyCode") {
+			tu.Message.Text = fmt.Sprintf("/mine %s", tu.Message.Text)
+			mineCommand(tu)
+		} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "shoutMessage") {
+			ss.setMessage(tu)
+		} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "shoutLink") {
+			ss.setLink(tu)
+		} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "refEnter") {
+			tu.Message.Text = fmt.Sprintf("/start %s", tu.Message.Text)
+			startCommand(tu)
 		}
+		// }
 	}
 }
 
@@ -413,7 +413,7 @@ func withdrawCommand(tu TelegramUpdate) {
 
 	if user.LastWithdraw != nil && time.Since(*user.LastWithdraw).Hours() < float64(24) {
 		messageTelegram(tr(user.TelegramID, "withdrawTimeLimit"), int64(tu.Message.Chat.ID))
-	} else if user.MinedAnotes == 0 {
+	} else if user.MinedAnotes < 500000000 && user.LastWithdraw != nil {
 		messageTelegram(tr(user.TelegramID, "withdrawNoAnotes"), int64(tu.Message.Chat.ID))
 	} else if len(user.Address) == 0 {
 		messageTelegram(tr(user.TelegramID, "notRegistered"), int64(tu.Message.Chat.ID))
@@ -434,8 +434,10 @@ func withdrawCommand(tu TelegramUpdate) {
 			logTelegram("[bot.go - 344]" + err.Error())
 		}
 
+		amount := user.MinedAnotes - 30000000
+
 		atr := &gowaves.AssetsTransferRequest{
-			Amount:    user.MinedAnotes,
+			Amount:    amount,
 			AssetID:   conf.TokenID,
 			Fee:       100000,
 			Recipient: user.Address,
@@ -484,51 +486,51 @@ func teamCommand(tu TelegramUpdate) {
 	messageTelegram(msg, int64(tu.Message.Chat.ID))
 }
 
-func registerNewUsers(tu TelegramUpdate) {
-	var lng string
+// func registerNewUsers(tu TelegramUpdate) {
+// 	var lng string
 
-	rUser := &User{TelegramID: tu.Message.From.ID}
-	db.First(rUser, rUser)
+// 	rUser := &User{TelegramID: tu.Message.From.ID}
+// 	db.First(rUser, rUser)
 
-	for _, user := range tu.Message.NewChatMembers {
-		messageTelegram(fmt.Sprintf(strings.Replace(tr(tu.Message.Chat.ID, "welcome"), "\\n", "\n", -1), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))
+// 	for _, user := range tu.Message.NewChatMembers {
+// 		messageTelegram(fmt.Sprintf(strings.Replace(tr(tu.Message.Chat.ID, "welcome"), "\\n", "\n", -1), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))
 
-		if tu.Message.Chat.ID == tAnonBalkan {
-			lng = langHr
-		} else {
-			lng = lang
-		}
+// 		if tu.Message.Chat.ID == tAnonBalkan {
+// 			lng = langHr
+// 		} else {
+// 			lng = lang
+// 		}
 
-		u := &User{TelegramID: user.ID}
+// 		u := &User{TelegramID: user.ID}
 
-		db.First(u, u)
+// 		db.First(u, u)
 
-		if u.ID == 0 {
-			u.Nickname = user.Username
-			if u.Nickname == "" {
-				u.Nickname = randString(10)
-			}
-			u.MinedAnotes = int(satInBtc)
-			if err := db.Create(u).Error; err != nil {
-				logTelegram("[bot.go - 501]" + err.Error() + " nick - " + u.Nickname)
-			}
-		}
+// 		if u.ID == 0 {
+// 			u.Nickname = user.Username
+// 			if u.Nickname == "" {
+// 				u.Nickname = randString(10)
+// 			}
+// 			u.MinedAnotes = int(satInBtc)
+// 			if err := db.Create(u).Error; err != nil {
+// 				logTelegram("[bot.go - 501]" + err.Error() + " nick - " + u.Nickname)
+// 			}
+// 		}
 
-		if u.Nickname == "" {
-			u.Nickname = randString(10)
-			u.MinedAnotes = int(satInBtc)
-		}
+// 		if u.Nickname == "" {
+// 			u.Nickname = randString(10)
+// 			u.MinedAnotes = int(satInBtc)
+// 		}
 
-		if u.Language == "" {
-			u.Language = lng
-		}
+// 		if u.Language == "" {
+// 			u.Language = lng
+// 		}
 
-		if u.ReferralID == 0 && rUser.TelegramID != u.TelegramID {
-			u.ReferralID = rUser.ID
-		}
+// 		if u.ReferralID == 0 && rUser.TelegramID != u.TelegramID {
+// 			u.ReferralID = rUser.ID
+// 		}
 
-		if err := db.Save(u).Error; err != nil {
-			logTelegram("[bot.go - 520]" + err.Error() + " nick - " + u.Nickname)
-		}
-	}
-}
+// 		if err := db.Save(u).Error; err != nil {
+// 			logTelegram("[bot.go - 520]" + err.Error() + " nick - " + u.Nickname)
+// 		}
+// 	}
+// }

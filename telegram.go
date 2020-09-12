@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	ui18n "github.com/unknwon/i18n"
@@ -37,6 +38,7 @@ func initBot() *tgbotapi.BotAPI {
 
 func logTelegram(message string) {
 	msg := tgbotapi.NewMessage(tAnonOps, message)
+	msg.DisableWebPagePreview = true
 	bot.Send(msg)
 }
 
@@ -46,8 +48,11 @@ func messageTelegram(message string, groupID int64) error {
 	msg.DisableWebPagePreview = true
 	msg.ParseMode = "HTML"
 	_, err := bot.Send(msg)
-	if err != nil {
-		logTelegram("[telegram.go - 50]" + err.Error())
+	if err != nil &&
+		!strings.Contains(err.Error(), "blocked") &&
+		!strings.Contains(err.Error(), "chat not found") &&
+		!strings.Contains(err.Error(), "deactivated") {
+		logTelegram("[telegram.go - 50]" + err.Error() + " ### user: " + strconv.Itoa(int(groupID)) + " ### message: " + message)
 	}
 	return err
 }
