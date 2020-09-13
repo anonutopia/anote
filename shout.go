@@ -110,7 +110,7 @@ func (ss *ShoutService) processBid(t *gowaves.TransactionsAddressLimitResponse) 
 	bot.Send(msg)
 
 	shout := &Shout{OwnerID: user.ID}
-	db.FirstOrCreate(shout)
+	db.FirstOrCreate(shout, shout)
 
 	shout.ChatID = int(msg.ChatID)
 	shout.Price = t.Amount

@@ -17,7 +17,9 @@ const langHr = "hr"
 const lang = "en-US"
 
 func executeBotCommand(tu TelegramUpdate) {
-	if tu.Message.Text == "/price" || strings.HasPrefix(tu.Message.Text, "/price@"+conf.BotName) {
+	if tu.Message.From.IsBot {
+		unknownCommand(tu)
+	} else if tu.Message.Text == "/price" || strings.HasPrefix(tu.Message.Text, "/price@"+conf.BotName) {
 		priceCommand(tu)
 	} else if tu.Message.Text == "/team" || strings.HasPrefix(tu.Message.Text, "/team@"+conf.BotName) {
 		teamCommand(tu)
@@ -434,10 +436,12 @@ func withdrawCommand(tu TelegramUpdate) {
 			logTelegram("[bot.go - 344]" + err.Error())
 		}
 
-		amount := user.MinedAnotes - 30000000
+		if user.LastWithdraw != nil {
+			mined -= 30000000
+		}
 
 		atr := &gowaves.AssetsTransferRequest{
-			Amount:    amount,
+			Amount:    mined,
 			AssetID:   conf.TokenID,
 			Fee:       100000,
 			Recipient: user.Address,

@@ -51,6 +51,7 @@ func messageTelegram(message string, groupID int64) error {
 	if err != nil &&
 		!strings.Contains(err.Error(), "blocked") &&
 		!strings.Contains(err.Error(), "chat not found") &&
+		!strings.Contains(err.Error(), "initiate") &&
 		!strings.Contains(err.Error(), "deactivated") {
 		logTelegram("[telegram.go - 50]" + err.Error() + " ### user: " + strconv.Itoa(int(groupID)) + " ### message: " + message)
 	}

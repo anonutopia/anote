@@ -19,7 +19,7 @@ type Prices struct {
 type PriceClient struct {
 }
 
-func (w *PriceClient) DoRequest() (*Prices, error) {
+func (pc *PriceClient) DoRequest() (*Prices, error) {
 	p := &Prices{}
 	cl := http.Client{}
 
@@ -53,6 +53,17 @@ func (w *PriceClient) DoRequest() (*Prices, error) {
 	}
 
 	return p, nil
+}
+
+func (pc *PriceClient) HashMultiplierAmount() (uint64, error) {
+	var amount uint64
+	amount = 0
+	kv := &KeyValue{Key: "tokenPrice"}
+	db.First(kv, kv)
+
+	amount = 50 * satInBtc / kv.ValueInt * satInBtc
+
+	return amount, nil
 }
 
 func initPriceClient() *PriceClient {
