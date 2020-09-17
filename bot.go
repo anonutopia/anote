@@ -180,7 +180,10 @@ func startCommand(tu TelegramUpdate) {
 		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(u.TelegramID, "refEnter"))
 		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
 		msg.ReplyToMessageID = tu.Message.MessageID
-		bot.Send(msg)
+		_, err := bot.Send(msg)
+		if err != nil {
+			logTelegram("[bot.go - 185]" + err.Error())
+		}
 	}
 }
 
@@ -196,7 +199,10 @@ func addressCommand(tu TelegramUpdate) {
 		pc = tgbotapi.NewPhotoUpload(int64(tu.Message.Chat.ID), "qrcode.png")
 	}
 	pc.Caption = "QR Code"
-	bot.Send(pc)
+	_, err := bot.Send(pc)
+	if err != nil {
+		logTelegram("[bot.go - 201]" + err.Error())
+	}
 }
 
 func registerCommand(tu TelegramUpdate) {
@@ -207,7 +213,10 @@ func registerCommand(tu TelegramUpdate) {
 		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "pleaseEnter"))
 		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
 		msg.ReplyToMessageID = tu.Message.MessageID
-		bot.Send(msg)
+		_, err := bot.Send(msg)
+		if err != nil {
+			logTelegram("[bot.go - 185]" + err.Error())
+		}
 	} else {
 		avr, err := wnc.AddressValidate(msgArr[1])
 		if err != nil {
@@ -246,7 +255,10 @@ func nickCommand(tu TelegramUpdate) {
 		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "enterNick"))
 		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
 		msg.ReplyToMessageID = tu.Message.MessageID
-		bot.Send(msg)
+		_, err := bot.Send(msg)
+		if err != nil {
+			logTelegram("[bot.go - 185]" + err.Error())
+		}
 	} else {
 		userNick := &User{Nickname: msgArr[1]}
 		db.First(userNick, userNick)
@@ -288,7 +300,10 @@ func calculateCommand(tu TelegramUpdate) {
 		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "pleaseEnterAmount"))
 		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
 		msg.ReplyToMessageID = tu.Message.MessageID
-		bot.Send(msg)
+		_, err := bot.Send(msg)
+		if err != nil {
+			logTelegram("[bot.go - 185]" + err.Error())
+		}
 	} else {
 		if waves, err := strconv.ParseFloat(msgArr[1], 8); err == nil {
 			wAmount := int(waves * float64(satInBtc))
@@ -375,7 +390,10 @@ func mineCommand(tu TelegramUpdate) {
 		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "dailyCode"))
 		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
 		msg.ReplyToMessageID = tu.Message.MessageID
-		bot.Send(msg)
+		_, err := bot.Send(msg)
+		if err != nil {
+			logTelegram("[bot.go - 185]" + err.Error())
+		}
 	} else if msgArr[1] == strconv.Itoa(int(ksmc.ValueInt)) {
 		var timeSince float64
 		mined := user.MinedAnotes

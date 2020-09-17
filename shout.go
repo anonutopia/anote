@@ -18,7 +18,10 @@ func (ss *ShoutService) sendMessage(message string) {
 	msg := tgbotapi.NewMessage(tAnonShout, message)
 	msg.ParseMode = "HTML"
 	msg.DisableWebPagePreview = true
-	bot.Send(msg)
+	_, err := bot.Send(msg)
+	if err != nil {
+		logTelegram("[bot.go - 185]" + err.Error())
+	}
 
 	kslsd := &KeyValue{Key: "lastShoutDay"}
 	db.FirstOrCreate(kslsd, kslsd)
@@ -107,7 +110,10 @@ func (ss *ShoutService) processBid(t *gowaves.TransactionsAddressLimitResponse) 
 	db.First(user, user)
 	msg := tgbotapi.NewMessage(int64(user.TelegramID), tr(user.TelegramID, "shoutMessage"))
 	msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
-	bot.Send(msg)
+	_, err := bot.Send(msg)
+	if err != nil {
+		logTelegram("[bot.go - 185]" + err.Error())
+	}
 
 	shout := &Shout{OwnerID: user.ID}
 	db.FirstOrCreate(shout, shout)
@@ -131,7 +137,10 @@ func (ss *ShoutService) setMessage(tu TelegramUpdate) {
 	db.First(user, shout.OwnerID)
 	msg := tgbotapi.NewMessage(int64(user.TelegramID), tr(user.TelegramID, "shoutLink"))
 	msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
-	bot.Send(msg)
+	_, err := bot.Send(msg)
+	if err != nil {
+		logTelegram("[bot.go - 185]" + err.Error())
+	}
 }
 
 func (ss *ShoutService) setLink(tu TelegramUpdate) {
@@ -146,7 +155,10 @@ func (ss *ShoutService) setLink(tu TelegramUpdate) {
 	user := &User{}
 	db.First(user, shout.OwnerID)
 	msg := tgbotapi.NewMessage(int64(user.TelegramID), tr(user.TelegramID, "shoutFinish"))
-	bot.Send(msg)
+	_, err := bot.Send(msg)
+	if err != nil {
+		logTelegram("[bot.go - 185]" + err.Error())
+	}
 }
 
 func initShoutService() *ShoutService {

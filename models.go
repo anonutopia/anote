@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -62,6 +63,7 @@ func (u *User) isMiningStr() string {
 func (u *User) miningPower() float64 {
 	multipliedByTen := false
 	power := float64(0)
+	limit := uint64(0)
 
 	power += 0.02
 
@@ -74,10 +76,11 @@ func (u *User) miningPower() float64 {
 		multipliedByTen = true
 	}
 
-	abr, _ := wnc.AssetsBalance(u.Address, conf.TokenID)
-	hma, _ := pc.HashMultiplierAmount()
-
-	limit := uint64(abr.Balance) / hma
+	if len(u.Address) > 0 {
+		abr, _ := wnc.AssetsBalance(u.Address, conf.TokenID)
+		hma, _ := pc.HashMultiplierAmount()
+		limit = uint64(abr.Balance) / hma
+	}
 
 	if limit > 4 {
 		limit = 4
@@ -115,6 +118,18 @@ func (u *User) teamActive() int {
 	active := 0
 	db.Where("referral_id = ? AND mining_activated IS NOT NULL", u.ID).Find(&users).Count(&active)
 	return active
+}
+
+func hashingPower() {
+	var hp float64
+	var users []*User
+	db.Find(&users)
+	for _, u := range users {
+		if u.Mining {
+			hp += u.miningPower()
+		}
+	}
+	log.Printf("power: %.2f", hp)
 }
 
 // Shout models is used for storing shouts and auctions for ads

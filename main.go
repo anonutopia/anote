@@ -48,5 +48,7 @@ func main() {
 
 	// send()
 
+	go hashingPower()
+
 	initMonitor()
 }
