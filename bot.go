@@ -147,7 +147,15 @@ func startCommand(tu TelegramUpdate) {
 		}
 		u.MinedAnotes = int(satInBtc)
 		if err := db.Create(u).Error; err != nil {
-			logTelegram("[bot.go - 140]" + err.Error())
+			if strings.Contains(err.Error(), "duplicate") &&
+				strings.Contains(err.Error(), "uix_users_nickname") {
+				u.Nickname = randString(10)
+				if err := db.Save(u).Error; err != nil {
+					logTelegram("[bot.go - 154]" + err.Error() + " nick - " + u.Nickname)
+				}
+			} else {
+				logTelegram("[bot.go - 157]" + err.Error() + " nick - " + u.Nickname)
+			}
 		}
 		messageTelegram(strings.Replace(tr(u.TelegramID, "hello"), "\\n", "\n", -1), int64(tu.Message.Chat.ID))
 	}
@@ -237,7 +245,17 @@ func registerCommand(tu TelegramUpdate) {
 						}
 					}
 					if err := db.Save(user).Error; err != nil {
-						logTelegram("[bot.go - 215]" + err.Error() + " nick - " + user.Nickname)
+						if strings.Contains(err.Error(), "duplicate") &&
+							strings.Contains(err.Error(), "uix_users_nickname") {
+							user.Nickname = randString(10)
+							if err := db.Save(user).Error; err != nil {
+								logTelegram("[bot.go - 244]" + err.Error() + " nick - " + user.Nickname)
+							} else {
+								messageTelegram(tr(user.TelegramID, "registered"), int64(tu.Message.Chat.ID))
+							}
+						} else {
+							logTelegram("[bot.go - 249]" + err.Error() + " nick - " + user.Nickname)
+						}
 					} else {
 						messageTelegram(tr(user.TelegramID, "registered"), int64(tu.Message.Chat.ID))
 					}
@@ -419,9 +437,20 @@ func mineCommand(tu TelegramUpdate) {
 			}
 		}
 		if err := db.Save(user).Error; err != nil {
-			logTelegram("[bot.go - 401]" + err.Error() + " nick - " + user.Nickname)
+			if strings.Contains(err.Error(), "duplicate") &&
+				strings.Contains(err.Error(), "uix_users_nickname") {
+				user.Nickname = randString(10)
+				if err := db.Save(user).Error; err != nil {
+					logTelegram("[bot.go - 436]" + err.Error() + " nick - " + user.Nickname)
+				} else {
+					messageTelegram(tr(user.TelegramID, "startedMining"), int64(tu.Message.Chat.ID))
+				}
+			} else {
+				logTelegram("[bot.go - 441]" + err.Error() + " nick - " + user.Nickname)
+			}
+		} else {
+			messageTelegram(tr(user.TelegramID, "startedMining"), int64(tu.Message.Chat.ID))
 		}
-		messageTelegram(tr(user.TelegramID, "startedMining"), int64(tu.Message.Chat.ID))
 	} else {
 		messageTelegram(tr(user.TelegramID, "codeNotValid"), int64(tu.Message.Chat.ID))
 	}
