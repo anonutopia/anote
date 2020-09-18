@@ -72,7 +72,7 @@ func executeBotCommand(tu TelegramUpdate) {
 			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
 			return
 		}
-		withdrawCommand(tu)
+		go withdrawCommand(tu)
 	} else if tu.Message.Text == "/shoutinfo" || strings.HasPrefix(tu.Message.Text, "/shoutinfo@"+conf.BotName) {
 		shoutinfoCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/") {
