@@ -50,7 +50,7 @@ func (t *Token) issueAmount(investment int, assetID string, dryRun bool) (int, f
 
 	log.Println(investmentEur)
 
-	if investment > 10 {
+	for investment > 10 {
 		log.Printf("token: %d %d %d %d", t.Price, t.PriceFactor, t.TierPrice, t.TierPriceFactor)
 		log.Printf("cryptoPrice: %f", cryptoPrice)
 		log.Printf("investment: %d", investment)
