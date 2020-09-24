@@ -119,7 +119,7 @@ func (ss *ShoutService) processBid(t *gowaves.TransactionsAddressLimitResponse) 
 	db.FirstOrCreate(shout, shout)
 
 	shout.ChatID = int(msg.ChatID)
-	shout.Price = t.Amount
+	shout.Price = uint64(t.Amount)
 	if err := db.Save(shout).Error; err != nil {
 		logTelegram("[shout.go - 118] " + err.Error())
 	}

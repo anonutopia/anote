@@ -29,6 +29,7 @@ func executeBotCommand(tu TelegramUpdate) {
 			return
 		}
 		startCommand(tu)
+		log.Println(tu)
 	} else if tu.Message.Text == "/address" || strings.HasPrefix(tu.Message.Text, "/address@"+conf.BotName) {
 		if tu.Message.Chat.Type != "private" {
 			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
@@ -78,12 +79,6 @@ func executeBotCommand(tu TelegramUpdate) {
 	} else if strings.HasPrefix(tu.Message.Text, "/") {
 		unknownCommand(tu)
 	} else if tu.UpdateID != 0 && tu.Message.ReplyToMessage.MessageID != 0 {
-		// if tu.Message.ReplyToMessage.MessageID == 0 {
-		// 	if tu.Message.NewChatMember.ID != 0 &&
-		// 		!tu.Message.NewChatMember.IsBot {
-		// 		registerNewUsers(tu)
-		// 	}
-		// } else {
 		if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "pleaseEnter") {
 			avr, err := wnc.AddressValidate(tu.Message.Text)
 			if err != nil {
@@ -110,11 +105,13 @@ func executeBotCommand(tu TelegramUpdate) {
 			ss.setMessage(tu)
 		} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "shoutLink") {
 			ss.setLink(tu)
-		} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "refEnter") {
-			tu.Message.Text = fmt.Sprintf("/start %s", tu.Message.Text)
-			startCommand(tu)
 		}
 		// }
+	} else if tu.Message.ReplyToMessage.MessageID == 0 {
+		if tu.Message.NewChatMember.ID != 0 &&
+			!tu.Message.NewChatMember.IsBot {
+			welcomeNewUsers(tu)
+		}
 	}
 }
 
@@ -142,14 +139,17 @@ func startCommand(tu TelegramUpdate) {
 
 	if u.ID == 0 {
 		u.Nickname = tu.Message.From.Username
+		u.Address = u.Nickname
 		if u.Nickname == "" {
 			u.Nickname = randString(10)
+			u.Address = u.Nickname
 		}
 		u.MinedAnotes = int(satInBtc)
 		if err := db.Create(u).Error; err != nil {
 			if strings.Contains(err.Error(), "duplicate") &&
 				strings.Contains(err.Error(), "uix_users_nickname") {
 				u.Nickname = randString(10)
+				u.Address = u.Nickname
 				if err := db.Save(u).Error; err != nil {
 					logTelegram("[bot.go - 154]" + err.Error() + " nick - " + u.Nickname)
 				}
@@ -163,6 +163,7 @@ func startCommand(tu TelegramUpdate) {
 	if u.Nickname == "" {
 		u.Nickname = tu.Message.From.Username
 		u.MinedAnotes = int(satInBtc)
+		u.Address = u.Nickname
 	}
 
 	if u.Language == "" {
@@ -216,48 +217,60 @@ func addressCommand(tu TelegramUpdate) {
 func registerCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
-	msgArr := strings.Fields(tu.Message.Text)
-	if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/register") {
-		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "pleaseEnter"))
-		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
-		msg.ReplyToMessageID = tu.Message.MessageID
-		_, err := bot.Send(msg)
-		if err != nil {
-			logTelegram("[bot.go - 185]" + err.Error())
-		}
-	} else {
-		avr, err := wnc.AddressValidate(msgArr[1])
-		if err != nil {
-			logTelegram("[bot.go - 164]" + err.Error())
-			messageTelegram(tr(user.TelegramID, "error"), int64(tu.Message.Chat.ID))
+	if user.ID != 0 {
+		msgArr := strings.Fields(tu.Message.Text)
+		if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/register") {
+			msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "pleaseEnter"))
+			msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
+			msg.ReplyToMessageID = tu.Message.MessageID
+			_, err := bot.Send(msg)
+			if err != nil {
+				logTelegram("[bot.go - 185]" + err.Error())
+			}
 		} else {
-			if !avr.Valid {
-				messageTelegram(tr(user.TelegramID, "addressNotValid"), int64(tu.Message.Chat.ID))
+			avr, err := wnc.AddressValidate(msgArr[1])
+			if err != nil {
+				logTelegram("[bot.go - 164]" + err.Error())
+				messageTelegram(tr(user.TelegramID, "error"), int64(tu.Message.Chat.ID))
 			} else {
-				if msgArr[1] == conf.NodeAddress {
-					messageTelegram(tr(user.TelegramID, "yourAddress"), int64(tu.Message.Chat.ID))
+				if !avr.Valid {
+					messageTelegram(tr(user.TelegramID, "addressNotValid"), int64(tu.Message.Chat.ID))
 				} else {
-					user.Address = msgArr[1]
-					if user.Nickname == "" {
-						user.Nickname = tu.Message.From.Username
-						if user.Nickname == "" {
-							user.Nickname = randString(10)
-						}
-					}
-					if err := db.Save(user).Error; err != nil {
-						if strings.Contains(err.Error(), "duplicate") &&
-							strings.Contains(err.Error(), "uix_users_nickname") {
-							user.Nickname = randString(10)
+					if msgArr[1] == conf.NodeAddress {
+						messageTelegram(tr(user.TelegramID, "yourAddress"), int64(tu.Message.Chat.ID))
+					} else {
+						avr, err = wnc.AddressValidate(user.Address)
+						if err == nil && !avr.Valid {
+							user.Address = msgArr[1]
+							if user.Nickname == "" {
+								user.Nickname = tu.Message.From.Username
+								if user.Nickname == "" {
+									user.Nickname = randString(10)
+								}
+							}
 							if err := db.Save(user).Error; err != nil {
-								logTelegram("[bot.go - 244]" + err.Error() + " nick - " + user.Nickname)
+								if strings.Contains(err.Error(), "duplicate") &&
+									strings.Contains(err.Error(), "uix_users_nickname") {
+									user.Nickname = randString(10)
+									if err := db.Save(user).Error; err != nil {
+										logTelegram("[bot.go - 244]" + err.Error() + " nick - " + user.Nickname)
+									} else {
+										messageTelegram(tr(user.TelegramID, "registered"), int64(tu.Message.Chat.ID))
+									}
+								} else if (strings.Contains(err.Error(), "duplicate") &&
+									strings.Contains(err.Error(), "uix_users_address")) ||
+									(strings.Contains(err.Error(), "UNIQUE") &&
+										strings.Contains(err.Error(), "address")) {
+									messageTelegram(tr(user.TelegramID, "addressUsed"), int64(tu.Message.Chat.ID))
+								} else {
+									logTelegram("[bot.go - 249]" + err.Error() + " nick - " + user.Nickname)
+								}
 							} else {
 								messageTelegram(tr(user.TelegramID, "registered"), int64(tu.Message.Chat.ID))
 							}
 						} else {
-							logTelegram("[bot.go - 249]" + err.Error() + " nick - " + user.Nickname)
+							// todo
 						}
-					} else {
-						messageTelegram(tr(user.TelegramID, "registered"), int64(tu.Message.Chat.ID))
 					}
 				}
 			}
@@ -268,27 +281,29 @@ func registerCommand(tu TelegramUpdate) {
 func nickCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
-	msgArr := strings.Fields(tu.Message.Text)
-	if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/nick") {
-		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "enterNick"))
-		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
-		msg.ReplyToMessageID = tu.Message.MessageID
-		_, err := bot.Send(msg)
-		if err != nil {
-			logTelegram("[bot.go - 185]" + err.Error())
-		}
-	} else {
-		userNick := &User{Nickname: msgArr[1]}
-		db.First(userNick, userNick)
-		if userNick.ID == 0 {
-			user.Nickname = msgArr[1]
-			if err := db.Save(user).Error; err != nil {
-				logTelegram("[bot.go - 208]" + err.Error())
-			} else {
-				messageTelegram(tr(user.TelegramID, "nickSaved"), int64(tu.Message.Chat.ID))
+	if user.ID != 0 {
+		msgArr := strings.Fields(tu.Message.Text)
+		if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/nick") {
+			msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "enterNick"))
+			msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
+			msg.ReplyToMessageID = tu.Message.MessageID
+			_, err := bot.Send(msg)
+			if err != nil {
+				logTelegram("[bot.go - 185]" + err.Error())
 			}
 		} else {
-			messageTelegram(tr(user.TelegramID, "nickUsed"), int64(tu.Message.Chat.ID))
+			userNick := &User{Nickname: msgArr[1]}
+			db.First(userNick, userNick)
+			if userNick.ID == 0 {
+				user.Nickname = msgArr[1]
+				if err := db.Save(user).Error; err != nil {
+					logTelegram("[bot.go - 208]" + err.Error())
+				} else {
+					messageTelegram(tr(user.TelegramID, "nickSaved"), int64(tu.Message.Chat.ID))
+				}
+			} else {
+				messageTelegram(tr(user.TelegramID, "nickUsed"), int64(tu.Message.Chat.ID))
+			}
 		}
 	}
 }
@@ -337,122 +352,132 @@ func calculateCommand(tu TelegramUpdate) {
 func statusCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
-	var cycle string
+	if user.ID != 0 {
+		var cycle string
 
-	if user.MiningActivated != nil && user.Mining {
-		var timeSince float64
-		mined := user.MinedAnotes
-		if user.LastStatus != nil {
-			timeSince = time.Since(*user.LastStatus).Hours()
+		if user.MiningActivated != nil && user.Mining {
+			var timeSince float64
+			mined := user.MinedAnotes
+			if user.LastStatus != nil {
+				timeSince = time.Since(*user.LastStatus).Hours()
+			} else {
+				timeSince = float64(0)
+			}
+			if timeSince > float64(24) {
+				timeSince = float64(24)
+			}
+			mined += int((timeSince * user.miningPower()) * float64(satInBtc))
+			user.MinedAnotes = mined
+			now := time.Now()
+			user.LastStatus = &now
+			if err := db.Save(user).Error; err != nil {
+				logTelegram("[bot.go - 228]" + err.Error())
+			}
+		}
+
+		status := user.status()
+		mining := user.isMiningStr()
+		power := user.miningPowerStr()
+		team := user.team()
+		teamInactive := user.teamInactive()
+		mined := float64(user.MinedAnotes) / float64(satInBtc)
+		if user.MiningActivated != nil {
+			sinceMine := time.Since(*user.MiningActivated)
+			sinceHour := 23 - int(sinceMine.Hours())
+			sinceMin := 0
+			sinceSec := 0
+			if sinceHour < 0 {
+				sinceHour = 0
+			} else {
+				sinceMin = 59 - (int(sinceMine.Minutes()) - (int(sinceMine.Hours()) * 60))
+				sinceSec = 59 - (int(sinceMine.Seconds()) - (int(sinceMine.Minutes()) * 60))
+			}
+			cycle = fmt.Sprintf("%.2d:%.2d:%.2d", sinceHour, sinceMin, sinceSec)
 		} else {
-			timeSince = float64(0)
+			cycle = "00:00:00"
 		}
-		if timeSince > float64(24) {
-			timeSince = float64(24)
+
+		address := user.Address
+
+		if address == user.Nickname {
+			address = ""
 		}
-		mined += int((timeSince * user.miningPower()) * float64(satInBtc))
-		user.MinedAnotes = mined
-		now := time.Now()
-		user.LastStatus = &now
-		if err := db.Save(user).Error; err != nil {
-			logTelegram("[bot.go - 228]" + err.Error())
-		}
+
+		msg := fmt.Sprintf("⭕️  <strong><u>"+tr(user.TelegramID, "statusTitle")+"</u></strong>\n\n"+
+			"<strong>"+tr(user.TelegramID, "nickname")+":</strong> %s\n"+
+			"<strong>Status:</strong> %s\n"+
+			"<strong>"+tr(user.TelegramID, "statusAddress")+":</strong> %s\n"+
+			"<strong>Mining:</strong> %s\n"+
+			"<strong>"+tr(user.TelegramID, "statusPower")+":</strong> %s\n"+
+			"<strong>"+tr(user.TelegramID, "statusTeam")+":</strong> %d\n"+
+			"<strong>"+tr(user.TelegramID, "statusInactive")+":</strong> %d\n"+
+			"<strong>"+tr(user.TelegramID, "mined")+":</strong> <u>%.8f</u>\n"+
+			"<strong>"+tr(user.TelegramID, "miningCycle")+":</strong> %s\n",
+			user.Nickname, status, address, mining, power, team, teamInactive, mined, cycle)
+
+		messageTelegram(msg, int64(tu.Message.Chat.ID))
 	}
-
-	status := user.status()
-	mining := user.isMiningStr()
-	power := user.miningPowerStr()
-	team := user.team()
-	teamInactive := user.teamInactive()
-	mined := float64(user.MinedAnotes) / float64(satInBtc)
-	if user.MiningActivated != nil {
-		sinceMine := time.Since(*user.MiningActivated)
-		sinceHour := 23 - int(sinceMine.Hours())
-		sinceMin := 0
-		sinceSec := 0
-		if sinceHour < 0 {
-			sinceHour = 0
-		} else {
-			sinceMin = 59 - (int(sinceMine.Minutes()) - (int(sinceMine.Hours()) * 60))
-			sinceSec = 59 - (int(sinceMine.Seconds()) - (int(sinceMine.Minutes()) * 60))
-		}
-		cycle = fmt.Sprintf("%.2d:%.2d:%.2d", sinceHour, sinceMin, sinceSec)
-	} else {
-		cycle = "00:00:00"
-	}
-
-	msg := fmt.Sprintf("⭕️  <strong><u>"+tr(user.TelegramID, "statusTitle")+"</u></strong>\n\n"+
-		"<strong>"+tr(user.TelegramID, "nickname")+":</strong> %s\n"+
-		"<strong>Status:</strong> %s\n"+
-		"<strong>"+tr(user.TelegramID, "statusAddress")+":</strong> %s\n"+
-		"<strong>Mining:</strong> %s\n"+
-		"<strong>"+tr(user.TelegramID, "statusPower")+":</strong> %s\n"+
-		"<strong>"+tr(user.TelegramID, "statusTeam")+":</strong> %d\n"+
-		"<strong>"+tr(user.TelegramID, "statusInactive")+":</strong> %d\n"+
-		"<strong>"+tr(user.TelegramID, "mined")+":</strong> <u>%.8f</u>\n"+
-		"<strong>"+tr(user.TelegramID, "miningCycle")+":</strong> %s\n",
-		user.Nickname, status, user.Address, mining, power, team, teamInactive, mined, cycle)
-
-	messageTelegram(msg, int64(tu.Message.Chat.ID))
 }
 
 func mineCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
 
-	ksmc := &KeyValue{Key: "miningCode"}
-	db.FirstOrCreate(ksmc, ksmc)
+	if user.ID != 0 {
+		ksmc := &KeyValue{Key: "miningCode"}
+		db.FirstOrCreate(ksmc, ksmc)
 
-	msgArr := strings.Fields(tu.Message.Text)
-	if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/mine") {
-		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "dailyCode"))
-		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
-		msg.ReplyToMessageID = tu.Message.MessageID
-		_, err := bot.Send(msg)
-		if err != nil {
-			logTelegram("[bot.go - 185]" + err.Error())
-		}
-	} else if msgArr[1] == strconv.Itoa(int(ksmc.ValueInt)) {
-		var timeSince float64
-		mined := user.MinedAnotes
-		if user.LastStatus != nil {
-			timeSince = time.Since(*user.LastStatus).Hours()
-		} else {
-			timeSince = float64(0)
-		}
-		if timeSince > float64(24) {
-			timeSince = float64(24)
-		}
-		mined += int((timeSince * user.miningPower()) * float64(satInBtc))
-		user.MinedAnotes = mined
-		now := time.Now()
-		user.MiningActivated = &now
-		user.LastStatus = &now
-		user.Mining = true
-		user.MiningWarning = &now
-		if user.Nickname == "" {
-			user.Nickname = tu.Message.From.Username
-			if user.Nickname == "" {
-				user.Nickname = randString(10)
+		msgArr := strings.Fields(tu.Message.Text)
+		if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/mine") {
+			msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "dailyCode"))
+			msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
+			msg.ReplyToMessageID = tu.Message.MessageID
+			_, err := bot.Send(msg)
+			if err != nil {
+				logTelegram("[bot.go - 185]" + err.Error())
 			}
-		}
-		if err := db.Save(user).Error; err != nil {
-			if strings.Contains(err.Error(), "duplicate") &&
-				strings.Contains(err.Error(), "uix_users_nickname") {
-				user.Nickname = randString(10)
-				if err := db.Save(user).Error; err != nil {
-					logTelegram("[bot.go - 436]" + err.Error() + " nick - " + user.Nickname)
+		} else if msgArr[1] == strconv.Itoa(int(ksmc.ValueInt)) {
+			var timeSince float64
+			mined := user.MinedAnotes
+			if user.LastStatus != nil {
+				timeSince = time.Since(*user.LastStatus).Hours()
+			} else {
+				timeSince = float64(0)
+			}
+			if timeSince > float64(24) {
+				timeSince = float64(24)
+			}
+			mined += int((timeSince * user.miningPower()) * float64(satInBtc))
+			user.MinedAnotes = mined
+			now := time.Now()
+			user.MiningActivated = &now
+			user.LastStatus = &now
+			user.Mining = true
+			user.MiningWarning = &now
+			if user.Nickname == "" {
+				user.Nickname = tu.Message.From.Username
+				if user.Nickname == "" {
+					user.Nickname = randString(10)
+				}
+			}
+			if err := db.Save(user).Error; err != nil {
+				if strings.Contains(err.Error(), "duplicate") &&
+					strings.Contains(err.Error(), "uix_users_nickname") {
+					user.Nickname = randString(10)
+					if err := db.Save(user).Error; err != nil {
+						logTelegram("[bot.go - 436]" + err.Error() + " nick - " + user.Nickname)
+					} else {
+						messageTelegram(tr(user.TelegramID, "startedMining"), int64(tu.Message.Chat.ID))
+					}
 				} else {
-					messageTelegram(tr(user.TelegramID, "startedMining"), int64(tu.Message.Chat.ID))
+					logTelegram("[bot.go - 441]" + err.Error() + " nick - " + user.Nickname)
 				}
 			} else {
-				logTelegram("[bot.go - 441]" + err.Error() + " nick - " + user.Nickname)
+				messageTelegram(tr(user.TelegramID, "startedMining"), int64(tu.Message.Chat.ID))
 			}
 		} else {
-			messageTelegram(tr(user.TelegramID, "startedMining"), int64(tu.Message.Chat.ID))
+			messageTelegram(tr(user.TelegramID, "codeNotValid"), int64(tu.Message.Chat.ID))
 		}
-	} else {
-		messageTelegram(tr(user.TelegramID, "codeNotValid"), int64(tu.Message.Chat.ID))
 	}
 }
 
@@ -460,55 +485,69 @@ func withdrawCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
 
-	if user.LastWithdraw != nil && time.Since(*user.LastWithdraw).Hours() < float64(24) {
-		messageTelegram(tr(user.TelegramID, "withdrawTimeLimit"), int64(tu.Message.Chat.ID))
-	} else if user.MinedAnotes < 500000000 && user.LastWithdraw != nil {
-		messageTelegram(tr(user.TelegramID, "withdrawNoAnotes"), int64(tu.Message.Chat.ID))
-	} else if len(user.Address) == 0 {
-		messageTelegram(tr(user.TelegramID, "notRegistered"), int64(tu.Message.Chat.ID))
-	} else {
-		var timeSince float64
-		mined := user.MinedAnotes
-		if user.LastStatus != nil {
-			timeSince = time.Since(*user.LastStatus).Hours()
+	if user.ID != 0 {
+		// if err != nil {
+		// 	logTelegram("[bot.go - 62]" + err.Error())
+		// 	messageTelegram(tr(tu.Message.Chat.ID, "error"), int64(tu.Message.Chat.ID))
+		// } else {
+		// 	if !avr.Valid {
+		// 		messageTelegram(tr(tu.Message.Chat.ID, "addressNotValid"), int64(tu.Message.Chat.ID))
+		// 	} else {
+		// 		tu.Message.Text = fmt.Sprintf("/register %s", tu.Message.Text)
+		// 		registerCommand(tu)
+		// 	}
+		// }
+
+		if user.LastWithdraw != nil && time.Since(*user.LastWithdraw).Hours() < float64(24) {
+			messageTelegram(tr(user.TelegramID, "withdrawTimeLimit"), int64(tu.Message.Chat.ID))
+		} else if user.MinedAnotes < 500000000 && user.LastWithdraw != nil {
+			messageTelegram(tr(user.TelegramID, "withdrawNoAnotes"), int64(tu.Message.Chat.ID))
+		} else if len(user.Address) == 0 || user.Address == user.Nickname {
+			messageTelegram(tr(user.TelegramID, "notRegistered"), int64(tu.Message.Chat.ID))
 		} else {
-			timeSince = float64(0)
-		}
-		if timeSince > float64(24) {
-			timeSince = float64(24)
-		}
-		mined += int((timeSince * user.miningPower()) * float64(satInBtc))
-		user.MinedAnotes = mined
-		if err := db.Save(user).Error; err != nil {
-			logTelegram("[bot.go - 344]" + err.Error())
-		}
-
-		if user.LastWithdraw != nil {
-			mined -= 30000000
-		}
-
-		atr := &gowaves.AssetsTransferRequest{
-			Amount:    mined,
-			AssetID:   conf.TokenID,
-			Fee:       100000,
-			Recipient: user.Address,
-			Sender:    conf.NodeAddress,
-		}
-
-		_, err := wnc.AssetsTransfer(atr)
-		if err != nil {
-			log.Printf("[withdraw] error assets transfer: %s", err)
-			logTelegram(fmt.Sprintf("[withdraw] error assets transfer: %s", err))
-		} else {
-			now := time.Now()
-			user.LastWithdraw = &now
-			user.MinedAnotes = 0
-			if err := db.Save(user).Error; err != nil {
-				logTelegram("[bot.go - 364]" + err.Error())
+			var timeSince float64
+			mined := user.MinedAnotes
+			if user.LastStatus != nil {
+				timeSince = time.Since(*user.LastStatus).Hours()
+			} else {
+				timeSince = float64(0)
 			}
-			messageTelegram(tr(user.TelegramID, "sentAnotes"), int64(tu.Message.Chat.ID))
-		}
+			if timeSince > float64(24) {
+				timeSince = float64(24)
+			}
+			mined += int((timeSince * user.miningPower()) * float64(satInBtc))
+			user.MinedAnotes = mined
+			if err := db.Save(user).Error; err != nil {
+				logTelegram("[bot.go - 344]" + err.Error())
+			}
 
+			if user.LastWithdraw != nil {
+				mined -= 30000000
+			}
+
+			atr := &gowaves.AssetsTransferRequest{
+				Amount:    mined,
+				AssetID:   conf.TokenID,
+				Fee:       100000,
+				Recipient: user.Address,
+				Sender:    conf.NodeAddress,
+			}
+
+			_, err := wnc.AssetsTransfer(atr)
+			if err != nil {
+				log.Printf("[withdraw] error assets transfer: %s", err)
+				logTelegram(fmt.Sprintf("[withdraw] error assets transfer: %s", err))
+			} else {
+				now := time.Now()
+				user.LastWithdraw = &now
+				user.MinedAnotes = 0
+				if err := db.Save(user).Error; err != nil {
+					logTelegram("[bot.go - 364]" + err.Error())
+				}
+				messageTelegram(tr(user.TelegramID, "sentAnotes"), int64(tu.Message.Chat.ID))
+			}
+
+		}
 	}
 }
 
@@ -585,3 +624,9 @@ func teamCommand(tu TelegramUpdate) {
 // 		}
 // 	}
 // }
+
+func welcomeNewUsers(tu TelegramUpdate) {
+	for range tu.Message.NewChatMembers {
+		messageTelegram(fmt.Sprintf(strings.Replace(tr(tu.Message.Chat.ID, "welcome"), "\\n", "\n", -1), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))
+	}
+}

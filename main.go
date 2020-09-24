@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/anonutopia/gowaves"
 	"github.com/go-macaron/binding"
 	"github.com/jinzhu/gorm"
@@ -40,7 +42,7 @@ func main() {
 	token = initToken()
 
 	m = initMacaron()
-	m.Post("/", binding.Json(TelegramUpdate{}), webhookView)
+	m.Post(fmt.Sprintf("/%s", conf.TelegramAPIKey), binding.Json(TelegramUpdate{}), webhookView)
 
 	initMinerMonitor()
 
@@ -49,6 +51,8 @@ func main() {
 	// send()
 
 	go hashingPower()
+
+	// go clean1()
 
 	initMonitor()
 }

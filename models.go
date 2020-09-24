@@ -26,7 +26,7 @@ type Transaction struct {
 // User represents Telegram user
 type User struct {
 	gorm.Model
-	Address         string `sql:"size:255"`
+	Address         string `sql:"size:255;unique_index"`
 	TelegramID      int    `sql:"unique_index"`
 	ReferralID      uint
 	Referral        *User
@@ -61,9 +61,9 @@ func (u *User) isMiningStr() string {
 }
 
 func (u *User) miningPower() float64 {
-	multipliedByTen := false
+	// multipliedByTen := false
 	power := float64(0)
-	limit := uint64(0)
+	// limit := uint64(0)
 
 	power += 0.02
 
@@ -73,27 +73,27 @@ func (u *User) miningPower() float64 {
 
 	if u.teamActive() >= 3 {
 		power *= 10
-		multipliedByTen = true
+		// multipliedByTen = true
 	}
 
-	if len(u.Address) > 0 {
-		abr, _ := wnc.AssetsBalance(u.Address, conf.TokenID)
-		hma, _ := pc.HashMultiplierAmount()
-		limit = uint64(abr.Balance) / hma
-	}
+	// if len(u.Address) > 0 {
+	// 	abr, _ := wnc.AssetsBalance(u.Address, conf.TokenID)
+	// 	hma, _ := pc.HashMultiplierAmount()
+	// 	limit = uint64(abr.Balance) / hma
+	// }
 
-	if limit > 4 {
-		limit = 4
-	}
+	// if limit > 4 {
+	// 	limit = 4
+	// }
 
-	for i := 1; uint64(i) < limit; i++ {
-		if multipliedByTen {
-			power *= 2
-		} else {
-			power *= 10
-			multipliedByTen = true
-		}
-	}
+	// for i := 1; uint64(i) < limit; i++ {
+	// 	if multipliedByTen {
+	// 		power *= 2
+	// 	} else {
+	// 		power *= 10
+	// 		multipliedByTen = true
+	// 	}
+	// }
 
 	return power
 }
@@ -116,7 +116,7 @@ func (u *User) teamInactive() int {
 func (u *User) teamActive() int {
 	var users []*User
 	active := 0
-	db.Where("referral_id = ? AND mining_activated IS NOT NULL", u.ID).Find(&users).Count(&active)
+	db.Where("referral_id = ? AND mining_activated >= ?", u.ID, time.Now().Add(-24*time.Hour).Format("2006-01-02")).Find(&users).Count(&active)
 	return active
 }
 
@@ -137,7 +137,7 @@ type Shout struct {
 	gorm.Model
 	Message   string
 	Link      string `sql:"size:255"`
-	Price     int
+	Price     uint64
 	OwnerID   uint
 	Owner     *User
 	ChatID    int

@@ -143,3 +143,37 @@ type TelegramUpdate struct {
 		} `json:"new_chat_members"`
 	} `json:"message"`
 }
+
+func clean() {
+	var users []*User
+	db.Find(&users)
+	for i, u := range users {
+		if u.MiningActivated != nil {
+			err := messageTelegram("Miner check.", int64(u.TelegramID))
+			if err != nil &&
+				(strings.Contains(err.Error(), "blocked") ||
+					strings.Contains(err.Error(), "chat not found") ||
+					strings.Contains(err.Error(), "initiate") ||
+					strings.Contains(err.Error(), "deactivated")) {
+				db.Delete(u)
+			} else if err != nil {
+				logTelegram("[telegram.go - 160]" + err.Error())
+			}
+		}
+		log.Println(i)
+	}
+	log.Println("done cleaning")
+}
+
+func clean1() {
+	var users []*User
+	db.Unscoped().Find(&users)
+	for i, u := range users {
+		if len(u.Address) == 0 {
+			u.Address = u.Nickname
+			db.Unscoped().Save(u)
+		}
+		log.Println(i)
+	}
+	log.Println("done cleaning")
+}
