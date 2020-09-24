@@ -16,6 +16,8 @@ var wnc *gowaves.WavesNodeClient
 
 var db *gorm.DB
 
+// var dbBak *gorm.DB
+
 var bot *tgbotapi.BotAPI
 
 var m *macaron.Macaron
@@ -32,6 +34,8 @@ func main() {
 	conf = initConfig()
 
 	db = initDb()
+
+	// dbBak = initDbBak()
 
 	wnc = initWaves()
 
@@ -53,6 +57,8 @@ func main() {
 	go hashingPower()
 
 	// go clean1()
+
+	// go restoreBackup()
 
 	initMonitor()
 }
