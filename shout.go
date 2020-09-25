@@ -14,11 +14,8 @@ import (
 type ShoutService struct {
 }
 
-func (ss *ShoutService) sendMessage(message string, preview bool) {
-	msg := tgbotapi.NewMessage(tAnonShout, message)
-	if preview {
-		msg = tgbotapi.NewMessage(tAnonShoutPreview, message)
-	}
+func (ss *ShoutService) sendMessage(message string, preview bool, telegramID int64) {
+	msg := tgbotapi.NewMessage(telegramID, message)
 	msg.ParseMode = "HTML"
 	msg.DisableWebPagePreview = true
 	_, err := bot.Send(msg)
@@ -50,7 +47,7 @@ func (ss *ShoutService) start() {
 			db.Where("finished = true and published = false").Order("price desc").First(&shout)
 
 			if shout.ID != 0 {
-				ss.sendMessage(fmt.Sprintf("%s <a href=\"%s\">more &gt;&gt;</a>\n\n@AnonsRobot Mining Code: %d", shout.Message, shout.Link, code), false)
+				ss.sendMessage(fmt.Sprintf("%s <a href=\"%s\">more &gt;&gt;</a>\n\n@AnonsRobot Mining Code: %d", shout.Message, shout.Link, code), false, tAnonShout)
 
 				ksmc := &KeyValue{Key: "miningCode"}
 				db.FirstOrCreate(ksmc, ksmc)
@@ -165,7 +162,7 @@ func (ss *ShoutService) setLink(tu TelegramUpdate) {
 		logTelegram("[bot.go - 185]" + err.Error())
 	}
 
-	ss.sendMessage(fmt.Sprintf("%s <a href=\"%s\">more &gt;&gt;</a>\n\n@AnonsRobot Mining Code: %d", shout.Message, shout.Link, 333), true)
+	ss.sendMessage(fmt.Sprintf("<strong>Preview:</strong>\n\n%s <a href=\"%s\">more &gt;&gt;</a>\n\n@AnonsRobot Mining Code: %d", shout.Message, shout.Link, 333), true, int64(user.TelegramID))
 }
 
 func initShoutService() *ShoutService {
