@@ -12,12 +12,13 @@ import (
 
 // Telegram group ID consts
 const (
-	tAnonBalkan  = -1001161265502
-	tAnon        = -1001361489843
-	tAnonTaxi    = -1001422544298
-	tAnonTaxiPrv = -1001271198034
-	tAnonOps     = -1001213539865
-	tAnonShout   = -1001453693349
+	tAnonBalkan       = -1001161265502
+	tAnon             = -1001361489843
+	tAnonTaxi         = -1001422544298
+	tAnonTaxiPrv      = -1001271198034
+	tAnonOps          = -1001213539865
+	tAnonShout        = -1001453693349
+	tAnonShoutPreview = -1001484971271
 )
 
 func initBot() *tgbotapi.BotAPI {

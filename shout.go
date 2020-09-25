@@ -14,8 +14,11 @@ import (
 type ShoutService struct {
 }
 
-func (ss *ShoutService) sendMessage(message string) {
+func (ss *ShoutService) sendMessage(message string, preview bool) {
 	msg := tgbotapi.NewMessage(tAnonShout, message)
+	if preview {
+		msg = tgbotapi.NewMessage(tAnonShoutPreview, message)
+	}
 	msg.ParseMode = "HTML"
 	msg.DisableWebPagePreview = true
 	_, err := bot.Send(msg)
@@ -23,11 +26,13 @@ func (ss *ShoutService) sendMessage(message string) {
 		logTelegram("[bot.go - 185]" + err.Error())
 	}
 
-	kslsd := &KeyValue{Key: "lastShoutDay"}
-	db.FirstOrCreate(kslsd, kslsd)
-	kslsd.ValueInt = uint64(time.Now().Day())
-	if err := db.Save(kslsd).Error; err != nil {
-		logTelegram("[shout.go - 27] " + err.Error())
+	if !preview {
+		kslsd := &KeyValue{Key: "lastShoutDay"}
+		db.FirstOrCreate(kslsd, kslsd)
+		kslsd.ValueInt = uint64(time.Now().Day())
+		if err := db.Save(kslsd).Error; err != nil {
+			logTelegram("[shout.go - 27] " + err.Error())
+		}
 	}
 }
 
@@ -45,7 +50,7 @@ func (ss *ShoutService) start() {
 			db.Where("finished = true and published = false").Order("price desc").First(&shout)
 
 			if shout.ID != 0 {
-				ss.sendMessage(fmt.Sprintf("%s <a href=\"%s\">more &gt;&gt;</a>\n\n@AnonsRobot Mining Code: %d", shout.Message, shout.Link, code))
+				ss.sendMessage(fmt.Sprintf("%s <a href=\"%s\">more &gt;&gt;</a>\n\n@AnonsRobot Mining Code: %d", shout.Message, shout.Link, code), false)
 
 				ksmc := &KeyValue{Key: "miningCode"}
 				db.FirstOrCreate(ksmc, ksmc)
@@ -159,6 +164,8 @@ func (ss *ShoutService) setLink(tu TelegramUpdate) {
 	if err != nil {
 		logTelegram("[bot.go - 185]" + err.Error())
 	}
+
+	ss.sendMessage(fmt.Sprintf("%s <a href=\"%s\">more &gt;&gt;</a>\n\n@AnonsRobot Mining Code: %d", shout.Message, shout.Link, 333), true)
 }
 
 func initShoutService() *ShoutService {
