@@ -275,6 +275,8 @@ func registerCommand(tu TelegramUpdate) {
 				}
 			}
 		}
+	} else {
+		messageTelegram(tr(tu.Message.Chat.ID, "guest"), int64(tu.Message.Chat.ID))
 	}
 }
 
@@ -305,6 +307,8 @@ func nickCommand(tu TelegramUpdate) {
 				messageTelegram(tr(user.TelegramID, "nickUsed"), int64(tu.Message.Chat.ID))
 			}
 		}
+	} else {
+		messageTelegram(tr(tu.Message.Chat.ID, "guest"), int64(tu.Message.Chat.ID))
 	}
 }
 
@@ -416,6 +420,8 @@ func statusCommand(tu TelegramUpdate) {
 			user.Nickname, status, address, mining, power, team, teamInactive, mined, cycle)
 
 		messageTelegram(msg, int64(tu.Message.Chat.ID))
+	} else {
+		messageTelegram(tr(tu.Message.Chat.ID, "guest"), int64(tu.Message.Chat.ID))
 	}
 }
 
@@ -478,6 +484,8 @@ func mineCommand(tu TelegramUpdate) {
 		} else {
 			messageTelegram(tr(user.TelegramID, "codeNotValid"), int64(tu.Message.Chat.ID))
 		}
+	} else {
+		messageTelegram(tr(tu.Message.Chat.ID, "guest"), int64(tu.Message.Chat.ID))
 	}
 }
 
@@ -540,6 +548,8 @@ func withdrawCommand(tu TelegramUpdate) {
 			}
 
 		}
+	} else {
+		messageTelegram(tr(tu.Message.Chat.ID, "guest"), int64(tu.Message.Chat.ID))
 	}
 }
 
