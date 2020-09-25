@@ -486,18 +486,6 @@ func withdrawCommand(tu TelegramUpdate) {
 	db.First(user, user)
 
 	if user.ID != 0 {
-		// if err != nil {
-		// 	logTelegram("[bot.go - 62]" + err.Error())
-		// 	messageTelegram(tr(tu.Message.Chat.ID, "error"), int64(tu.Message.Chat.ID))
-		// } else {
-		// 	if !avr.Valid {
-		// 		messageTelegram(tr(tu.Message.Chat.ID, "addressNotValid"), int64(tu.Message.Chat.ID))
-		// 	} else {
-		// 		tu.Message.Text = fmt.Sprintf("/register %s", tu.Message.Text)
-		// 		registerCommand(tu)
-		// 	}
-		// }
-
 		if user.LastWithdraw != nil && time.Since(*user.LastWithdraw).Hours() < float64(24) {
 			messageTelegram(tr(user.TelegramID, "withdrawTimeLimit"), int64(tu.Message.Chat.ID))
 		} else if user.MinedAnotes < 500000000 && user.LastWithdraw != nil {
@@ -535,8 +523,12 @@ func withdrawCommand(tu TelegramUpdate) {
 
 			_, err := wnc.AssetsTransfer(atr)
 			if err != nil {
-				log.Printf("[withdraw] error assets transfer: %s", err)
-				logTelegram(fmt.Sprintf("[withdraw] error assets transfer: %s", err))
+				if strings.Contains(err.Error(), "invalid address") {
+					messageTelegram(tr(user.TelegramID, "notRegistered"), int64(tu.Message.Chat.ID))
+				} else {
+					log.Printf("[withdraw] error assets transfer: %s", err)
+					logTelegram(fmt.Sprintf("[withdraw] error assets transfer: %s", err))
+				}
 			} else {
 				now := time.Now()
 				user.LastWithdraw = &now
