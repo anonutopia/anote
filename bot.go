@@ -76,6 +76,12 @@ func executeBotCommand(tu TelegramUpdate) {
 		go withdrawCommand(tu)
 	} else if tu.Message.Text == "/shoutinfo" || strings.HasPrefix(tu.Message.Text, "/shoutinfo@"+conf.BotName) {
 		shoutinfoCommand(tu)
+	} else if tu.Message.Text == "/shoutedit" || strings.HasPrefix(tu.Message.Text, "/shoutedit@"+conf.BotName) {
+		if tu.Message.Chat.Type != "private" {
+			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
+			return
+		}
+		shouteditCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/") {
 		unknownCommand(tu)
 	} else if tu.UpdateID != 0 && tu.Message.ReplyToMessage.MessageID != 0 {
@@ -132,6 +138,24 @@ func shoutinfoCommand(tu TelegramUpdate) {
 	}
 
 	messageTelegram(msg, int64(tu.Message.Chat.ID))
+}
+
+func shouteditCommand(tu TelegramUpdate) {
+	user := &User{TelegramID: tu.Message.From.ID}
+	db.First(user, user)
+	shout := &Shout{OwnerID: user.ID, Published: false}
+	db.First(shout, shout)
+
+	if shout.ID == 0 {
+		messageTelegram(fmt.Sprintf(tr(user.TelegramID, "shoutMissing")), int64(tu.Message.Chat.ID))
+	} else {
+		msg := tgbotapi.NewMessage(int64(user.TelegramID), tr(user.TelegramID, "shoutMessage"))
+		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
+		_, err := bot.Send(msg)
+		if err != nil {
+			logTelegram("[bot.go - 157]" + err.Error())
+		}
+	}
 }
 
 func priceCommand(tu TelegramUpdate) {
