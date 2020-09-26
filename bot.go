@@ -118,10 +118,20 @@ func executeBotCommand(tu TelegramUpdate) {
 func shoutinfoCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
-	var shout Shout
-	db.Where("finished = true and published = false").Order("price desc").First(&shout)
-	price := float64(shout.Price) / float64(satInBtc)
-	messageTelegram(fmt.Sprintf(tr(user.TelegramID, "shoutInfo"), price), int64(tu.Message.Chat.ID))
+	var shouts []*Shout
+	msg := fmt.Sprintf(tr(user.TelegramID, "shoutInfo"))
+	msg += "\n"
+
+	db.Where("finished = true and published = false").Order("price desc").Find(&shouts)
+	for i, s := range shouts {
+		price := float64(s.Price) / float64(satInBtc)
+		u := &User{}
+		db.First(u, s.OwnerID)
+		msg += "\n"
+		msg += fmt.Sprintf("%d. %s - %.8f ANOTE", i+1, u.Nickname, price)
+	}
+
+	messageTelegram(msg, int64(tu.Message.Chat.ID))
 }
 
 func priceCommand(tu TelegramUpdate) {
