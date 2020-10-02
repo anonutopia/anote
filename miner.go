@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"strings"
 	"time"
 )
@@ -13,7 +12,6 @@ type MinerMonitor struct {
 func (mm *MinerMonitor) checkMiners() {
 	var users []*User
 	db.Find(&users)
-	log.Println(len(users))
 	for _, u := range users {
 		now := time.Now()
 		if u.MiningActivated != nil &&

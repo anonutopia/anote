@@ -20,7 +20,7 @@ func (ss *ShoutService) sendMessage(message string, preview bool, telegramID int
 	msg.DisableWebPagePreview = true
 	_, err := bot.Send(msg)
 	if err != nil {
-		logTelegram("[bot.go - 185]" + err.Error())
+		logTelegram("[shout.go - 23]" + err.Error())
 	}
 
 	if !preview {
@@ -114,14 +114,23 @@ func (ss *ShoutService) processBid(t *gowaves.TransactionsAddressLimitResponse) 
 	msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
 	_, err := bot.Send(msg)
 	if err != nil {
-		logTelegram("[bot.go - 185]" + err.Error())
+		logTelegram("[shout.go - 117]" + err.Error())
 	}
 
-	shout := &Shout{OwnerID: user.ID}
-	db.FirstOrCreate(shout, shout)
+	shout := &Shout{OwnerID: user.ID, Published: false}
+	db.Where("published = false").First(shout, shout)
+
+	if shout.ID == 0 {
+		if err := db.Create(shout).Error; err != nil {
+			logTelegram("[shout.go - 125]" + err.Error())
+		}
+		shout.Price = uint64(t.Amount)
+	} else {
+		shout.Price = shout.Price + uint64(t.Amount)
+	}
 
 	shout.ChatID = int(msg.ChatID)
-	shout.Price = uint64(t.Amount)
+
 	if err := db.Save(shout).Error; err != nil {
 		logTelegram("[shout.go - 118] " + err.Error())
 	}
@@ -129,6 +138,7 @@ func (ss *ShoutService) processBid(t *gowaves.TransactionsAddressLimitResponse) 
 
 func (ss *ShoutService) setMessage(tu TelegramUpdate) {
 	shout := &Shout{ChatID: tu.Message.Chat.ID}
+	db.Where("published = false").First(shout, shout)
 	db.First(shout, shout)
 	shout.Message = tu.Message.Text
 	if err := db.Save(shout).Error; err != nil {
@@ -141,13 +151,13 @@ func (ss *ShoutService) setMessage(tu TelegramUpdate) {
 	msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
 	_, err := bot.Send(msg)
 	if err != nil {
-		logTelegram("[bot.go - 185]" + err.Error())
+		logTelegram("[shout.go - 153]" + err.Error())
 	}
 }
 
 func (ss *ShoutService) setLink(tu TelegramUpdate) {
 	shout := &Shout{ChatID: tu.Message.Chat.ID}
-	db.First(shout, shout)
+	db.Where("published = false").First(shout, shout)
 	shout.Link = tu.Message.Text
 	shout.Finished = true
 	if err := db.Save(shout).Error; err != nil {
@@ -159,7 +169,7 @@ func (ss *ShoutService) setLink(tu TelegramUpdate) {
 	msg := tgbotapi.NewMessage(int64(user.TelegramID), tr(user.TelegramID, "shoutFinish"))
 	_, err := bot.Send(msg)
 	if err != nil {
-		logTelegram("[bot.go - 185]" + err.Error())
+		logTelegram("[shout.go - 171]" + err.Error())
 	}
 
 	ss.sendMessage(fmt.Sprintf("<strong>Preview:</strong>\n\n%s <a href=\"%s\">more &gt;&gt;</a>\n\n@AnonsRobot Mining Code: %d", shout.Message, shout.Link, 333), true, int64(user.TelegramID))

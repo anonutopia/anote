@@ -239,7 +239,7 @@ func startCommand(tu TelegramUpdate) {
 		msg.ReplyToMessageID = tu.Message.MessageID
 		_, err := bot.Send(msg)
 		if err != nil {
-			logTelegram("[bot.go - 185]" + err.Error())
+			logTelegram("[bot.go - 242]" + err.Error())
 		}
 	}
 }
@@ -273,7 +273,7 @@ func registerCommand(tu TelegramUpdate) {
 			msg.ReplyToMessageID = tu.Message.MessageID
 			_, err := bot.Send(msg)
 			if err != nil {
-				logTelegram("[bot.go - 185]" + err.Error())
+				logTelegram("[bot.go - 276]" + err.Error())
 			}
 		} else {
 			avr, err := wnc.AddressValidate(msgArr[1])
@@ -339,7 +339,7 @@ func nickCommand(tu TelegramUpdate) {
 			msg.ReplyToMessageID = tu.Message.MessageID
 			_, err := bot.Send(msg)
 			if err != nil {
-				logTelegram("[bot.go - 185]" + err.Error())
+				logTelegram("[bot.go - 342]" + err.Error())
 			}
 		} else {
 			userNick := &User{Nickname: msgArr[1]}
@@ -387,7 +387,7 @@ func calculateCommand(tu TelegramUpdate) {
 		msg.ReplyToMessageID = tu.Message.MessageID
 		_, err := bot.Send(msg)
 		if err != nil {
-			logTelegram("[bot.go - 185]" + err.Error())
+			logTelegram("[bot.go - 390]" + err.Error())
 		}
 	} else {
 		if waves, err := strconv.ParseFloat(msgArr[1], 8); err == nil {
@@ -488,7 +488,7 @@ func mineCommand(tu TelegramUpdate) {
 			msg.ReplyToMessageID = tu.Message.MessageID
 			_, err := bot.Send(msg)
 			if err != nil {
-				logTelegram("[bot.go - 185]" + err.Error())
+				logTelegram("[bot.go - 491]" + err.Error())
 			}
 		} else if msgArr[1] == strconv.Itoa(int(ksmc.ValueInt)) {
 			var timeSince float64
