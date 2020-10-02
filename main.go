@@ -26,7 +26,7 @@ var m *macaron.Macaron
 
 var pc *PriceClient
 
-var token *Token
+var tm *TokenMonitor
 
 var ss *ShoutService
 
@@ -45,7 +45,7 @@ func main() {
 
 	pc = initPriceClient()
 
-	token = initToken()
+	tm = initTokenMonitor()
 
 	m = initMacaron()
 	m.Post(fmt.Sprintf("/%s", conf.TelegramAPIKey), binding.Json(TelegramUpdate{}), webhookView)

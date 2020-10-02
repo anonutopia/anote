@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -65,64 +64,8 @@ func (wm *WavesMonitor) processTransaction(tr *Transaction, t *gowaves.Transacti
 }
 
 func (wm *WavesMonitor) purchaseAsset(t *gowaves.TransactionsAddressLimitResponse) {
-	amount, _ := token.issueAmount(t.Amount, t.AssetID, false)
-	log.Println(amount)
-	user := &User{Address: t.Sender}
-	db.First(user, user)
-
-	atr := &gowaves.AssetsTransferRequest{
-		Amount:    amount,
-		AssetID:   conf.TokenID,
-		Fee:       100000,
-		Recipient: t.Sender,
-		Sender:    conf.NodeAddress,
-	}
-
-	_, err := wnc.AssetsTransfer(atr)
-	if err != nil {
-		log.Printf("[purchaseAsset] error assets transfer: %s", err)
-		logTelegram(fmt.Sprintf("[purchaseAsset] error assets transfer: %s", err))
-	} else {
-		log.Printf("Sent token: %s => %d", t.Sender, amount)
-		amount = t.Amount - 200000
-		amountR := int(float64(amount) * 0.2)
-		amountF := int(float64(amount) * 0.8)
-
-		r := &User{}
-		db.First(r, user.ReferralID)
-
-		atr = &gowaves.AssetsTransferRequest{
-			Amount:    amountR,
-			AssetID:   t.AssetID,
-			Fee:       100000,
-			Recipient: r.Address,
-			Sender:    conf.NodeAddress,
-		}
-
-		_, err := wnc.AssetsTransfer(atr)
-		if err != nil {
-			log.Printf("[purchaseAsset] error Waves referral transfer: %s", err)
-			logTelegram(fmt.Sprintf("[purchaseAsset] error Waves referral transfer: %s", err))
-		} else {
-			log.Printf("Sent waves referral: %s => %d", r.Address, amountR)
-
-			atr = &gowaves.AssetsTransferRequest{
-				Amount:    amountF,
-				AssetID:   t.AssetID,
-				Fee:       100000,
-				Recipient: conf.FounderAddress,
-				Sender:    conf.NodeAddress,
-			}
-
-			_, err := wnc.AssetsTransfer(atr)
-			if err != nil {
-				log.Printf("[purchaseAsset] error Waves founder transfer: %s", err)
-				logTelegram(fmt.Sprintf("[purchaseAsset] error Waves founder transfer: %s", err))
-			} else {
-				log.Printf("Sent waves founder: %s => %d", conf.FounderAddress, amountF)
-			}
-		}
-	}
+	order := &gowaves.AssetsOrderRequest{}
+	log.Println(order)
 }
 
 func initMonitor() {
