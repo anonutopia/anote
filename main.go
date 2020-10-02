@@ -14,6 +14,8 @@ var conf *Config
 
 var wnc *gowaves.WavesNodeClient
 
+var wmc *gowaves.WavesMatcherClient
+
 var db *gorm.DB
 
 // var dbBak *gorm.DB
@@ -37,7 +39,7 @@ func main() {
 
 	// dbBak = initDbBak()
 
-	wnc = initWaves()
+	wnc, wmc = initWaves()
 
 	bot = initBot()
 

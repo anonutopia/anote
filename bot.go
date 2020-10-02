@@ -161,9 +161,23 @@ func shouteditCommand(tu TelegramUpdate) {
 func priceCommand(tu TelegramUpdate) {
 	u := &User{TelegramID: tu.Message.From.ID}
 	db.First(u, u)
-	kv := &KeyValue{Key: "tokenPrice"}
-	db.First(kv, kv)
-	price := float64(kv.ValueInt) / float64(satInBtc)
+	// kv := &KeyValue{Key: "tokenPrice"}
+	// db.First(kv, kv)
+	// price := float64(kv.ValueInt) / float64(satInBtc)
+
+	osr, err := wmc.OrderbookStatus(conf.TokenID, "WAVES")
+	if err != nil {
+		logTelegram("[bot.go - 170]" + err.Error())
+	}
+
+	p, err := pc.DoRequest()
+	if err != nil {
+		log.Println("[bot.go - 175]" + err.Error())
+		logTelegram("[bot.go - 176]" + err.Error())
+	}
+
+	price := float64(osr.LastPrice) / float64(satInBtc) / p.WAVES
+
 	messageTelegram(fmt.Sprintf(tr(u.TelegramID, "currentPrice"), price), int64(tu.Message.Chat.ID))
 }
 

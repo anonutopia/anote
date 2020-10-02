@@ -6,14 +6,20 @@ import (
 	"github.com/anonutopia/gowaves"
 )
 
-func initWaves() *gowaves.WavesNodeClient {
+func initWaves() (*gowaves.WavesNodeClient, *gowaves.WavesMatcherClient) {
 	wnc := &gowaves.WavesNodeClient{
 		Host:   conf.NodeHost,
 		Port:   6869,
 		ApiKey: conf.WavesNodeAPIKey,
 	}
 
-	return wnc
+	wmc := &gowaves.WavesMatcherClient{
+		Host:   "https://matcher.waves.exchange",
+		Port:   443,
+		ApiKey: conf.WavesNodeAPIKey,
+	}
+
+	return wnc, wmc
 }
 
 func send() {
