@@ -191,7 +191,7 @@ func (t *TokenMonitor) checkLastOrder() {
 
 	if osr.LastSide != "buy" {
 		price := osr.Ask
-		amount := 1
+		amount := int(satInBtc)
 
 		order := &gowaves.AssetsOrderRequest{
 			SenderPublicKey:  "2F84usFJtN7devqZJJDu5WVRVfeNMTfMijXsQo2MN5a5",
@@ -208,12 +208,18 @@ func (t *TokenMonitor) checkLastOrder() {
 			Price:      price,
 			MatcherFee: 300000,
 			Version:    3,
+			Timestamp:  int(time.Now().UnixNano() / int64(time.Millisecond)),
+			Expiration: int(time.Now().Add(time.Hour).UnixNano() / int64(time.Millisecond)),
 		}
 
 		if aor, err := wnc.AssetsOrder(order); err != nil {
 			logTelegram("[token.go - 214]" + err.Error())
 		} else {
-			log.Println(aor.Signature)
+			if ors, err := wmc.Orderbook(aor); err != nil {
+				logTelegram("[token.go - 217]" + err.Error())
+			} else {
+				log.Println(ors)
+			}
 		}
 	}
 }

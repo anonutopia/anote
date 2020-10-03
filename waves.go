@@ -14,9 +14,8 @@ func initWaves() (*gowaves.WavesNodeClient, *gowaves.WavesMatcherClient) {
 	}
 
 	wmc := &gowaves.WavesMatcherClient{
-		Host:   "https://matcher.waves.exchange",
-		Port:   443,
-		ApiKey: conf.WavesNodeAPIKey,
+		Host: "https://matcher.waves.exchange",
+		Port: 443,
 	}
 
 	return wnc, wmc
