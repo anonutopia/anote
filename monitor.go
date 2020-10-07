@@ -28,7 +28,7 @@ func (wm *WavesMonitor) start() {
 			}
 		}
 
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * 30)
 	}
 }
 

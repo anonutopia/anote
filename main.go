@@ -56,7 +56,7 @@ func main() {
 
 	// send()
 
-	go hashingPower()
+	// go hashingPower()
 
 	// go clean1()
 

@@ -86,7 +86,7 @@ func (mm *MinerMonitor) start() {
 	for {
 		mm.checkMiners()
 
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Minute)
 	}
 }
 

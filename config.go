@@ -8,21 +8,22 @@ import (
 
 // Config struct holds all our configuration
 type Config struct {
-	BotName         string `json:"bot_name"`
-	WavesNodeAPIKey string `json:"waves_node_api_key"`
-	NodeAddress     string `json:"node_address"`
-	Dev             bool   `json:"dev"`
-	Debug           bool   `json:"debug"`
-	TelegramAPIKey  string `json:"telegram_api_key"`
-	InitialPrice    uint64 `json:"initial_price"`
-	EmailAddress    string `json:"email_address"`
-	TokenID         string `json:"token_id"`
-	FounderAddress  string `json:"founder_address"`
-	Hostname        string `json:"hostname"`
-	ShoutTime       int    `json:"shout_time"`
-	PostgreSQL      string `json:"postgre_sql"`
-	NodeHost        string `json:"node_host"`
-	ShoutAddress    string `json:"shout_address"`
+	BotName         string   `json:"bot_name"`
+	WavesNodeAPIKey string   `json:"waves_node_api_key"`
+	NodeAddress     string   `json:"node_address"`
+	Dev             bool     `json:"dev"`
+	Debug           bool     `json:"debug"`
+	TelegramAPIKey  string   `json:"telegram_api_key"`
+	InitialPrice    uint64   `json:"initial_price"`
+	EmailAddress    string   `json:"email_address"`
+	TokenID         string   `json:"token_id"`
+	FounderAddress  string   `json:"founder_address"`
+	Hostname        string   `json:"hostname"`
+	ShoutTime       int      `json:"shout_time"`
+	PostgreSQL      string   `json:"postgre_sql"`
+	NodeHost        string   `json:"node_host"`
+	ShoutAddress    string   `json:"shout_address"`
+	Exclude         []string `json:"exclude"`
 }
 
 // Load method loads configuration file to Config struct

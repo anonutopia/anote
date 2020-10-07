@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -118,18 +117,6 @@ func (u *User) teamActive() int {
 	active := 0
 	db.Where("referral_id = ? AND mining_activated >= ?", u.ID, time.Now().Add(-24*time.Hour).Format("2006-01-02")).Find(&users).Count(&active)
 	return active
-}
-
-func hashingPower() {
-	var hp float64
-	var users []*User
-	db.Find(&users)
-	for _, u := range users {
-		if u.Mining {
-			hp += u.miningPower()
-		}
-	}
-	log.Printf("power: %.2f", hp)
 }
 
 // Shout models is used for storing shouts and auctions for ads

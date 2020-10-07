@@ -1,7 +1,8 @@
 mine - Start generating new Anotes
-register - Register your Waves address
 status - Get your Anonutopia / Anote status
+info - Get info about Anote
 withdraw - Withdraw your mined Anotes
+register - Register your Waves address
 calculate - Calculate amount of Anotes you will get for some amount of Waves
 price - Get current Anote price
 address - Get Anote's main Waves address (for creating new tokens)

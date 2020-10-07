@@ -21,6 +21,8 @@ func executeBotCommand(tu TelegramUpdate) {
 		unknownCommand(tu)
 	} else if tu.Message.Text == "/price" || strings.HasPrefix(tu.Message.Text, "/price@"+conf.BotName) {
 		priceCommand(tu)
+	} else if tu.Message.Text == "/info" || strings.HasPrefix(tu.Message.Text, "/info@"+conf.BotName) {
+		infoCommand(tu)
 	} else if tu.Message.Text == "/team" || strings.HasPrefix(tu.Message.Text, "/team@"+conf.BotName) {
 		teamCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/start") || strings.HasPrefix(tu.Message.Text, "/start@"+conf.BotName) {
@@ -162,81 +164,92 @@ func priceCommand(tu TelegramUpdate) {
 	u := &User{TelegramID: tu.Message.From.ID}
 	db.First(u, u)
 
-	osr, err := wmc.OrderbookStatus(conf.TokenID, "WAVES")
-	if err != nil {
-		logTelegram("[bot.go - 170]" + err.Error())
-	}
-
-	p, err := pc.DoRequest()
-	if err != nil {
-		log.Println("[bot.go - 175]" + err.Error())
-		logTelegram("[bot.go - 176]" + err.Error())
-	}
-
-	price := float64(osr.LastPrice) / float64(satInBtc) / p.WAVES
+	price := float64(tm.Price) / float64(satInBtc)
 
 	messageTelegram(fmt.Sprintf(tr(u.TelegramID, "currentPrice"), price), int64(tu.Message.Chat.ID))
+}
+
+func infoCommand(tu TelegramUpdate) {
+	user := &User{TelegramID: tu.Message.From.ID}
+	db.First(user, user)
+
+	price := float64(tm.Price) / float64(satInBtc)
+	priceRec := float64(tm.PriceRecord) / float64(satInBtc)
+	miningPower := float64(tm.MiningPower) / float64(100)
+	totalSupply := float64(tm.TotalSupply) / float64(satInBtc)
+
+	msg := fmt.Sprintf("⭕️  <strong><u>"+tr(user.TelegramID, "infoTitle")+"</u></strong>\n\n"+
+		"<strong>"+tr(user.TelegramID, "price")+":</strong> %.8f €\n"+
+		"<strong>"+tr(user.TelegramID, "priceRecord")+":</strong> %.8f €\n"+
+		"<strong>"+tr(user.TelegramID, "miningPower")+":</strong> %.2f A/h\n"+
+		"<strong>"+tr(user.TelegramID, "totalSupply")+":</strong> %.8f Anotes\n"+
+		"<strong>"+tr(user.TelegramID, "totalHolders")+":</strong> %d\n",
+		price, priceRec, miningPower, totalSupply, tm.TotalHolders)
+
+	messageTelegram(msg, int64(tu.Message.Chat.ID))
 }
 
 func startCommand(tu TelegramUpdate) {
 	u := &User{TelegramID: tu.Message.From.ID}
 	db.First(u, u)
 
-	if u.ID == 0 {
-		u.Nickname = tu.Message.From.Username
-		u.Address = u.Nickname
-		if u.Nickname == "" {
-			u.Nickname = randString(10)
+	if !conf.Dev {
+		if u.ID == 0 {
+			u.Nickname = tu.Message.From.Username
 			u.Address = u.Nickname
-		}
-		u.MinedAnotes = int(satInBtc)
-		if err := db.Create(u).Error; err != nil {
-			if strings.Contains(err.Error(), "duplicate") &&
-				strings.Contains(err.Error(), "uix_users_nickname") {
+			if u.Nickname == "" {
 				u.Nickname = randString(10)
 				u.Address = u.Nickname
-				if err := db.Save(u).Error; err != nil {
-					logTelegram("[bot.go - 154]" + err.Error() + " nick - " + u.Nickname)
+			}
+			u.MinedAnotes = int(satInBtc)
+			if err := db.Create(u).Error; err != nil {
+				if strings.Contains(err.Error(), "duplicate") &&
+					strings.Contains(err.Error(), "uix_users_nickname") {
+					u.Nickname = randString(10)
+					u.Address = u.Nickname
+					if err := db.Save(u).Error; err != nil {
+						logTelegram("[bot.go - 154]" + err.Error() + " nick - " + u.Nickname)
+					}
+				} else {
+					logTelegram("[bot.go - 157]" + err.Error() + " nick - " + u.Nickname)
 				}
-			} else {
-				logTelegram("[bot.go - 157]" + err.Error() + " nick - " + u.Nickname)
+			}
+			messageTelegram(strings.Replace(tr(u.TelegramID, "hello"), "\\n", "\n", -1), int64(tu.Message.Chat.ID))
+		}
+
+		if u.Nickname == "" {
+			u.Nickname = tu.Message.From.Username
+			u.MinedAnotes = int(satInBtc)
+			u.Address = u.Nickname
+		}
+
+		if u.Language == "" {
+			u.Language = lang
+		}
+
+		if u.ReferralID == 0 {
+			msgArr := strings.Fields(tu.Message.Text)
+			if len(msgArr) == 2 && strings.HasPrefix(tu.Message.Text, "/start") {
+				ref := &User{Nickname: msgArr[1]}
+				db.First(ref, ref)
+				if ref.ID != 0 {
+					u.ReferralID = ref.ID
+				}
 			}
 		}
-		messageTelegram(strings.Replace(tr(u.TelegramID, "hello"), "\\n", "\n", -1), int64(tu.Message.Chat.ID))
-	}
 
-	if u.Nickname == "" {
-		u.Nickname = tu.Message.From.Username
-		u.MinedAnotes = int(satInBtc)
-		u.Address = u.Nickname
-	}
-
-	if u.Language == "" {
-		u.Language = lang
-	}
-
-	if u.ReferralID == 0 {
-		msgArr := strings.Fields(tu.Message.Text)
-		if len(msgArr) == 2 && strings.HasPrefix(tu.Message.Text, "/start") {
-			ref := &User{Nickname: msgArr[1]}
-			db.First(ref, ref)
-			if ref.ID != 0 {
-				u.ReferralID = ref.ID
-			}
+		if err := db.Save(u).Error; err != nil {
+			logTelegram("[bot.go - 167]" + err.Error())
 		}
-	}
 
-	if err := db.Save(u).Error; err != nil {
-		logTelegram("[bot.go - 167]" + err.Error())
-	}
-
-	if u.ReferralID == 0 {
-		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(u.TelegramID, "refEnter"))
-		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
-		msg.ReplyToMessageID = tu.Message.MessageID
-		_, err := bot.Send(msg)
-		if err != nil {
-			logTelegram("[bot.go - 242]" + err.Error())
+		if u.ReferralID == 0 {
+			msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(u.TelegramID, "refEnter"))
+			msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
+			msg.ReplyToMessageID = tu.Message.MessageID
+			_, err := bot.Send(msg)
+			if err != nil {
+				logTelegram("[bot.go - 242]" + err.Error())
+			}
 		}
 	}
 }
