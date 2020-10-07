@@ -179,12 +179,14 @@ func infoCommand(tu TelegramUpdate) {
 	totalSupply := float64(tm.TotalSupply) / float64(satInBtc)
 
 	msg := fmt.Sprintf("⭕️  <strong><u>"+tr(user.TelegramID, "infoTitle")+"</u></strong>\n\n"+
-		"<strong>"+tr(user.TelegramID, "price")+":</strong> %.8f €\n"+
-		"<strong>"+tr(user.TelegramID, "priceRecord")+":</strong> %.8f €\n"+
-		"<strong>"+tr(user.TelegramID, "miningPower")+":</strong> %.2f A/h\n"+
-		"<strong>"+tr(user.TelegramID, "totalSupply")+":</strong> %.8f Anotes\n"+
-		"<strong>"+tr(user.TelegramID, "totalHolders")+":</strong> %d\n",
-		price, priceRec, miningPower, totalSupply, tm.TotalHolders)
+		"<strong>"+tr(user.TelegramID, "price")+":</strong> <u>%.8f</u> €\n"+
+		"<strong>"+tr(user.TelegramID, "priceRecord")+":</strong> <u>%.8f</u> €\n"+
+		"<strong>"+tr(user.TelegramID, "miningPower")+":</strong> <u>%.2f</u> A/h\n"+
+		"<strong>"+tr(user.TelegramID, "activeMiners")+":</strong> <u>%d</u>\n"+
+		"<strong>"+tr(user.TelegramID, "totalMiners")+":</strong> <u>%d</u>\n"+
+		"<strong>"+tr(user.TelegramID, "totalHolders")+":</strong> <u>%d</u>\n"+
+		"<strong>"+tr(user.TelegramID, "totalSupply")+":</strong> <u>%.2f</u> Anotes\n",
+		price, priceRec, miningPower, tm.ActiveMiners, tm.TotalMiners, tm.TotalHolders, totalSupply)
 
 	messageTelegram(msg, int64(tu.Message.Chat.ID))
 }

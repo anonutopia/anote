@@ -18,6 +18,8 @@ type TokenMonitor struct {
 	MiningPower  uint64
 	TotalSupply  uint64
 	TotalHolders uint64
+	TotalMiners  uint64
+	ActiveMiners uint64
 }
 
 func (t *TokenMonitor) saveState() {
@@ -55,42 +57,63 @@ func (t *TokenMonitor) saveState() {
 	if err := db.Save(hld).Error; err != nil {
 		logTelegram("[token.go - 56] " + err.Error())
 	}
+
+	tm := &KeyValue{Key: "totalMiners"}
+	db.FirstOrCreate(tm, tm)
+	tm.ValueInt = t.TotalMiners
+	if err := db.Save(tm).Error; err != nil {
+		logTelegram("[token.go - 63] " + err.Error())
+	}
+
+	am := &KeyValue{Key: "activeMiners"}
+	db.FirstOrCreate(am, am)
+	am.ValueInt = t.ActiveMiners
+	if err := db.Save(am).Error; err != nil {
+		logTelegram("[token.go - 72] " + err.Error())
+	}
 }
 
 func (t *TokenMonitor) loadState() {
 	ksip := &KeyValue{Key: "tokenPriceRecord"}
 	db.FirstOrCreate(ksip, ksip)
-
 	if ksip.ValueInt > 0 {
 		t.PriceRecord = ksip.ValueInt
 	}
 
 	tp := &KeyValue{Key: "tokenPrice"}
 	db.FirstOrCreate(tp, tp)
-
 	if tp.ValueInt > 0 {
 		t.Price = tp.ValueInt
 	}
 
 	mp := &KeyValue{Key: "miningPower"}
 	db.FirstOrCreate(mp, mp)
-
 	if mp.ValueInt > 0 {
 		t.MiningPower = mp.ValueInt
 	}
 
 	ts := &KeyValue{Key: "totalSupply"}
 	db.FirstOrCreate(ts, ts)
-
 	if ts.ValueInt > 0 {
 		t.TotalSupply = ts.ValueInt
 	}
 
 	hld := &KeyValue{Key: "totalHolders"}
 	db.FirstOrCreate(hld, hld)
-
 	if hld.ValueInt > 0 {
 		t.TotalHolders = hld.ValueInt
+	}
+
+	tm := &KeyValue{Key: "totalMiners"}
+	db.FirstOrCreate(tm, tm)
+	if tm.ValueInt > 0 {
+		t.TotalMiners = tm.ValueInt
+	}
+
+	am := &KeyValue{Key: "activeMiners"}
+	db.FirstOrCreate(am, am)
+	if am.ValueInt > 0 {
+		t.ActiveMiners = am.ValueInt
 	}
 }
 
@@ -126,6 +149,8 @@ func (t *TokenMonitor) start() {
 		t.checkLastOrder()
 
 		t.calculateSupply()
+
+		t.countMiners()
 
 		t.saveState()
 
@@ -202,6 +227,12 @@ func (t *TokenMonitor) miningPower() {
 	t.MiningPower = uint64(mp * 100)
 }
 
+func (t *TokenMonitor) countMiners() {
+	var users []*User
+	db.Where("mining_activated is not null").Find(&users).Count(&t.TotalMiners)
+	db.Where("mining = true").Find(&users).Count(&t.ActiveMiners)
+}
+
 func (t *TokenMonitor) calculateSupply() {
 	supply := uint64(0)
 	holders := uint64(0)
@@ -209,7 +240,7 @@ func (t *TokenMonitor) calculateSupply() {
 	if nsr, err := wnc.NodeStatus(); err != nil {
 		logTelegram("[token.go - 186]" + err.Error())
 	} else {
-		if abdr, err := wnc.AssetsBalanceDistribution(conf.TokenID, nsr.BlockchainHeight-1, 100, ""); err != nil {
+		if abdr, err := wnc.AssetsBalanceDistribution(conf.TokenID, nsr.BlockchainHeight-3, 100, ""); err != nil {
 			logTelegram("[token.go - 189]" + err.Error())
 		} else {
 			for a, i := range abdr.Items {
@@ -220,7 +251,7 @@ func (t *TokenMonitor) calculateSupply() {
 			}
 
 			for abdr.HasNext {
-				if abdr, err = wnc.AssetsBalanceDistribution(conf.TokenID, nsr.BlockchainHeight-1, 100, abdr.LastItem); err != nil {
+				if abdr, err = wnc.AssetsBalanceDistribution(conf.TokenID, nsr.BlockchainHeight-3, 100, abdr.LastItem); err != nil {
 					logTelegram("[token.go - 104]" + err.Error())
 				} else {
 					for a, i := range abdr.Items {
