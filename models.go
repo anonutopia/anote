@@ -60,9 +60,7 @@ func (u *User) isMiningStr() string {
 }
 
 func (u *User) miningPower() float64 {
-	// multipliedByTen := false
 	power := float64(0)
-	// limit := uint64(0)
 
 	power += 0.02
 
@@ -72,27 +70,17 @@ func (u *User) miningPower() float64 {
 
 	if u.teamActive() >= 3 {
 		power *= 10
-		// multipliedByTen = true
 	}
 
-	// if len(u.Address) > 0 {
-	// 	abr, _ := wnc.AssetsBalance(u.Address, conf.TokenID)
-	// 	hma, _ := pc.HashMultiplierAmount()
-	// 	limit = uint64(abr.Balance) / hma
-	// }
-
-	// if limit > 4 {
-	// 	limit = 4
-	// }
-
-	// for i := 1; uint64(i) < limit; i++ {
-	// 	if multipliedByTen {
-	// 		power *= 2
-	// 	} else {
-	// 		power *= 10
-	// 		multipliedByTen = true
-	// 	}
-	// }
+	if len(u.Address) > 0 {
+		avr, err := wnc.AddressValidate(u.Address)
+		if err == nil && avr.Valid {
+			abr, err := wnc.AssetsBalance(u.Address, conf.AintID)
+			if err == nil {
+				power += float64(abr.Balance) / float64(satInBtc)
+			}
+		}
+	}
 
 	return power
 }
