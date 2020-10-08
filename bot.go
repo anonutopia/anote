@@ -174,6 +174,7 @@ func infoCommand(tu TelegramUpdate) {
 	db.First(user, user)
 
 	price := float64(tm.Price) / float64(satInBtc)
+	priceAint := price * 24 * 365
 	priceRec := float64(tm.PriceRecord) / float64(satInBtc)
 	miningPower := float64(tm.MiningPower) / float64(100)
 	totalSupply := float64(tm.TotalSupply) / float64(satInBtc)
@@ -181,12 +182,13 @@ func infoCommand(tu TelegramUpdate) {
 	msg := fmt.Sprintf("⭕️  <strong><u>"+tr(user.TelegramID, "infoTitle")+"</u></strong>\n\n"+
 		"<strong>"+tr(user.TelegramID, "price")+":</strong> <u>%.8f</u> €\n"+
 		"<strong>"+tr(user.TelegramID, "priceRecord")+":</strong> <u>%.8f</u> €\n"+
+		"<strong>"+tr(user.TelegramID, "priceAint")+":</strong> <u>%.8f</u> €\n"+
 		"<strong>"+tr(user.TelegramID, "miningPower")+":</strong> <u>%.2f</u> A/h\n"+
 		"<strong>"+tr(user.TelegramID, "activeMiners")+":</strong> <u>%d</u>\n"+
 		"<strong>"+tr(user.TelegramID, "totalMiners")+":</strong> <u>%d</u>\n"+
 		"<strong>"+tr(user.TelegramID, "totalHolders")+":</strong> <u>%d</u>\n"+
 		"<strong>"+tr(user.TelegramID, "totalSupply")+":</strong> <u>%.2f</u> Anotes\n",
-		price, priceRec, miningPower, tm.ActiveMiners, tm.TotalMiners, tm.TotalHolders, totalSupply)
+		price, priceRec, priceAint, miningPower, tm.ActiveMiners, tm.TotalMiners, tm.TotalHolders, totalSupply)
 
 	messageTelegram(msg, int64(tu.Message.Chat.ID))
 }
@@ -411,7 +413,7 @@ func calculateCommand(tu TelegramUpdate) {
 
 			log.Println(wAmount)
 
-			opr, _ := wmc.OrderbookPair(conf.TokenID, "WAVES", 20)
+			opr, _ := wmc.OrderbookPair(conf.TokenID, "WAVES", 100)
 
 			for _, ap := range opr.Asks {
 				if wAmount > 0 {
