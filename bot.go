@@ -392,25 +392,49 @@ func refCommand(tu TelegramUpdate) {
 func calculateCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
-	// msgArr := strings.Fields(tu.Message.Text)
-	// if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/calculate") {
-	// 	msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "pleaseEnterAmount"))
-	// 	msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
-	// 	msg.ReplyToMessageID = tu.Message.MessageID
-	// 	_, err := bot.Send(msg)
-	// 	if err != nil {
-	// 		logTelegram("[bot.go - 390]" + err.Error())
-	// 	}
-	// } else {
-	// 	if waves, err := strconv.ParseFloat(msgArr[1], 8); err == nil {
-	// 		wAmount := int(waves * float64(satInBtc))
-	// 		amount, newPrice := token.issueAmount(wAmount, "", true)
-	// 		amountF := float64(amount) / float64(satInBtc)
-	// 		messageTelegram(fmt.Sprintf(strings.Replace(tr(user.TelegramID, "amountResult"), "\\n", "\n", -1), amountF, newPrice), int64(tu.Message.Chat.ID))
-	// 	} else {
-	// 		messageTelegram(fmt.Sprintf(tr(user.TelegramID, "amountError"), err.Error()), int64(tu.Message.Chat.ID))
-	// 	}
-	// }
+
+	msgArr := strings.Fields(tu.Message.Text)
+	if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/calculate") {
+		msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "pleaseEnterAmount"))
+		msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
+		msg.ReplyToMessageID = tu.Message.MessageID
+		_, err := bot.Send(msg)
+		if err != nil {
+			logTelegram("[bot.go - 406]" + err.Error())
+		}
+	} else {
+		if eur, err := strconv.ParseFloat(msgArr[1], 8); err == nil {
+			prices, _ := pc.DoRequest()
+			wAmount := int64(float64(eur) * prices.WAVES * float64(satInBtc))
+			aAmount := uint64(0)
+			price := uint64(0)
+
+			log.Println(wAmount)
+
+			opr, _ := wmc.OrderbookPair(conf.TokenID, "WAVES", 20)
+
+			for _, ap := range opr.Asks {
+				if wAmount > 0 {
+					wAmountTier := int64(float64(ap.Amount) / float64(satInBtc) * float64(ap.Price))
+					if wAmount >= wAmountTier {
+						aAmount += ap.Amount
+					} else {
+						wAmountTier := wAmount
+						add := uint64(float64(wAmountTier) / float64(ap.Price) * float64(satInBtc))
+						aAmount += add
+					}
+					price = ap.Price
+					wAmount -= wAmountTier
+				}
+			}
+
+			amountF := float64(aAmount) / float64(satInBtc)
+			newPrice := float64(price) / float64(satInBtc) / prices.WAVES
+			messageTelegram(fmt.Sprintf(strings.Replace(tr(user.TelegramID, "amountResult"), "\\n", "\n", -1), amountF, newPrice), int64(tu.Message.Chat.ID))
+		} else {
+			messageTelegram(fmt.Sprintf(tr(user.TelegramID, "amountError"), err.Error()), int64(tu.Message.Chat.ID))
+		}
+	}
 }
 
 func statusCommand(tu TelegramUpdate) {

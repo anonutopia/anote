@@ -54,7 +54,7 @@ func (wm *WavesMonitor) processTransaction(tr *Transaction, t *gowaves.Transacti
 		len(t.Attachment) == 0 {
 
 		log.Println("purchase")
-		wm.purchaseAsset(t)
+		wm.purchaseAnote(t)
 	}
 
 	tr.Processed = true
@@ -63,7 +63,7 @@ func (wm *WavesMonitor) processTransaction(tr *Transaction, t *gowaves.Transacti
 	}
 }
 
-func (wm *WavesMonitor) purchaseAsset(t *gowaves.TransactionsAddressLimitResponse) {
+func (wm *WavesMonitor) purchaseAnote(t *gowaves.TransactionsAddressLimitResponse) {
 	order := &gowaves.AssetsOrderRequest{}
 	log.Println(order)
 }
