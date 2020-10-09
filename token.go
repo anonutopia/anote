@@ -208,10 +208,8 @@ func (t *TokenMonitor) checkLastOrder() {
 		if aor, err := wnc.AssetsOrder(order); err != nil {
 			logTelegram("[token.go - 214]" + err.Error())
 		} else {
-			if ors, err := wmc.Orderbook(aor); err != nil {
+			if _, err := wmc.Orderbook(aor); err != nil {
 				logTelegram("[token.go - 217]" + err.Error())
-			} else {
-				log.Println(ors)
 			}
 		}
 	}

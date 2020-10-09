@@ -25,6 +25,7 @@ type Config struct {
 	ShoutAddress    string   `json:"shout_address"`
 	Exclude         []string `json:"exclude"`
 	AintID          string   `json:"aint_id"`
+	AintAddress     string   `json:"aint_address"`
 }
 
 // Load method loads configuration file to Config struct
