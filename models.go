@@ -86,7 +86,7 @@ func (u *User) miningPower() float64 {
 }
 
 func (u *User) miningPowerStr() string {
-	return fmt.Sprintf("%.3f A/h", u.miningPower())
+	return fmt.Sprintf("%.5f A/h", u.miningPower())
 }
 
 func (u *User) team() int {

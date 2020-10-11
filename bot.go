@@ -298,7 +298,7 @@ func registerCommand(tu TelegramUpdate) {
 				if !avr.Valid {
 					messageTelegram(tr(user.TelegramID, "addressNotValid"), int64(tu.Message.Chat.ID))
 				} else {
-					if msgArr[1] == conf.NodeAddress {
+					if msgArr[1] == conf.NodeAddress || stringInSlice(msgArr[1], conf.Exclude) {
 						messageTelegram(tr(user.TelegramID, "yourAddress"), int64(tu.Message.Chat.ID))
 					} else {
 						avr, err = wnc.AddressValidate(user.Address)

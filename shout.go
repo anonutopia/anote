@@ -47,7 +47,11 @@ func (ss *ShoutService) start() {
 			db.Where("finished = true and published = false").Order("price desc").First(&shout)
 
 			if shout.ID != 0 {
-				ss.sendMessage(fmt.Sprintf("%s <a href=\"%s\">more &gt;&gt;</a>\n\n<a href=\"https://www.anonutopia.com/anonshout\"><u>advertise here</u></a>\n\n@AnonsRobot Mining Code: %d", shout.Message, shout.Link, code), false, tAnonShout)
+				link := ""
+				if len(shout.Link) > 0 {
+					link = fmt.Sprintf(" <a href=\"%s\">more &gt;&gt;</a>", shout.Link)
+				}
+				ss.sendMessage(fmt.Sprintf("%s%s\n\n<a href=\"https://www.anonutopia.com/anonshout\"><u>advertise here</u></a>\n\n@AnonsRobot Mining Code: %d", shout.Message, link, code), false, tAnonShout)
 
 				ksmc := &KeyValue{Key: "miningCode"}
 				db.FirstOrCreate(ksmc, ksmc)

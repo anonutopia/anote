@@ -78,8 +78,7 @@ func (wm *WavesMonitor) checkTransactionAint(t *gowaves.TransactionsAddressLimit
 			t.Recipient == conf.AintAddress &&
 			(t.AssetID == "" ||
 				t.AssetID == "8LQW8f7P5d5PZM7GtZEBgaqRPGSzS3DfPuiXrURJ4AJS" ||
-				t.AssetID == "474jTeYx2r2Va35794tCScAXWJG9hU2HcgxzMowaZUnu") &&
-			len(t.Attachment) == 0 {
+				t.AssetID == "474jTeYx2r2Va35794tCScAXWJG9hU2HcgxzMowaZUnu") {
 
 			wm.purchaseAint(t)
 		}
@@ -100,7 +99,11 @@ func (wm *WavesMonitor) purchaseAnote(t *gowaves.TransactionsAddressLimitRespons
 
 func (wm *WavesMonitor) purchaseAint(t *gowaves.TransactionsAddressLimitResponse) {
 	priceAint := float64(tm.Price) / float64(satInBtc) * 24 * 365
-	prices, _ := pc.DoRequest()
+	prices, err := pc.DoRequest()
+	if err != nil {
+		logTelegram("[monitor.go - 104]" + err.Error())
+		return
+	}
 	invEur := float64(0)
 
 	if t.AssetID == "" {
