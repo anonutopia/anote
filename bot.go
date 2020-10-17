@@ -449,7 +449,11 @@ func statusCommand(tu TelegramUpdate) {
 			var timeSince float64
 			mined := user.MinedAnotes
 			if user.LastStatus != nil {
-				timeSince = time.Since(*user.LastStatus).Hours()
+				if time.Since(*user.LastStatus) < time.Since(*user.LastWithdraw) {
+					timeSince = time.Since(*user.LastStatus).Hours()
+				} else {
+					timeSince = time.Since(*user.LastWithdraw).Hours()
+				}
 			} else {
 				timeSince = float64(0)
 			}
