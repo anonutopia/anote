@@ -54,7 +54,7 @@ func main() {
 
 	ss = initShoutService()
 
-	// send()
+	send()
 
 	// go hashingPower()
 

@@ -133,7 +133,7 @@ func (t *TokenMonitor) start() {
 		priceInt := uint64(price * float64(satInBtc))
 		t.Price = uint64(price * float64(satInBtc))
 
-		if price > (float64(t.PriceRecord)/float64(satInBtc) + 0.0005) {
+		if price > (float64(t.PriceRecord)/float64(satInBtc) + 0.0001) {
 			t.PriceRecord = priceInt
 
 			msg := fmt.Sprintf(ui18n.Tr(lang, "priceRise"), price)
@@ -184,7 +184,7 @@ func (t *TokenMonitor) checkLastOrder() {
 
 	if osr.LastSide != "buy" {
 		price := osr.Ask
-		amount := int(satInBtc)
+		amount := int(satInBtc) / 100
 
 		order := &gowaves.AssetsOrderRequest{
 			SenderPublicKey:  "2F84usFJtN7devqZJJDu5WVRVfeNMTfMijXsQo2MN5a5",

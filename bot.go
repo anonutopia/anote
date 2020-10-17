@@ -664,55 +664,6 @@ func teamCommand(tu TelegramUpdate) {
 	messageTelegram(msg, int64(tu.Message.Chat.ID))
 }
 
-// func registerNewUsers(tu TelegramUpdate) {
-// 	var lng string
-
-// 	rUser := &User{TelegramID: tu.Message.From.ID}
-// 	db.First(rUser, rUser)
-
-// 	for _, user := range tu.Message.NewChatMembers {
-// 		messageTelegram(fmt.Sprintf(strings.Replace(tr(tu.Message.Chat.ID, "welcome"), "\\n", "\n", -1), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))
-
-// 		if tu.Message.Chat.ID == tAnonBalkan {
-// 			lng = langHr
-// 		} else {
-// 			lng = lang
-// 		}
-
-// 		u := &User{TelegramID: user.ID}
-
-// 		db.First(u, u)
-
-// 		if u.ID == 0 {
-// 			u.Nickname = user.Username
-// 			if u.Nickname == "" {
-// 				u.Nickname = randString(10)
-// 			}
-// 			u.MinedAnotes = int(satInBtc)
-// 			if err := db.Create(u).Error; err != nil {
-// 				logTelegram("[bot.go - 501]" + err.Error() + " nick - " + u.Nickname)
-// 			}
-// 		}
-
-// 		if u.Nickname == "" {
-// 			u.Nickname = randString(10)
-// 			u.MinedAnotes = int(satInBtc)
-// 		}
-
-// 		if u.Language == "" {
-// 			u.Language = lng
-// 		}
-
-// 		if u.ReferralID == 0 && rUser.TelegramID != u.TelegramID {
-// 			u.ReferralID = rUser.ID
-// 		}
-
-// 		if err := db.Save(u).Error; err != nil {
-// 			logTelegram("[bot.go - 520]" + err.Error() + " nick - " + u.Nickname)
-// 		}
-// 	}
-// }
-
 func welcomeNewUsers(tu TelegramUpdate) {
 	for range tu.Message.NewChatMembers {
 		messageTelegram(fmt.Sprintf(strings.Replace(tr(tu.Message.Chat.ID, "welcome"), "\\n", "\n", -1), tu.Message.NewChatMember.FirstName), int64(tu.Message.Chat.ID))

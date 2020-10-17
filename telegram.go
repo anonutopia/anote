@@ -12,13 +12,12 @@ import (
 
 // Telegram group ID consts
 const (
-	tAnonBalkan       = -1001161265502
-	tAnon             = -1001361489843
-	tAnonTaxi         = -1001422544298
-	tAnonTaxiPrv      = -1001271198034
-	tAnonOps          = -1001213539865
-	tAnonShout        = -1001453693349
-	tAnonShoutPreview = -1001484971271
+	tAnonBalkan  = -1001161265502
+	tAnon        = -1001361489843
+	tAnonTaxi    = -1001422544298
+	tAnonTaxiPrv = -1001271198034
+	tAnonOps     = -1001213539865
+	tAnonShout   = -1001453693349
 )
 
 func initBot() *tgbotapi.BotAPI {
@@ -53,6 +52,7 @@ func messageTelegram(message string, groupID int64) error {
 		!strings.Contains(err.Error(), "blocked") &&
 		!strings.Contains(err.Error(), "chat not found") &&
 		!strings.Contains(err.Error(), "initiate") &&
+		!strings.Contains(err.Error(), "Forbidden") &&
 		!strings.Contains(err.Error(), "deactivated") {
 		logTelegram("[telegram.go - 50]" + err.Error() + " ### user: " + strconv.Itoa(int(groupID)) + " ### message: " + message)
 	}
