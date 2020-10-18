@@ -19,8 +19,6 @@ const lang = "en-US"
 func executeBotCommand(tu TelegramUpdate) {
 	if tu.Message.From.IsBot {
 		unknownCommand(tu)
-	} else if tu.Message.Text == "/price" || strings.HasPrefix(tu.Message.Text, "/price@"+conf.BotName) {
-		priceCommand(tu)
 	} else if tu.Message.Text == "/info" || strings.HasPrefix(tu.Message.Text, "/info@"+conf.BotName) {
 		infoCommand(tu)
 	} else if tu.Message.Text == "/team" || strings.HasPrefix(tu.Message.Text, "/team@"+conf.BotName) {
@@ -158,15 +156,6 @@ func shouteditCommand(tu TelegramUpdate) {
 			logTelegram("[bot.go - 157]" + err.Error())
 		}
 	}
-}
-
-func priceCommand(tu TelegramUpdate) {
-	u := &User{TelegramID: tu.Message.From.ID}
-	db.First(u, u)
-
-	price := float64(tm.Price) / float64(satInBtc)
-
-	messageTelegram(fmt.Sprintf(tr(u.TelegramID, "currentPrice"), price), int64(tu.Message.Chat.ID))
 }
 
 func infoCommand(tu TelegramUpdate) {
