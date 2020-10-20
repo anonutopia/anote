@@ -165,9 +165,10 @@ func (t *TokenMonitor) getPrice() float64 {
 	}
 
 	p, err := pc.DoRequest()
-	if err != nil {
+	for err != nil {
 		log.Println("[token.go - 155]" + err.Error())
-		logTelegram("[token.go - 156]" + err.Error())
+		time.Sleep(time.Millisecond * 300)
+		p, err = pc.DoRequest()
 	}
 
 	price := float64(osr.LastPrice) / float64(satInBtc) / p.WAVES

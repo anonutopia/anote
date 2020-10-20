@@ -54,7 +54,14 @@ func main() {
 
 	ss = initShoutService()
 
-	send()
+	// send()
+
+	// id := create_order()
+	// create_order()
+
+	// time.Sleep(time.Second * 10)
+
+	// cancel_order("2M3CJfifdeAkV5zmquqSnydSWjxCMQ27ED8VqgPjr1Eb")
 
 	// go hashingPower()
 
