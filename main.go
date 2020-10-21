@@ -54,6 +54,8 @@ func main() {
 
 	ss = initShoutService()
 
+	initSustainingService()
+
 	// send()
 
 	// id := create_order()
