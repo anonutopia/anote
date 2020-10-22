@@ -32,6 +32,8 @@ var ss *ShoutService
 
 var wm *WavesMonitor
 
+var qs *QuestsService
+
 func main() {
 	conf = initConfig()
 
@@ -55,6 +57,8 @@ func main() {
 	ss = initShoutService()
 
 	initSustainingService()
+
+	qs = initQuestsService()
 
 	// send()
 

@@ -161,7 +161,7 @@ func (t *TokenMonitor) start() {
 func (t *TokenMonitor) getPrice() float64 {
 	osr, err := wmc.OrderbookStatus(conf.TokenID, "WAVES")
 	if err != nil {
-		logTelegram("[token.go - 150]" + err.Error())
+		logTelegram("[token.go - 164]" + err.Error())
 	}
 
 	p, err := pc.DoRequest()
@@ -179,7 +179,7 @@ func (t *TokenMonitor) getPrice() float64 {
 func (t *TokenMonitor) checkLastOrder() {
 	osr, err := wmc.OrderbookStatus(conf.TokenID, "WAVES")
 	if err != nil {
-		logTelegram("[token.go - 150]" + err.Error())
+		logTelegram("[token.go - 182]" + err.Error())
 		return
 	}
 

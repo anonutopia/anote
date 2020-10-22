@@ -42,6 +42,12 @@ func executeBotCommand(tu TelegramUpdate) {
 			return
 		}
 		registerCommand(tu)
+	} else if strings.HasPrefix(tu.Message.Text, "/facebook") || strings.HasPrefix(tu.Message.Text, "/facebook@"+conf.BotName) {
+		if tu.Message.Chat.Type != "private" {
+			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
+			return
+		}
+		facebookCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/nick") || strings.HasPrefix(tu.Message.Text, "/nick@"+conf.BotName) {
 		if tu.Message.Chat.Type != "private" {
 			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
@@ -104,6 +110,9 @@ func executeBotCommand(tu TelegramUpdate) {
 		} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "enterNick") {
 			tu.Message.Text = fmt.Sprintf("/nick %s", tu.Message.Text)
 			nickCommand(tu)
+		} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "enterFacebookLink") {
+			tu.Message.Text = fmt.Sprintf("/facebook %s", tu.Message.Text)
+			facebookCommand(tu)
 		} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "dailyCode") {
 			tu.Message.Text = fmt.Sprintf("/mine %s", tu.Message.Text)
 			mineCommand(tu)
@@ -112,7 +121,6 @@ func executeBotCommand(tu TelegramUpdate) {
 		} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "shoutLink") {
 			ss.setLink(tu)
 		}
-		// }
 	} else if tu.Message.ReplyToMessage.MessageID == 0 {
 		if tu.Message.NewChatMember.ID != 0 &&
 			!tu.Message.NewChatMember.IsBot {
@@ -324,6 +332,33 @@ func registerCommand(tu TelegramUpdate) {
 						}
 					}
 				}
+			}
+		}
+	} else {
+		messageTelegram(tr(tu.Message.Chat.ID, "guest"), int64(tu.Message.Chat.ID))
+	}
+}
+
+func facebookCommand(tu TelegramUpdate) {
+	user := &User{TelegramID: tu.Message.From.ID}
+	db.First(user, user)
+	log.Println(user)
+	if user.ID != 0 {
+		msgArr := strings.Fields(tu.Message.Text)
+		if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/facebook") {
+			msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "enterFacebookLink"))
+			msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
+			msg.ReplyToMessageID = tu.Message.MessageID
+			_, err := bot.Send(msg)
+			if err != nil {
+				logTelegram("[bot.go - 352]" + err.Error())
+			}
+		} else {
+			link := msgArr[1]
+			if qs.isFbLinkValid(link) {
+				messageTelegram(tr(user.TelegramID, "fbSuccess"), int64(tu.Message.Chat.ID))
+			} else {
+				messageTelegram(tr(user.TelegramID, "fbFailed"), int64(tu.Message.Chat.ID))
 			}
 		}
 	} else {
