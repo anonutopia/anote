@@ -7,13 +7,17 @@ import (
 )
 
 type SustainingService struct {
+	LastSell time.Time
+	LastSend time.Time
 }
 
 func (sus *SustainingService) start() {
+	sus.LastSell = time.Now()
+	sus.LastSend = time.Now()
 	for {
 		sus.checkState()
 
-		time.Sleep(time.Minute * 2)
+		time.Sleep(time.Second * 10)
 	}
 }
 
@@ -21,13 +25,16 @@ func (sus *SustainingService) checkState() {
 	if abr, err := wnc.AddressesBalance(conf.NodeAddress); err != nil {
 		return
 	} else {
-		if abr.Balance < 10000000 {
+		if abr.Balance < 10000000 && time.Since(sus.LastSell) > time.Duration(time.Minute*5) {
 			sus.sell()
 		} else if abr.Balance < 30000000 {
 			sus.createLimitOrder()
 		}
 	}
-	sus.sendToNode()
+
+	if time.Since(sus.LastSend) > time.Duration(time.Minute*5) {
+		sus.sendToNode()
+	}
 }
 
 func (sus *SustainingService) createLimitOrder() {
@@ -125,6 +132,8 @@ func (sus *SustainingService) sell() {
 	} else {
 		if _, err := wmc.Orderbook(aor); err != nil {
 			logTelegram("[sustaining.go - 217]" + err.Error())
+		} else {
+			sus.LastSell = time.Now()
 		}
 	}
 }
@@ -143,6 +152,8 @@ func (sus *SustainingService) sendToNode() {
 
 		if _, err := wnc.AssetsTransfer(atr); err != nil {
 			logTelegram("[sustaining.go - 144]" + err.Error())
+		} else {
+			sus.LastSend = time.Now()
 		}
 	}
 }
