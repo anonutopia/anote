@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
-	ui18n "github.com/unknwon/i18n"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
@@ -57,29 +55,6 @@ func messageTelegram(message string, groupID int64) error {
 		logTelegram("[telegram.go - 50]" + err.Error() + " ### user: " + strconv.Itoa(int(groupID)) + " ### message: " + message)
 	}
 	return err
-}
-
-func sendInvestmentMessages(investment float64, newPrice float64) {
-	msg := fmt.Sprintf(ui18n.Tr(lang, "newPurchase"), investment)
-	msgHr := fmt.Sprintf(ui18n.Tr(langHr, "newPurchase"), investment)
-
-	if newPrice > float64(0) {
-		msg += "\n\n"
-		msg += fmt.Sprintf(ui18n.Tr(lang, "priceRise"), newPrice)
-
-		msgHr += "\n\n"
-		msgHr += fmt.Sprintf(ui18n.Tr(langHr, "priceRise"), newPrice)
-	}
-
-	msg += "\n\n"
-	msg += ui18n.Tr(lang, "purchaseHowto")
-
-	msgHr += "\n\n"
-	msgHr += ui18n.Tr(langHr, "purchaseHowto")
-
-	messageTelegram(msg, tAnonOps)
-	messageTelegram(msg, tAnon)
-	messageTelegram(msgHr, tAnonBalkan)
 }
 
 // TelegramUpdate struct represent webhook update data from Telegram

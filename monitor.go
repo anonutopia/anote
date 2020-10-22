@@ -93,7 +93,7 @@ func (wm *WavesMonitor) checkTransactionAint(t *gowaves.TransactionsAddressLimit
 func (wm *WavesMonitor) purchaseAnote(t *gowaves.TransactionsAddressLimitResponse) {
 	u := &User{Address: t.Sender}
 	db.First(u, u)
-	logTelegram("ANOTE purchase.")
+	logTelegram(fmt.Sprintf("ANOTE purchase: %s - %.8f", t.Sender, float64(t.Amount)/float64(satInBtc)))
 	messageTelegram("We have received your coins and we'll resolve your trade in next 24 hours.", int64(u.TelegramID))
 }
 
