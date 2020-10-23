@@ -37,6 +37,10 @@ type User struct {
 	Language        string `sql:"size:255;"`
 	MiningWarning   *time.Time
 	Nickname        string `sql:"size:255;unique_index"`
+	FbPostLink      string `sql:"size:255;"`
+	SentAint        bool   `sql:"DEFAULT:false"`
+	LastFbQuest     *time.Time
+	SentFbAnotes    bool `sql:"DEFAULT:false"`
 }
 
 func (u *User) status() string {

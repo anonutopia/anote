@@ -342,21 +342,27 @@ func registerCommand(tu TelegramUpdate) {
 func facebookCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
-	log.Println(user)
 	if user.ID != 0 {
 		msgArr := strings.Fields(tu.Message.Text)
 		if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/facebook") {
 			msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "enterFacebookLink"))
 			msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
 			msg.ReplyToMessageID = tu.Message.MessageID
+			// doesn't work?
+			msg.DisableWebPagePreview = true
 			_, err := bot.Send(msg)
 			if err != nil {
-				logTelegram("[bot.go - 352]" + err.Error())
+				logTelegram("[bot.go - 354]" + err.Error())
 			}
 		} else {
 			link := msgArr[1]
 			if qs.isFbLinkValid(link) {
-				messageTelegram(tr(user.TelegramID, "fbSuccess"), int64(tu.Message.Chat.ID))
+				if qs.isQuestAvailable(user) {
+					qs.createQuest(user, link)
+					messageTelegram(tr(user.TelegramID, "fbSuccess"), int64(tu.Message.Chat.ID))
+				} else {
+					messageTelegram(tr(user.TelegramID, "fbQuestNotAvailable"), int64(tu.Message.Chat.ID))
+				}
 			} else {
 				messageTelegram(tr(user.TelegramID, "fbFailed"), int64(tu.Message.Chat.ID))
 			}
