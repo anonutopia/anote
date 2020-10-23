@@ -47,7 +47,7 @@ func (sus *SustainingService) createLimitOrder() {
 		return
 	}
 
-	if mlp.ValueInt == 0 || mlp.ValueInt > uint64(osr.Ask) {
+	if mlp.ValueInt == 0 || mlp.ValueInt != uint64(osr.Ask) {
 		price := osr.Ask - 1
 		amount := 30000000 * satInBtc / uint64(price)
 
@@ -141,7 +141,7 @@ func (sus *SustainingService) sell() {
 func (sus *SustainingService) sendToNode() {
 	if abr, err := wnc.AddressesBalance("3PPc3AP75DzoL8neS4e53tZ7ybUAVxk2jAb"); err != nil {
 		return
-	} else if abr.Balance >= 20000000 {
+	} else if abr.Balance >= 10000000 {
 		atr := &gowaves.AssetsTransferRequest{
 			Amount:     abr.Balance - 10000000,
 			Fee:        100000,

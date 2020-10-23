@@ -21,7 +21,11 @@ func (qs *QuestsService) start() {
 }
 
 func (qs *QuestsService) isFbLinkValid(link string) bool {
-	if !strings.Contains(link, "https://www.facebook.com/") {
+	if !strings.Contains(link, "https://www.facebook.com/") &&
+		!strings.Contains(link, "https://m.facebook.com/") &&
+		!strings.Contains(link, "https://mobile.facebook.com/") &&
+		!strings.Contains(link, "https://web.facebook.com/") {
+
 		logTelegram(fmt.Sprintf("[quests.go - 21] link: %s", link))
 		return false
 	}
