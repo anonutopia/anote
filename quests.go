@@ -53,6 +53,8 @@ func (qs *QuestsService) createQuest(u *User, link string) {
 		u.MinedAnotes += 10 * int(satInBtc)
 		messageTelegram(tr(u.TelegramID, "fbQuestAnotesAdded"), int64(u.TelegramID))
 		u.SentFbAnotes = true
+	} else {
+		u.SentFbAnotes = false
 	}
 	db.Save(u)
 }
