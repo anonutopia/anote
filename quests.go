@@ -101,7 +101,7 @@ func (qs *QuestsService) sendAint(u *User) {
 		AssetID:   conf.AintID,
 		Fee:       100000,
 		Recipient: u.Address,
-		Sender:    conf.AintAddress,
+		Sender:    conf.NodeAddress,
 	}
 
 	if _, err := wnc.AssetsTransfer(atr); err != nil {
