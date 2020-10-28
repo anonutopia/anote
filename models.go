@@ -41,6 +41,7 @@ type User struct {
 	SentAint        bool   `sql:"DEFAULT:false"`
 	LastFbQuest     *time.Time
 	SentFbAnotes    bool `sql:"DEFAULT:false"`
+	UpdatedAddress  bool `sql:"DEFAULT:false"`
 }
 
 func (u *User) status() string {

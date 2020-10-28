@@ -7,13 +7,15 @@ import (
 )
 
 type SustainingService struct {
-	LastSell time.Time
-	LastSend time.Time
+	LastSell  time.Time
+	LastSend  time.Time
+	LastOrder time.Time
 }
 
 func (sus *SustainingService) start() {
 	sus.LastSell = time.Now()
 	sus.LastSend = time.Now()
+	sus.LastOrder = time.Now()
 	for {
 		sus.checkState()
 
@@ -47,7 +49,7 @@ func (sus *SustainingService) createLimitOrder() {
 		return
 	}
 
-	if mlp.ValueInt == 0 || mlp.ValueInt != uint64(osr.Ask) {
+	if (mlp.ValueInt == 0 || mlp.ValueInt != uint64(osr.Ask)) && time.Since(sus.LastOrder) > time.Duration(time.Minute*5) {
 		price := osr.Ask - 1
 		amount := 30000000 * satInBtc / uint64(price)
 
@@ -80,6 +82,8 @@ func (sus *SustainingService) createLimitOrder() {
 
 		mlp.ValueInt = uint64(price)
 		db.Save(mlp)
+
+		sus.LastOrder = time.Now()
 	}
 }
 

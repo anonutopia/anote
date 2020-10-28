@@ -276,10 +276,13 @@ func addressCommand(tu TelegramUpdate) {
 func registerCommand(tu TelegramUpdate) {
 	user := &User{TelegramID: tu.Message.From.ID}
 	db.First(user, user)
+	log.Println(user)
 	if user.ID != 0 {
 		msgArr := strings.Fields(tu.Message.Text)
 		if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/register") {
 			msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "pleaseEnter"))
+			msg.DisableWebPagePreview = true
+			msg.ParseMode = "HTML"
 			msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
 			msg.ReplyToMessageID = tu.Message.MessageID
 			_, err := bot.Send(msg)
@@ -299,7 +302,7 @@ func registerCommand(tu TelegramUpdate) {
 						messageTelegram(tr(user.TelegramID, "yourAddress"), int64(tu.Message.Chat.ID))
 					} else {
 						avr, err = wnc.AddressValidate(user.Address)
-						if err == nil && !avr.Valid {
+						if err == nil && !avr.Valid && !user.UpdatedAddress {
 							user.Address = msgArr[1]
 							if user.Nickname == "" {
 								user.Nickname = tu.Message.From.Username
@@ -327,8 +330,18 @@ func registerCommand(tu TelegramUpdate) {
 							} else {
 								messageTelegram(tr(user.TelegramID, "registered"), int64(tu.Message.Chat.ID))
 							}
-						} else {
-							// todo
+						} else if err != nil {
+							logTelegram("[bot.go - 331]" + err.Error() + " nick - " + user.Nickname)
+						} else if user.UpdatedAddress {
+							messageTelegram(tr(user.TelegramID, "addressOnceUpdate"), int64(tu.Message.Chat.ID))
+						} else if avr.Valid && !user.UpdatedAddress {
+							user.Address = msgArr[1]
+							user.UpdatedAddress = true
+							if err := db.Save(user).Error; err != nil {
+								logTelegram("[bot.go - 338]" + err.Error() + " nick - " + user.Nickname)
+							} else {
+								messageTelegram(tr(user.TelegramID, "addressUpdated"), int64(tu.Message.Chat.ID))
+							}
 						}
 					}
 				}
@@ -360,6 +373,7 @@ func facebookCommand(tu TelegramUpdate) {
 				if qs.isQuestAvailable(user) {
 					qs.createQuest(user, link)
 					messageTelegram(tr(user.TelegramID, "fbSuccess"), int64(tu.Message.Chat.ID))
+					logTelegram(fmt.Sprintf("Facebook share: %d %s", user.ID, link))
 				} else {
 					messageTelegram(tr(user.TelegramID, "fbQuestNotAvailable"), int64(tu.Message.Chat.ID))
 				}

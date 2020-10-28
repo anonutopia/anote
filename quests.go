@@ -23,7 +23,11 @@ func (qs *QuestsService) start() {
 func (qs *QuestsService) isFbLinkValid(link string) bool {
 	if !strings.Contains(link, "https://www.facebook.com/") &&
 		!strings.Contains(link, "https://m.facebook.com/") &&
+		!strings.Contains(link, "https://free.facebook.com/") &&
+		!strings.Contains(link, "https://l.facebook.com/") &&
+		!strings.Contains(link, "https://lm.facebook.com/") &&
 		!strings.Contains(link, "https://mobile.facebook.com/") &&
+		!strings.Contains(link, "https://facebook.com/") &&
 		!strings.Contains(link, "https://web.facebook.com/") {
 
 		logTelegram(fmt.Sprintf("[quests.go - 21] link: %s", link))
@@ -37,10 +41,10 @@ func (qs *QuestsService) isFbLinkValid(link string) bool {
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(r.Body)
 		body := buf.String()
-		if !strings.Contains(body, "Anote") ||
+		if (!strings.Contains(body, "Anote") && !strings.Contains(body, "Anotu")) ||
 			!strings.Contains(body, "anonutopia.com") ||
-			!strings.Contains(body, "follow") ||
-			!strings.Contains(body, "nickname") {
+			(!strings.Contains(body, "follow") && !strings.Contains(body, "preuzeti")) ||
+			(!strings.Contains(body, "nickname") && !strings.Contains(body, "nadimak")) {
 
 			return false
 		}
