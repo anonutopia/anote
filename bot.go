@@ -48,6 +48,12 @@ func executeBotCommand(tu TelegramUpdate) {
 			return
 		}
 		facebookCommand(tu)
+	} else if strings.HasPrefix(tu.Message.Text, "/twitter") || strings.HasPrefix(tu.Message.Text, "/twitter@"+conf.BotName) {
+		if tu.Message.Chat.Type != "private" {
+			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
+			return
+		}
+		twitterCommand(tu)
 	} else if strings.HasPrefix(tu.Message.Text, "/nick") || strings.HasPrefix(tu.Message.Text, "/nick@"+conf.BotName) {
 		if tu.Message.Chat.Type != "private" {
 			messageTelegram(tr(tu.Message.Chat.ID, "usePrivate"), int64(tu.Message.Chat.ID))
@@ -94,8 +100,11 @@ func executeBotCommand(tu TelegramUpdate) {
 		if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "pleaseEnter") {
 			avr, err := wnc.AddressValidate(tu.Message.Text)
 			if err != nil {
-				logTelegram("[bot.go - 62]" + err.Error())
 				messageTelegram(tr(tu.Message.Chat.ID, "error"), int64(tu.Message.Chat.ID))
+				if strings.Contains(err.Error(), "The requested resource could not be found") {
+					return
+				}
+				logTelegram("[bot.go - 62]" + err.Error())
 			} else {
 				if !avr.Valid {
 					messageTelegram(tr(tu.Message.Chat.ID, "addressNotValid"), int64(tu.Message.Chat.ID))
@@ -113,6 +122,9 @@ func executeBotCommand(tu TelegramUpdate) {
 		} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "enterFacebookLink") {
 			tu.Message.Text = fmt.Sprintf("/facebook %s", tu.Message.Text)
 			facebookCommand(tu)
+		} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "enterTwitterLink") {
+			tu.Message.Text = fmt.Sprintf("/twitter %s", tu.Message.Text)
+			twitterCommand(tu)
 		} else if tu.Message.ReplyToMessage.Text == tr(tu.Message.Chat.ID, "dailyCode") {
 			tu.Message.Text = fmt.Sprintf("/mine %s", tu.Message.Text)
 			mineCommand(tu)
@@ -379,6 +391,40 @@ func facebookCommand(tu TelegramUpdate) {
 				}
 			} else {
 				messageTelegram(tr(user.TelegramID, "fbFailed"), int64(tu.Message.Chat.ID))
+			}
+		}
+	} else {
+		messageTelegram(tr(tu.Message.Chat.ID, "guest"), int64(tu.Message.Chat.ID))
+	}
+}
+
+func twitterCommand(tu TelegramUpdate) {
+	user := &User{TelegramID: tu.Message.From.ID}
+	db.First(user, user)
+	if user.ID != 0 {
+		msgArr := strings.Fields(tu.Message.Text)
+		if len(msgArr) == 1 && strings.HasPrefix(tu.Message.Text, "/twitter") {
+			msg := tgbotapi.NewMessage(int64(tu.Message.Chat.ID), tr(user.TelegramID, "enterTwitterLink"))
+			msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
+			msg.ReplyToMessageID = tu.Message.MessageID
+			// doesn't work?
+			msg.DisableWebPagePreview = true
+			_, err := bot.Send(msg)
+			if err != nil {
+				logTelegram("[bot.go - 414]" + err.Error())
+			}
+		} else {
+			link := msgArr[1]
+			if qs.isTwLinkValid(link) {
+				if qs.isQuestAvailableTw(user) {
+					qs.createQuestTw(user, link)
+					messageTelegram(tr(user.TelegramID, "twSuccess"), int64(tu.Message.Chat.ID))
+					logTelegram(fmt.Sprintf("Twitter share: %d %s", user.ID, link))
+				} else {
+					messageTelegram(tr(user.TelegramID, "twQuestNotAvailable"), int64(tu.Message.Chat.ID))
+				}
+			} else {
+				messageTelegram(tr(user.TelegramID, "twFailed"), int64(tu.Message.Chat.ID))
 			}
 		}
 	} else {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -30,7 +31,10 @@ func (qs *QuestsService) isFbLinkValid(link string) bool {
 		!strings.Contains(link, "https://facebook.com/") &&
 		!strings.Contains(link, "https://web.facebook.com/") {
 
-		logTelegram(fmt.Sprintf("[quests.go - 21] link: %s", link))
+		if strings.Contains(link, "facebook") {
+			logTelegram(fmt.Sprintf("[quests.go - 34] link: %s", link))
+		}
+
 		return false
 	}
 
@@ -43,11 +47,34 @@ func (qs *QuestsService) isFbLinkValid(link string) bool {
 		body := buf.String()
 		if (!strings.Contains(body, "Anote") && !strings.Contains(body, "Anotu")) ||
 			!strings.Contains(body, "anonutopia.com") ||
-			(!strings.Contains(body, "follow") && !strings.Contains(body, "preuzeti")) ||
-			(!strings.Contains(body, "nickname") && !strings.Contains(body, "nadimak")) {
+			(!strings.Contains(body, "Follow") && !strings.Contains(body, "preuzeti")) {
 
 			return false
 		}
+	}
+
+	return true
+}
+
+func (qs *QuestsService) isTwLinkValid(link string) bool {
+	parts := strings.Split(link, "/")
+
+	if !strings.HasPrefix(link, "https://www.twitter.com/") &&
+		!strings.HasPrefix(link, "https://twitter.com/") {
+
+		if strings.Contains(link, "twitter") {
+			logTelegram(fmt.Sprintf("[quests.go - 64] link: %s", link))
+		}
+
+		return false
+	}
+
+	if len(parts) != 6 {
+		return false
+	}
+
+	if id, err := strconv.Atoi(parts[len(parts)-1]); err != nil {
+		return id > 0
 	}
 
 	return true
@@ -67,9 +94,32 @@ func (qs *QuestsService) createQuest(u *User, link string) {
 	db.Save(u)
 }
 
+func (qs *QuestsService) createQuestTw(u *User, link string) {
+	u.TwPostLink = link
+	now := time.Now()
+	u.LastTwQuest = &now
+	if !u.SentAint {
+		u.MinedAnotes += 10 * int(satInBtc)
+		messageTelegram(tr(u.TelegramID, "twQuestAnotesAdded"), int64(u.TelegramID))
+		u.SentTwAnotes = true
+	} else {
+		u.SentTwAnotes = false
+	}
+	db.Save(u)
+}
+
 func (qs *QuestsService) isQuestAvailable(u *User) bool {
 	if u.LastFbQuest != nil &&
 		time.Since(*u.LastFbQuest) < time.Duration(time.Hour*24*7) {
+		return false
+	}
+
+	return true
+}
+
+func (qs *QuestsService) isQuestAvailableTw(u *User) bool {
+	if u.LastTwQuest != nil &&
+		time.Since(*u.LastTwQuest) < time.Duration(time.Hour*24*7) {
 		return false
 	}
 
@@ -101,6 +151,28 @@ func (qs *QuestsService) checkQuests() {
 			u.SentFbAnotes = true
 			db.Save(u)
 			messageTelegram(tr(u.TelegramID, "fbQuestAnotesAdded2"), int64(u.TelegramID))
+		}
+	}
+
+	db.Where("sent_aint = false AND last_tw_quest BETWEEN ? AND ?", first, second).Find(&users)
+
+	for _, u := range users {
+		if !u.SentAint {
+			qs.sendAint(u)
+			u.SentAint = true
+			db.Save(u)
+			messageTelegram(tr(u.TelegramID, "twQuestAintSent"), int64(u.TelegramID))
+		}
+	}
+
+	db.Where("sent_tw_anotes = false AND last_tw_quest BETWEEN ? AND ?", first, second).Find(&users)
+
+	for _, u := range users {
+		if u.SentAint {
+			u.MinedAnotes += 10 * int(satInBtc)
+			u.SentTwAnotes = true
+			db.Save(u)
+			messageTelegram(tr(u.TelegramID, "twQuestAnotesAdded2"), int64(u.TelegramID))
 		}
 	}
 }

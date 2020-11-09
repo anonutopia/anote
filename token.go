@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/anonutopia/gowaves"
@@ -161,7 +162,9 @@ func (t *TokenMonitor) start() {
 func (t *TokenMonitor) getPrice() float64 {
 	osr, err := wmc.OrderbookStatus(conf.TokenID, "WAVES")
 	if err != nil {
-		logTelegram("[token.go - 164]" + err.Error())
+		if !strings.Contains(err.Error(), "INTERNAL_ERROR") {
+			logTelegram("[token.go - 166]" + err.Error())
+		}
 	}
 
 	p, err := pc.DoRequest()
@@ -179,7 +182,9 @@ func (t *TokenMonitor) getPrice() float64 {
 func (t *TokenMonitor) checkLastOrder() {
 	osr, err := wmc.OrderbookStatus(conf.TokenID, "WAVES")
 	if err != nil {
-		logTelegram("[token.go - 182]" + err.Error())
+		if !strings.Contains(err.Error(), "INTERNAL_ERROR") {
+			logTelegram("[token.go - 183]" + err.Error())
+		}
 		return
 	}
 

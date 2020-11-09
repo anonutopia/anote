@@ -40,7 +40,10 @@ type User struct {
 	FbPostLink      string `sql:"size:255;"`
 	SentAint        bool   `sql:"DEFAULT:false"`
 	LastFbQuest     *time.Time
-	SentFbAnotes    bool `sql:"DEFAULT:false"`
+	SentFbAnotes    bool   `sql:"DEFAULT:false"`
+	TwPostLink      string `sql:"size:255;"`
+	LastTwQuest     *time.Time
+	SentTwAnotes    bool `sql:"DEFAULT:false"`
 	UpdatedAddress  bool `sql:"DEFAULT:false"`
 }
 

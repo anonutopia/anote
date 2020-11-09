@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"time"
 
 	"github.com/anonutopia/gowaves"
@@ -45,7 +46,9 @@ func (sus *SustainingService) createLimitOrder() {
 
 	osr, err := wmc.OrderbookStatus(conf.TokenID, "WAVES")
 	if err != nil {
-		logTelegram("[sustaining.go - 39]" + err.Error())
+		if !strings.Contains(err.Error(), "INTERNAL_ERROR") {
+			logTelegram("[sustaining.go - 50]" + err.Error())
+		}
 		return
 	}
 
@@ -69,7 +72,7 @@ func (sus *SustainingService) createLimitOrder() {
 			MatcherFee: 300000,
 			Version:    3,
 			Timestamp:  int(time.Now().UnixNano() / int64(time.Millisecond)),
-			Expiration: int(time.Now().Add(time.Hour*48).UnixNano() / int64(time.Millisecond)),
+			Expiration: int(time.Now().Add(time.Hour*1).UnixNano() / int64(time.Millisecond)),
 		}
 
 		if aor, err := wnc.AssetsOrder(order); err != nil {
@@ -90,7 +93,7 @@ func (sus *SustainingService) createLimitOrder() {
 func (sus *SustainingService) sell() {
 	opr, err := wmc.OrderbookPair(conf.TokenID, "WAVES", 10)
 	if err != nil {
-		logTelegram("[sustaining.go - 39]" + err.Error())
+		logTelegram("[sustaining.go - 93]" + err.Error())
 		return
 	}
 

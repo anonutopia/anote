@@ -11,3 +11,4 @@ nick - Setup your Anonutopia nickname
 team - List your Anonutopia team
 ref - Shows your referral links and code
 facebook - Claim your Facebook share reward
+twitter - Claim your Twitter share reward
