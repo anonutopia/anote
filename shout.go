@@ -114,12 +114,6 @@ func (ss *ShoutService) processTransaction(tr *Transaction, t *gowaves.Transacti
 func (ss *ShoutService) processBid(t *gowaves.TransactionsAddressLimitResponse) {
 	user := &User{Address: t.Sender}
 	db.First(user, user)
-	msg := tgbotapi.NewMessage(int64(user.TelegramID), tr(user.TelegramID, "shoutMessage"))
-	msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
-	_, err := bot.Send(msg)
-	if err != nil {
-		logTelegram("[shout.go - 117]" + err.Error())
-	}
 
 	shout := &Shout{OwnerID: user.ID, Published: false}
 	db.Where("published = false").First(shout, shout)
@@ -133,10 +127,17 @@ func (ss *ShoutService) processBid(t *gowaves.TransactionsAddressLimitResponse) 
 		shout.Price = shout.Price + uint64(t.Amount)
 	}
 
-	shout.ChatID = int(msg.ChatID)
+	shout.ChatID = int(int64(user.TelegramID))
 
 	if err := db.Save(shout).Error; err != nil {
 		logTelegram("[shout.go - 118] " + err.Error())
+	}
+
+	msg := tgbotapi.NewMessage(int64(user.TelegramID), tr(user.TelegramID, "shoutMessage"))
+	msg.ReplyMarkup = tgbotapi.ForceReply{ForceReply: true, Selective: false}
+	_, err := bot.Send(msg)
+	if err != nil {
+		logTelegram("[shout.go - 140]" + err.Error())
 	}
 }
 
