@@ -60,6 +60,7 @@ func (qs *QuestsService) isTwLinkValid(link string) bool {
 	parts := strings.Split(link, "/")
 
 	if !strings.HasPrefix(link, "https://www.twitter.com/") &&
+		!strings.HasPrefix(link, "https://mobile.twitter.com/") &&
 		!strings.HasPrefix(link, "https://twitter.com/") {
 
 		if strings.Contains(link, "twitter") {

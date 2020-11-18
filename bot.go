@@ -183,8 +183,8 @@ func infoCommand(tu TelegramUpdate) {
 	db.First(user, user)
 
 	price := float64(tm.Price) / float64(satInBtc)
-	priceAint := price * 24 * 365
 	priceRec := float64(tm.PriceRecord) / float64(satInBtc)
+	priceAint := priceRec * 24 * 365
 	miningPower := float64(tm.MiningPower) / float64(100)
 	totalSupply := float64(tm.TotalSupply) / float64(satInBtc)
 
