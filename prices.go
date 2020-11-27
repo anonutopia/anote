@@ -1,13 +1,5 @@
 package main
 
-import (
-	"encoding/json"
-	"errors"
-	"io/ioutil"
-	"log"
-	"net/http"
-)
-
 const url = "https://min-api.cryptocompare.com/data/price?fsym=EUR&tsyms=WAVES,BTC,ETH"
 
 type Prices struct {
@@ -21,36 +13,40 @@ type PriceClient struct {
 
 func (pc *PriceClient) DoRequest() (*Prices, error) {
 	p := &Prices{}
-	cl := http.Client{}
+	// cl := http.Client{}
 
-	var req *http.Request
-	var err error
+	// var req *http.Request
+	// var err error
 
-	req, err = http.NewRequest(http.MethodGet, url, nil)
+	// req, err = http.NewRequest(http.MethodGet, url, nil)
 
-	req.Header.Set("Content-Type", "application/json")
+	// req.Header.Set("Content-Type", "application/json")
 
-	if err != nil {
-		return nil, err
-	}
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	res, err := cl.Do(req)
+	// res, err := cl.Do(req)
 
-	if err == nil {
-		body, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			return nil, err
-		}
-		if res.StatusCode != 200 {
-			log.Printf("[PriceClient.DoRequest] Error, body: %s", string(body))
-			// logTelegram(fmt.Sprintf("[PriceClient.DoRequest] Error, body: %s", string(body)))
-			err := errors.New(res.Status)
-			return nil, err
-		}
-		json.Unmarshal(body, p)
-	} else {
-		return nil, err
-	}
+	// if err == nil {
+	// 	body, err := ioutil.ReadAll(res.Body)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	if res.StatusCode != 200 {
+	// 		log.Printf("[PriceClient.DoRequest] Error, body: %s", string(body))
+	// 		// logTelegram(fmt.Sprintf("[PriceClient.DoRequest] Error, body: %s", string(body)))
+	// 		err := errors.New(res.Status)
+	// 		return nil, err
+	// 	}
+	// 	json.Unmarshal(body, p)
+	// } else {
+	// 	return nil, err
+	// }
+
+	p.WAVES = 0.1841
+	p.BTC = 0.00007116
+	p.ETH = 0.002365
 
 	return p, nil
 }

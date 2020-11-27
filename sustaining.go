@@ -103,15 +103,17 @@ func (sus *SustainingService) sell() {
 	leftToBuy := uint64(0)
 
 	for i := 0; waves < 10000000; i++ {
-		w := opr.Bids[i].Amount * opr.Bids[i].Price / satInBtc
-		waves += w
-		price = opr.Bids[i].Price
-		if waves < 10000000 {
-			amount = opr.Bids[i].Amount
-		} else {
-			leftToBuy = 10000000 - waves + w
-			newAmount := leftToBuy * satInBtc / opr.Bids[i].Price
-			amount += newAmount
+		if len(opr.Bids) > i {
+			w := opr.Bids[i].Amount * opr.Bids[i].Price / satInBtc
+			waves += w
+			price = opr.Bids[i].Price
+			if waves < 10000000 {
+				amount = opr.Bids[i].Amount
+			} else {
+				leftToBuy = 10000000 - waves + w
+				newAmount := leftToBuy * satInBtc / opr.Bids[i].Price
+				amount += newAmount
+			}
 		}
 	}
 

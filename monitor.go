@@ -98,7 +98,9 @@ func (wm *WavesMonitor) purchaseAnote(t *gowaves.TransactionsAddressLimitRespons
 }
 
 func (wm *WavesMonitor) purchaseAint(t *gowaves.TransactionsAddressLimitResponse) {
-	priceAint := float64(tm.PriceRecord) / float64(satInBtc) * 24 * 365
+	// priceAint := float64(tm.PriceRecord) / float64(satInBtc) * 24 * 365
+	priceAint := float64(tm.Price) / float64(satInBtc) * 24 * 365
+	// priceAint := 1.44
 	prices, err := pc.DoRequest()
 	if err != nil {
 		logTelegram("[monitor.go - 104]" + err.Error())
