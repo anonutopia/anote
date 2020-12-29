@@ -28,9 +28,12 @@ func (sus *SustainingService) checkState() {
 	if abr, err := wnc.AddressesBalance(conf.NodeAddress); err != nil {
 		return
 	} else {
-		if abr.Balance < 10000000 && time.Since(sus.LastSell) > time.Duration(time.Minute*5) {
-			sus.sell()
-		} else if abr.Balance < 30000000 {
+		// if abr.Balance < 10000000 && time.Since(sus.LastSell) > time.Duration(time.Minute*5) {
+		// 	sus.sell()
+		// } else if abr.Balance < 30000000 {
+		// 	sus.createLimitOrder()
+		// }
+		if abr.Balance < 30000000 {
 			sus.createLimitOrder()
 		}
 	}

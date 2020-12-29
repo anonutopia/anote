@@ -186,8 +186,8 @@ func infoCommand(tu TelegramUpdate) {
 	price := float64(tm.Price) / float64(satInBtc)
 	priceRec := float64(tm.PriceRecord) / float64(satInBtc)
 	// priceAint := priceRec * 24 * 365
-	priceAint := price * 24 * 365
-	// priceAint := 1.44
+	// priceAint := price * 24 * 365
+	priceAint := 1.44
 	miningPower := float64(tm.MiningPower) / float64(100)
 	totalSupply := float64(tm.TotalSupply) / float64(satInBtc)
 
@@ -389,7 +389,6 @@ func facebookCommand(tu TelegramUpdate) {
 					qs.createQuest(user, link)
 					messageTelegram(tr(user.TelegramID, "fbSuccess"), int64(tu.Message.Chat.ID))
 					logTelegram(fmt.Sprintf("Facebook share: %d %s", user.ID, link))
-					// messageTelegram(tr(user.TelegramID, "fbSuccess"), int64(tu.Message.Chat.ID))
 					messageTelegram(fmt.Sprintf(strings.Replace(ui18n.Tr(lang, "fbShare"), "\\n", "\n", -1), link), tAnon)
 					messageTelegram(fmt.Sprintf(strings.Replace(ui18n.Tr(langHr, "fbShare"), "\\n", "\n", -1), link), tAnonBalkan)
 				} else {

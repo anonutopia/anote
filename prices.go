@@ -44,9 +44,9 @@ func (pc *PriceClient) DoRequest() (*Prices, error) {
 	// 	return nil, err
 	// }
 
-	p.WAVES = 0.1841
-	p.BTC = 0.00007116
-	p.ETH = 0.002365
+	p.WAVES = 0.1799
+	p.BTC = 0.0000686
+	p.ETH = 0.002256
 
 	return p, nil
 }
