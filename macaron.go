@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/cryptopragmatic/certmagic"
 	"github.com/go-macaron/cache"
 	"github.com/go-macaron/i18n"
 	_ "github.com/go-macaron/session/redis"
@@ -19,13 +18,15 @@ func initMacaron() *macaron.Macaron {
 		Names: []string{"Hrvatski", "Srpski", "English"},
 	}))
 
-	if !conf.Dev {
-		// certmagic.Default.Agreed = true
-		certmagic.DefaultACME.Email = conf.EmailAddress
-		go certmagic.HTTPS([]string{conf.Hostname}, m)
-	} else {
-		go m.Run("0.0.0.0", 5000)
-	}
+	// if !conf.Dev {
+	// 	// certmagic.Default.Agreed = true
+	// 	certmagic.DefaultACME.Email = conf.EmailAddress
+	// 	go certmagic.HTTPS([]string{conf.Hostname}, m)
+	// } else {
+	// 	go m.Run("0.0.0.0", 5000)
+	// }
+
+	go m.Run("0.0.0.0", 5000)
 
 	return m
 }
