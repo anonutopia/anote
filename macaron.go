@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/caddyserver/certmagic"
+	"github.com/cryptopragmatic/certmagic"
 	"github.com/go-macaron/cache"
 	"github.com/go-macaron/i18n"
 	_ "github.com/go-macaron/session/redis"

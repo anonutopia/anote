@@ -60,7 +60,7 @@ func main() {
 
 	qs = initQuestsService()
 
-	send()
+	// send()
 
 	// id := create_order()
 	// create_order()
