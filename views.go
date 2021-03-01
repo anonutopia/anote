@@ -20,7 +20,7 @@ var (
 )
 
 func webhookView(ctx *macaron.Context, tu TelegramUpdate) string {
-	executeBotCommand(tu)
+	go executeBotCommand(tu)
 
 	return "OK"
 }
