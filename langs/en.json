@@ -9,5 +9,8 @@
     "error": "Something went wrong. Please try again!",
     "addressUsed": "This address is already in use, please get your own using <a href=\"https://wallet.anonutopia.com\">Anote Wallet</a>.",
     "addressNotValid": "Your wallet address is not valid. Please check if it's correct and try again.",
-    "addressOnceUpdate": "You can only update your address once. If you need to update it again, purchase 1 AINT and ask for help in @Anonutopia group."
+    "addressOnceUpdate": "You can only update your address once. If you need to update it again, purchase 1 AINT and ask for help in @Anonutopia group.",
+    "refMessageTitle": "⭕️  <strong><u>Your Referral Message and Telegram Link</u></strong>\n\n<strong>Referral Message:</strong>",
+    "refMessage": "I'm sending you 1 Anote to join Anonutopia!\n\nAnote is a cool new crypto currency that you can mine, send, receive, exchange, sell and spend right away.\n\nFollow this link https://www.anonutopia.com/?r=%s and use %s as your code.\n\n#AnonutopiaUprising",
+    "refTelegram": "<strong>Telegram Referral Link:</strong>"
 }

@@ -124,7 +124,16 @@ func saveRegisterReply(m *tb.Message) {
 
 func refCommand(m *tb.Message) {
 	um.checkNick(m)
-	bot.Send(m.Sender, "TODO")
+	user := um.getUser(m)
+	bot.Send(m.Sender, gotrans.T("refMessageTitle"))
+
+	msg := fmt.Sprintf(gotrans.T("refMessage"), user.Code, user.Code)
+	bot.Send(m.Sender, msg, tb.NoPreview)
+
+	bot.Send(m.Sender, gotrans.T("refTelegram"), tb.NoPreview)
+
+	msg = fmt.Sprintf("https://t.me/AnoteRobot?start=%s", user.Code)
+	bot.Send(m.Sender, msg, tb.NoPreview)
 }
 
 func unknownCommand(m *tb.Message) {
