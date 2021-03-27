@@ -99,6 +99,9 @@ func saveRegisterReply(m *tb.Message) {
 			log.Println(err)
 		} else if avr.Valid {
 			if !user.UpdatedAddress {
+				if user.Address != user.Code {
+					user.UpdatedAddress = true
+				}
 				user.Address = m.Text
 				if err := db.Save(user).Error; err == nil {
 					bot.Send(m.Sender, gotrans.T("registered"))
