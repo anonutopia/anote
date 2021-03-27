@@ -8,7 +8,6 @@ import (
 
 	"github.com/anonutopia/gowaves"
 	"github.com/bykovme/gotrans"
-	"gopkg.in/tucnak/telebot.v2"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -113,9 +112,7 @@ func infoCommand(m *tb.Message) {
 
 func registerCommand(m *tb.Message) {
 	um.checkNick(m)
-	rm := &telebot.ReplyMarkup{ForceReply: true, Selective: true}
-	so := &telebot.SendOptions{ReplyMarkup: rm}
-	r, _ := bot.Reply(m, gotrans.T("register"), so)
+	r, _ := bot.Send(m.Sender, gotrans.T("register"), tb.ForceReply)
 	repMan.addRegister(r.ID)
 }
 
@@ -148,6 +145,8 @@ func saveRegisterReply(m *tb.Message) {
 			bot.Send(m.Sender, gotrans.T("addressNotValid"))
 		}
 	}
+	mrk := &tb.ReplyMarkup{}
+	bot.EditReplyMarkup(m.ReplyTo, mrk)
 }
 
 func referralCommand(m *tb.Message) {
