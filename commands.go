@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/anonutopia/gowaves"
 	"github.com/bykovme/gotrans"
 	"gopkg.in/tucnak/telebot.v2"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -86,7 +87,7 @@ func registerCommand(m *tb.Message) {
 	um.checkNick(m)
 	rm := &telebot.ReplyMarkup{ForceReply: true, Selective: true}
 	so := &telebot.SendOptions{ReplyMarkup: rm}
-	r, _ := bot.Reply(m, gotrans.T("nick"), so)
+	r, _ := bot.Reply(m, gotrans.T("register"), so)
 	repMan.addRegister(r.ID)
 }
 
@@ -94,16 +95,26 @@ func saveRegisterReply(m *tb.Message) {
 	user := &User{TelegramID: m.Sender.ID}
 	db.First(user, user)
 	if len(m.Text) > 0 {
-		user.Nickname = m.Text
-		if err := db.Save(user).Error; err == nil {
-			bot.Send(m.Sender, gotrans.T("nickSaved"))
-		} else {
-			if strings.Contains(err.Error(), "UNIQUE") {
-				bot.Send(m.Sender, gotrans.T("nickUsed"))
+		if avr, err := gowaves.WNC.AddressValidate(m.Text); err != nil {
+			log.Println(err)
+		} else if avr.Valid {
+			if !user.UpdatedAddress {
+				user.Address = m.Text
+				if err := db.Save(user).Error; err == nil {
+					bot.Send(m.Sender, gotrans.T("registered"))
+				} else {
+					if strings.Contains(err.Error(), "UNIQUE") {
+						bot.Send(m.Sender, gotrans.T("addressUsed"))
+					} else {
+						bot.Send(m.Sender, gotrans.T("error"))
+						log.Println(err)
+					}
+				}
 			} else {
-				bot.Send(m.Sender, gotrans.T("error"))
-				log.Println(err)
+				bot.Send(m.Sender, gotrans.T("addressOnceUpdate"))
 			}
+		} else {
+			bot.Send(m.Sender, gotrans.T("addressNotValid"))
 		}
 	}
 }

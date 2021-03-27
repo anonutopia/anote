@@ -4,8 +4,10 @@
     "status": "⭕️  <strong><u>Your Anote Status</u></strong>\n\n<strong>Address:</strong> %s",
     "priceRise": "The price of Anote has reached a new record %.8f €.",
     "info": "⭕️  <strong><u>Anote Info Stats</u></strong>\n\n<strong>Anote Price:</strong> <u>%.8f</u> €\n<strong>Price Record:</strong> <u>%.8f</u> €\n<strong>AINT Price:</strong> <u>%.8f</u> €\n<strong>Mining Power:</strong> <u>%.2f</u> A/h\n<strong>Active Miners:</strong> <u>%d</u>\n<strong>Miners:</strong> <u>%d</u>\n<strong>Total Holders:</strong> <u>%d</u>\n<strong>Total Supply:</strong> <u>%.2f</u> Anotes\n",
-    "nick": "Please enter your Anonutopia nickname:",
-    "nickSaved": "Your new nickname is successfully saved.",
+    "register": "Please enter your Anote wallet address:",
+    "registered": "Your wallet address has successfully been updated.",
     "error": "Something went wrong. Please try again!",
-    "nickUsed": "This nickname is already used, please try another one."
+    "addressUsed": "This address is already in use, please get your own using <a href=\"https://wallet.anonutopia.com\">Anote Wallet</a>.",
+    "addressNotValid": "Your wallet address is not valid. Please check if it's correct and try again.",
+    "addressOnceUpdate": "You can only update your address once. If you need to update it again, purchase 1 AINT and ask for help in @Anonutopia group."
 }

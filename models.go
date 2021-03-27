@@ -30,6 +30,7 @@ type User struct {
 	MiningWarning   *time.Time
 	Nickname        string `gorm:"size:255;uniqueIndex"`
 	Code            string `gorm:"size:255;uniqueIndex"`
+	UpdatedAddress  bool   `sql:"DEFAULT:false"`
 }
 
 func (u *User) getAddress() string {
