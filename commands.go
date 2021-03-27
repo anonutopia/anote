@@ -42,7 +42,21 @@ func startCommand(m *tb.Message) {
 
 func mineCommand(m *tb.Message) {
 	um.checkNick(m)
-	bot.Send(m.Sender, "TODO")
+	user := um.getUser(m)
+
+	if user.MiningActivated != nil && time.Since(*user.MiningActivated).Hours() < float64(24) {
+		bot.Send(m.Sender, gotrans.T("limit24h"))
+		return
+	} else if user.ID == 0 {
+		bot.Send(m.Sender, gotrans.T("guest"))
+		return
+	}
+
+	code := randString(10)
+	link := fmt.Sprintf("https://%s/mine/%s", conf.Hostname, code)
+	msg := fmt.Sprintf(gotrans.T("mine"), link)
+
+	bot.Send(m.Sender, msg)
 }
 
 func withdrawCommand(m *tb.Message) {
@@ -165,8 +179,7 @@ func saveRegisterReply(m *tb.Message) {
 			bot.Send(m.Sender, gotrans.T("addressNotValid"))
 		}
 	}
-	mrk := &tb.ReplyMarkup{}
-	bot.EditReplyMarkup(m.ReplyTo, mrk)
+	bot.EditReplyMarkup(m.ReplyTo, nil)
 }
 
 func referralCommand(m *tb.Message) {
