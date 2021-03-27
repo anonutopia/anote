@@ -20,5 +20,7 @@ func initMacaron() *macaron.Macaron {
 		go m.Run("0.0.0.0", 5000)
 	}
 
+	m.Get("/check", checkView)
+
 	return m
 }

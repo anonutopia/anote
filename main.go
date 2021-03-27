@@ -37,8 +37,6 @@ func main() {
 
 	m = initMacaron()
 
-	m.Get("/mine", mineView)
-
 	um = initUserManager()
 
 	wm = initWavesMonitor()
