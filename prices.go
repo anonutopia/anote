@@ -21,6 +21,7 @@ type Prices struct {
 
 type PriceClient struct {
 	Prices *Prices
+	Loaded bool
 }
 
 func (pc *PriceClient) doRequest() (*Prices, error) {
@@ -71,13 +72,15 @@ func (pc *PriceClient) start() {
 				log.Printf("%#v\n", pc.Prices)
 			}
 
+			pc.Loaded = true
+
 			time.Sleep(time.Minute * 15)
 		}
 	}()
 }
 
 func initPriceClient() *PriceClient {
-	pc := &PriceClient{}
+	pc := &PriceClient{Loaded: false}
 	pc.start()
 	return pc
 }
