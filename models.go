@@ -10,7 +10,7 @@ import (
 // KeyValue model is used for storing key/values
 type KeyValue struct {
 	gorm.Model
-	Key      string `sql:"size:255;unique_index"`
+	Key      string `sql:"size:255;uniqueIndex"`
 	ValueInt uint64 `sql:"type:int"`
 	ValueStr string `sql:"type:string"`
 }
@@ -18,8 +18,8 @@ type KeyValue struct {
 // User represents Telegram user
 type User struct {
 	gorm.Model
-	Address         string `sql:"size:255;unique_index"`
-	TelegramID      int    `sql:"unique_index"`
+	Address         string `gorm:"size:255;uniqueIndex"`
+	TelegramID      int    `gorm:"uniqueIndex"`
 	ReferralID      uint
 	Referral        *User
 	MiningActivated *time.Time
@@ -28,7 +28,8 @@ type User struct {
 	LastWithdraw    *time.Time
 	Language        string `sql:"size:255;"`
 	MiningWarning   *time.Time
-	Nickname        string `sql:"size:255;unique_index"`
+	Nickname        string `gorm:"size:255;uniqueIndex"`
+	Code            string `gorm:"size:255;uniqueIndex"`
 }
 
 func (u *User) getAddress() string {

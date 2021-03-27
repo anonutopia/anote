@@ -12,7 +12,19 @@ type UserManager struct {
 }
 
 func (um *UserManager) createUser(m *tb.Message) {
-	u := &User{TelegramID: m.Sender.ID}
+	code := randString(10)
+	tNick := m.Sender.Username
+
+	if len(tNick) == 0 {
+		tNick = code
+	}
+
+	u := &User{
+		TelegramID: m.Sender.ID,
+		Address:    code,
+		Nickname:   tNick,
+		Code:       code,
+	}
 	r := &User{}
 
 	db.FirstOrCreate(u, u)
@@ -30,6 +42,21 @@ func (um *UserManager) getUser(m *tb.Message) *User {
 	return u
 }
 
+func (um *UserManager) checkNick(m *tb.Message) {
+	user := um.getUser(m)
+	if user.Nickname != m.Sender.Username {
+		user.Nickname = m.Sender.Username
+		if err := db.Save(user).Error; err != nil {
+			log.Println(err)
+		}
+	}
+}
+
+func (um *UserManager) saveState() {
+	log.Println("Saving state.")
+	um.Running = false
+}
+
 func (um *UserManager) start() {
 	um.Running = true
 	go func() {
@@ -37,11 +64,6 @@ func (um *UserManager) start() {
 			time.Sleep(time.Second * 10)
 		}
 	}()
-}
-
-func (um *UserManager) saveState() {
-	log.Println("Saving state.")
-	um.Running = false
 }
 
 func initUserManager() *UserManager {

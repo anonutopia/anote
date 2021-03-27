@@ -54,7 +54,7 @@ func main() {
 
 	initCommands()
 
-	logTelegram("I've started.")
+	logTelegram("I'm up and running.")
 
 	go bot.Start()
 

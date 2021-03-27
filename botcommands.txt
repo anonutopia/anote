@@ -3,5 +3,4 @@ withdraw - Withdraw your mined Anotes
 status - Get your Anote status
 info - Get info about Anote
 register - Register your Waves address
-nick - Setup your Anonutopia nickname
 ref - Shows your referral links and code

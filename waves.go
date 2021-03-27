@@ -10,7 +10,6 @@ type WavesMonitor struct {
 
 func (wm *WavesMonitor) start() {
 	wm.StartedTime = time.Now().Unix() * 1000
-	logTelegram("I've started.")
 	for {
 		time.Sleep(time.Second * WavesMonitorTick)
 	}
