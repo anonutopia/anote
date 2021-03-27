@@ -22,7 +22,7 @@ func initCommands() {
 	bot.Handle("/status", statusCommand)
 	bot.Handle("/info", infoCommand)
 	bot.Handle("/register", registerCommand)
-	bot.Handle("/ref", refCommand)
+	bot.Handle("/referral", referralCommand)
 
 	bot.Handle(tb.OnText, func(m *tb.Message) {
 		if m.IsReply() {
@@ -122,7 +122,7 @@ func saveRegisterReply(m *tb.Message) {
 	}
 }
 
-func refCommand(m *tb.Message) {
+func referralCommand(m *tb.Message) {
 	um.checkNick(m)
 	user := um.getUser(m)
 	bot.Send(m.Sender, gotrans.T("refMessageTitle"))

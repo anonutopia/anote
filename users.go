@@ -25,10 +25,14 @@ func (um *UserManager) createUser(m *tb.Message) {
 		Nickname:   tNick,
 		Code:       code,
 	}
+
 	r := &User{}
 
 	db.FirstOrCreate(u, u)
-	db.First(r, m.Payload)
+	if err := db.Where("code = ?", m.Payload).First(r).Error; err != nil {
+		db.FirstOrCreate(u, u)
+		db.Where("nickname = ?", m.Payload).First(r)
+	}
 
 	if r.ID != 0 && r.ID != u.ID {
 		u.Referral = r
