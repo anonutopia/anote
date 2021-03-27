@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/anonutopia/gowaves"
+	"github.com/bykovme/gotrans"
 	"gorm.io/gorm"
 )
 
@@ -34,11 +36,11 @@ type User struct {
 }
 
 func (u *User) getAddress() string {
-	if len(u.Address) > 0 {
+	if len(u.Address) > 0 && u.Address != u.Code {
 		return u.Address
 	}
 
-	return "no address"
+	return "no wallet address"
 }
 
 func (u *User) miningPower() float64 {
@@ -83,4 +85,28 @@ func (u *User) teamActive() int64 {
 	active := int64(0)
 	db.Where("referral_id = ? AND mining_activated >= ?", u.ID, time.Now().Add(-24*time.Hour).Format("2006-01-02")).Find(&users).Count(&active)
 	return active
+}
+
+func (u *User) status() string {
+	if len(u.Address) == 0 {
+		return "Guest"
+	} else if u.team() >= 3 {
+		return "Miner"
+	} else if u.Mining {
+		return "Pioneer"
+	} else {
+		return "Dissident"
+	}
+}
+
+func (u *User) isMiningStr() string {
+	if u.Mining {
+		return gotrans.T("yes")
+	}
+
+	return gotrans.T("no")
+}
+
+func (u *User) miningPowerStr() string {
+	return fmt.Sprintf("%.5f A/h", u.miningPower())
 }

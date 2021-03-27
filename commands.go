@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/anonutopia/gowaves"
 	"github.com/bykovme/gotrans"
@@ -52,11 +53,38 @@ func withdrawCommand(m *tb.Message) {
 
 func statusCommand(m *tb.Message) {
 	um.checkNick(m)
-	u := um.getUser(m)
+	user := um.getUser(m)
+
+	var cycle string
+	if user.MiningActivated != nil {
+		sinceMine := time.Since(*user.MiningActivated)
+		sinceHour := 23 - int(sinceMine.Hours())
+		sinceMin := 0
+		sinceSec := 0
+		if sinceHour < 0 {
+			sinceHour = 0
+		} else {
+			sinceMin = 59 - (int(sinceMine.Minutes()) - (int(sinceMine.Hours()) * 60))
+			sinceSec = 59 - (int(sinceMine.Seconds()) - (int(sinceMine.Minutes()) * 60))
+		}
+		cycle = fmt.Sprintf("%.2d:%.2d:%.2d", sinceHour, sinceMin, sinceSec)
+	} else {
+		cycle = "00:00:00"
+	}
+
 	status := fmt.Sprintf(
 		gotrans.T("status"),
-		u.getAddress(),
+		user.Nickname,
+		user.status(),
+		user.getAddress(),
+		user.isMiningStr(),
+		user.miningPowerStr(),
+		user.team(),
+		user.teamInactive(),
+		float64(user.MinedAnotes)/float64(SatInBTC),
+		cycle,
 	)
+
 	bot.Send(m.Sender, status)
 }
 
