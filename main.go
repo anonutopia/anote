@@ -22,6 +22,8 @@ var m *macaron.Macaron
 
 var um *UserManager
 
+var tm *TokenMonitor
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
@@ -34,6 +36,8 @@ func main() {
 	db = initDb()
 
 	pc = initPriceClient()
+
+	tm = initTokenMonitor()
 
 	m = initMacaron()
 
