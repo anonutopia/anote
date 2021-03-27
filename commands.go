@@ -47,7 +47,27 @@ func mineCommand(m *tb.Message) {
 
 func withdrawCommand(m *tb.Message) {
 	um.checkNick(m)
-	bot.Send(m.Sender, "TODO")
+	user := um.getUser(m)
+
+	if user.LastWithdraw != nil && time.Since(*user.LastWithdraw).Hours() < float64(24) {
+		bot.Send(m.Sender, gotrans.T("limit24h"))
+		return
+	} else if user.MinedAnotes < 500000000 && user.LastWithdraw != nil {
+		bot.Send(m.Sender, gotrans.T("withdrawNoAnotes"))
+		return
+	} else if user.Address == user.Code {
+		bot.Send(m.Sender, gotrans.T("notRegistered"))
+		return
+	} else if user.ID == 0 {
+		bot.Send(m.Sender, gotrans.T("guest"))
+		return
+	}
+
+	code := randString(10)
+	link := fmt.Sprintf("https://%s/withdraw/%s", conf.Hostname, code)
+	msg := fmt.Sprintf(gotrans.T("withdraw"), link)
+
+	bot.Send(m.Sender, msg)
 }
 
 func statusCommand(m *tb.Message) {
