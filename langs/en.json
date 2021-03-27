@@ -2,5 +2,6 @@
     "welcome": "<u>Welcome to AnonFunder!</u>\n\nTo find out more, click here -> /help",
     "unknown": "This commane doesn't exist.\n\nTo see available commands, please click /help or / button in the bottom right corner of your Telegram window.",
     "status": "⭕️  <strong><u>Your Anote Status</u></strong>\n\n<strong>Address:</strong> %s",
-    "priceRise": "The price of Anote has reached a new record %.8f €."
+    "priceRise": "The price of Anote has reached a new record %.8f €.",
+    "info": "⭕️  <strong><u>Anote Info Stats</u></strong>\n\n<strong>Anote Price:</strong> <u>%.8f</u> €\n<strong>Price Record:</strong> <u>%.8f</u> €\n<strong>AINT Price:</strong> <u>%.8f</u> €\n<strong>Mining Power:</strong> <u>%.2f</u> A/h\n<strong>Active Miners:</strong> <u>%d</u>\n<strong>Miners:</strong> <u>%d</u>\n<strong>Total Holders:</strong> <u>%d</u>\n<strong>Total Supply:</strong> <u>%.2f</u> Anotes\n"
 }

@@ -42,7 +42,25 @@ func statusCommand(m *tb.Message) {
 }
 
 func infoCommand(m *tb.Message) {
-	bot.Send(m.Sender, "TODO")
+	price := float64(tm.Price) / float64(SatInBTC)
+	priceRec := float64(tm.PriceRecord) / float64(SatInBTC)
+	priceAint := 1.44
+	miningPower := float64(tm.MiningPower) / float64(100)
+	totalSupply := float64(tm.TotalSupply) / float64(SatInBTC)
+
+	msg := fmt.Sprintf(
+		gotrans.T("info"),
+		price,
+		priceRec,
+		priceAint,
+		miningPower,
+		tm.ActiveMiners,
+		tm.TotalMiners,
+		tm.TotalHolders,
+		totalSupply,
+	)
+
+	bot.Send(m.Sender, msg)
 }
 
 func registerCommand(m *tb.Message) {

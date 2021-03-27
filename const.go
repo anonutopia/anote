@@ -30,4 +30,7 @@ const (
 
 	// TelAnonTeam group for team messages
 	TelAnonTeam = -1001280228955
+
+	// SigTick represents a ticker in seconds for signal handler
+	SigTick = 10
 )

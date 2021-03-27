@@ -1,10 +1,14 @@
 package main
 
 import (
+	"log"
+	"time"
+
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 type UserManager struct {
+	Running bool
 }
 
 func (um *UserManager) createUser(m *tb.Message) {
@@ -26,7 +30,22 @@ func (um *UserManager) getUser(m *tb.Message) *User {
 	return u
 }
 
+func (um *UserManager) start() {
+	um.Running = true
+	go func() {
+		for um.Running {
+			time.Sleep(time.Second * 10)
+		}
+	}()
+}
+
+func (um *UserManager) saveState() {
+	log.Println("Saving state.")
+	um.Running = false
+}
+
 func initUserManager() *UserManager {
 	um := &UserManager{}
+	um.start()
 	return um
 }
