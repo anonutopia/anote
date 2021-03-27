@@ -1,14 +1,7 @@
 mine - Start generating new Anotes
-status - Get your Anonutopia / Anote status
-info - Get info about Anote
 withdraw - Withdraw your mined Anotes
+status - Get your Anote status
+info - Get info about Anote
 register - Register your Waves address
-calculate - Calculate amount of Anotes you will get for some amount of Waves
-address - Get Anote's main Waves address (for creating new tokens)
-shoutinfo - Info on AnonShout ad auctions
-shoutedit - Edit you currently active ad on AnonShout
 nick - Setup your Anonutopia nickname
-team - List your Anonutopia team
 ref - Shows your referral links and code
-facebook - Claim your Facebook share reward
-twitter - Claim your Twitter share reward
