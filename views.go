@@ -7,8 +7,39 @@ import (
 	macaron "gopkg.in/macaron.v1"
 )
 
-func mineView(ctx *macaron.Context) string {
-	return "OK"
+func mineView(ctx *macaron.Context) {
+	user := &User{}
+	code := ctx.Params("code")
+
+	if err := db.Where("temp_code = ?", code).First(user).Error; err != nil {
+		return
+	} else if user.MiningActivated != nil && time.Since(*user.MiningActivated).Hours() < float64(24) {
+		return
+	}
+
+	ctx.Data["ShowForm"] = true
+
+	ctx.HTML(200, "mine")
+}
+
+func mineViewPost(ctx *macaron.Context, cpt *captcha.Captcha) {
+	user := &User{}
+	code := ctx.Params("code")
+
+	if err := db.Where("temp_code = ?", code).First(user).Error; err != nil {
+		return
+	} else if user.MiningActivated != nil && time.Since(*user.MiningActivated).Hours() < float64(24) {
+		return
+	}
+
+	if cpt.VerifyReq(ctx.Req) {
+		user.mine()
+	} else {
+		ctx.Data["ShowForm"] = true
+		ctx.Data["NotValid"] = true
+	}
+
+	ctx.HTML(200, "mine")
 }
 
 func withdrawView(ctx *macaron.Context) {
