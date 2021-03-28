@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/go-macaron/binding"
 	"github.com/go-macaron/cache"
 	"github.com/go-macaron/captcha"
 	macaron "gopkg.in/macaron.v1"
@@ -14,7 +15,7 @@ func initMacaron() *macaron.Macaron {
 	m.Use(captcha.Captchaer())
 
 	m.Get("/mine/:code", mineView)
-	m.Post("/mine/:code", mineViewPost)
+	m.Post("/mine/:code", binding.Bind(MineForm{}), mineViewPost)
 	m.Get("/withdraw/:code", withdrawView)
 	m.Post("/withdraw/:code", withdrawViewPost)
 

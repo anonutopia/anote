@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/go-macaron/captcha"
@@ -22,18 +23,26 @@ func mineView(ctx *macaron.Context) {
 	ctx.HTML(200, "mine")
 }
 
-func mineViewPost(ctx *macaron.Context, cpt *captcha.Captcha) {
+func mineViewPost(ctx *macaron.Context, cpt *captcha.Captcha, mf MineForm) {
 	user := &User{}
 	code := ctx.Params("code")
+	var dmCode int
 
 	if err := db.Where("temp_code = ?", code).First(user).Error; err != nil {
 		return
 	} else if user.MiningActivated != nil && time.Since(*user.MiningActivated).Hours() < float64(24) {
 		return
+	} else if dmCode, err = strconv.Atoi(mf.DailyCode); err != nil {
+		return
 	}
 
-	if cpt.VerifyReq(ctx.Req) {
-		user.mine()
+	if cpt.Verify(mf.CaptchaId, mf.Captcha) {
+		if tm.checkMineCode(uint64(uint64(dmCode))) {
+			user.mine()
+		} else {
+			ctx.Data["ShowForm"] = true
+			ctx.Data["NotValidDailyCode"] = true
+		}
 	} else {
 		ctx.Data["ShowForm"] = true
 		ctx.Data["NotValid"] = true

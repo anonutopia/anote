@@ -127,5 +127,14 @@ func (u *User) withdraw() {
 }
 
 func (u *User) mine() {
+	if u.Mining {
+		return
+	}
+
+	now := time.Now()
+	u.Mining = true
+	u.MiningActivated = &now
+	u.TempCode = randString(10)
+	db.Save(u)
 	log.Println("mine")
 }

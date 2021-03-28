@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/anonutopia/gowaves v1.0.2
 	github.com/bykovme/gotrans v1.1.0
+	github.com/go-macaron/binding v1.1.1
 	github.com/go-macaron/cache v0.0.0-20200329073519-53bb48172687
 	github.com/go-macaron/captcha v0.2.0
 	github.com/wavesplatform/gowaves v0.8.8

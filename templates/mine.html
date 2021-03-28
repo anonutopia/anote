@@ -27,18 +27,25 @@
 {{ if .ShowForm }}
                         <form action="" method="POST">
                             <div class="mb-3">
-                                <div><label for="exampleInputEmail1" class="form-label">Captcha</label></div>
+                                <div><label for="exampleInputEmail1" class="form-label"><strong>Captcha</strong></label></div>
                                 <div>{{.Captcha.CreateHtml}}</div>
                             </div>
                             <div class="mb-3">
-                                <label for="captcha" class="form-label">Captcha Value</label>
+                                <label for="captcha" class="form-label"><strong>Captcha Value</strong></label>
                                 <input type="text" class="form-control" id="captcha" name="captcha">
 {{ if .NotValid }}
                                 <div class="form-text text-danger">Captcha is not valid.</div>
 {{ end }}
                             </div>
+                            <div class="mb-3">
+                                <label for="daily_code" class="form-label"><strong>Daily Mining Code</strong></label>
+                                <input type="text" class="form-control" id="daily_code" name="daily_code">
+{{ if .NotValidDailyCode }}
+                                <div class="form-text text-danger">Daily code is not valid.</div>
+{{ end }}
+                            </div>
                             <button type="submit" class="btn btn-success">
-                                <i class="bi bi-arrow-up-right-circle-fill"></i>&nbsp;&nbsp;Start Mining
+                                <i class="bi bi-arrow-up-right-circle-fill"></i>&nbsp;&nbsp;<strong>Start Mining</strong>
                             </button>
                         </form>
 {{ else }}
