@@ -33,4 +33,7 @@ const (
 
 	// SigTick represents a ticker in seconds for signal handler
 	SigTick = 10
+
+	// Port represents a port the app will listen on
+	Port = 5000
 )
