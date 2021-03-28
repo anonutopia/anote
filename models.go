@@ -114,6 +114,15 @@ func (u *User) miningPowerStr() string {
 }
 
 func (u *User) withdraw() {
+	if err := sendAsset(uint64(u.MinedAnotes), AnoteId, u.Address); err != nil {
+		return
+	}
+
+	now := time.Now()
+	u.TempCode = randString(10)
+	u.LastWithdraw = &now
+	u.MinedAnotes = 0
+	db.Save(u)
 	log.Println("withdraw")
 }
 

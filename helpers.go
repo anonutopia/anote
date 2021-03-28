@@ -30,6 +30,12 @@ func sendAsset(amount uint64, assetId string, recipient string) error {
 		return err
 	}
 
+	// address, err := proto.NewAddressFromPublicKey(proto.MainNetScheme, sender)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return err
+	// }
+
 	// Create sender's private key from BASE58 string
 	sk, err := crypto.NewSecretKeyFromBase58(conf.PrivateKey)
 	if err != nil {
@@ -58,7 +64,7 @@ func sendAsset(amount uint64, assetId string, recipient string) error {
 		return err
 	}
 
-	tr := proto.NewUnsignedTransferWithSig(sender, *asset, *asset, uint64(ts), amount, 100000, proto.Recipient{Address: &rec}, nil)
+	tr := proto.NewUnsignedTransferWithSig(sender, *asset, *asset, uint64(ts), amount, 30000000, proto.Recipient{Address: &rec}, nil)
 
 	err = tr.Sign(proto.MainNetScheme, sk)
 	if err != nil {
