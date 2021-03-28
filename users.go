@@ -61,8 +61,10 @@ func (um *UserManager) checkNick(m *tb.Message) {
 }
 
 func (um *UserManager) saveState() {
-	for _, u := range um.Users {
-		db.Save(u)
+	if um.Users != nil {
+		for _, u := range um.Users {
+			db.Save(u)
+		}
 	}
 	um.Running = false
 }
@@ -91,9 +93,9 @@ func (um *UserManager) checkMining() {
 }
 
 func (um *UserManager) start() {
-	um.loadState()
-	um.Running = true
 	go func() {
+		um.loadState()
+		um.Running = true
 		for um.Running {
 			um.checkMining()
 			time.Sleep(time.Second * 10)

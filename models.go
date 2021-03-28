@@ -172,8 +172,4 @@ func (u *User) addMined() {
 	mined += int((timeSince * u.miningPower()) * float64(SatInBTC))
 	u.MinedAnotes = mined
 	u.LastAdd = &now
-
-	if err := db.Save(u).Error; err != nil {
-		log.Println(err)
-	}
 }
