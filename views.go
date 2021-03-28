@@ -26,15 +26,14 @@ func mineView(ctx *macaron.Context) {
 func mineViewPost(ctx *macaron.Context, cpt *captcha.Captcha, mf MineForm) {
 	user := &User{}
 	code := ctx.Params("code")
-	var dmCode int
 
 	if err := db.Where("temp_code = ?", code).First(user).Error; err != nil {
 		return
 	} else if user.MiningActivated != nil && time.Since(*user.MiningActivated).Hours() < float64(24) {
 		return
-	} else if dmCode, err = strconv.Atoi(mf.DailyCode); err != nil {
-		return
 	}
+
+	dmCode, _ := strconv.Atoi(mf.DailyCode)
 
 	if cpt.Verify(mf.CaptchaId, mf.Captcha) {
 		if tm.checkMineCode(uint64(uint64(dmCode))) {
