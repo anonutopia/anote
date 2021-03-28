@@ -163,8 +163,7 @@ func registerCommand(m *tb.Message) {
 }
 
 func saveRegisterReply(m *tb.Message) {
-	user := &User{TelegramID: m.Sender.ID}
-	db.First(user, user)
+	user := um.getUser(m)
 	if len(m.Text) > 0 {
 		if avr, err := gowaves.WNC.AddressValidate(m.Text); err != nil {
 			log.Println(err)

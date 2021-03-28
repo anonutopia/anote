@@ -25,7 +25,7 @@ type User struct {
 	TelegramID      int    `gorm:"uniqueIndex"`
 	ReferralID      uint
 	Referral        *User
-	MiningActivated *time.Time
+	MiningActivated *time.Time `gorm:"index"`
 	MinedAnotes     int
 	Mining          bool `sql:"DEFAULT:false"`
 	LastWithdraw    *time.Time
@@ -35,6 +35,7 @@ type User struct {
 	Code            string `gorm:"size:255;uniqueIndex"`
 	UpdatedAddress  bool   `sql:"DEFAULT:false"`
 	TempCode        string `gorm:"size:255;uniqueIndex"`
+	LastAdd         *time.Time
 }
 
 func (u *User) getAddress() string {
@@ -134,7 +135,42 @@ func (u *User) mine() {
 	now := time.Now()
 	u.Mining = true
 	u.MiningActivated = &now
+	u.LastAdd = &now
 	u.TempCode = randString(10)
 	db.Save(u)
 	log.Println("mine")
+}
+
+func (u *User) checkMining() {
+	timeSince := time.Since(*u.MiningActivated).Hours()
+	if timeSince > float64(24) {
+		u.Mining = false
+		if err := db.Save(u).Error; err != nil {
+			log.Println(err)
+		}
+	}
+}
+
+func (u *User) addMined() {
+	if !u.Mining {
+		return
+	}
+
+	now := time.Now()
+	var timeSince float64
+	mined := u.MinedAnotes
+
+	if u.LastAdd == nil {
+		u.LastAdd = u.MiningActivated
+	}
+
+	timeSince = time.Since(*u.LastAdd).Hours()
+
+	mined += int((timeSince * u.miningPower()) * float64(SatInBTC))
+	u.MinedAnotes = mined
+	u.LastAdd = &now
+
+	if err := db.Save(u).Error; err != nil {
+		log.Println(err)
+	}
 }

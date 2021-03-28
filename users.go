@@ -9,6 +9,7 @@ import (
 
 type UserManager struct {
 	Running bool
+	Users   map[uint]*User
 }
 
 func (um *UserManager) createUser(m *tb.Message) {
@@ -29,6 +30,9 @@ func (um *UserManager) createUser(m *tb.Message) {
 	r := &User{}
 
 	db.FirstOrCreate(u, u)
+
+	um.Users[u.ID] = u
+
 	if err := db.Where("code = ?", m.Payload).First(r).Error; err != nil {
 		db.FirstOrCreate(u, u)
 		db.Where("nickname = ?", m.Payload).First(r)
@@ -57,14 +61,34 @@ func (um *UserManager) checkNick(m *tb.Message) {
 }
 
 func (um *UserManager) saveState() {
-	log.Println("Saving state.")
+	for _, u := range um.Users {
+		db.Save(u)
+	}
 	um.Running = false
 }
 
+func (um *UserManager) loadState() {
+	um.Users = make(map[uint]*User)
+	var users []*User
+	db.Find(&users)
+	for _, u := range users {
+		um.Users[u.ID] = u
+	}
+}
+
+func (um *UserManager) checkMining() {
+	for _, u := range um.Users {
+		u.checkMining()
+		u.addMined()
+	}
+}
+
 func (um *UserManager) start() {
+	um.loadState()
 	um.Running = true
 	go func() {
 		for um.Running {
+			um.checkMining()
 			time.Sleep(time.Second * 10)
 		}
 	}()
