@@ -8,14 +8,13 @@ import (
 	"time"
 )
 
-func initSignalHandler() (chan os.Signal, chan struct{}) {
+func initSignalHandler() chan struct{} {
 	sigs := make(chan os.Signal, 1)
 	umDone := make(chan struct{})
 
 	signal.Notify(sigs,
 		syscall.SIGHUP,
 		syscall.SIGINT,
-		syscall.SIGKILL,
 		syscall.SIGTERM,
 		syscall.SIGQUIT,
 		os.Interrupt)
@@ -27,6 +26,9 @@ func initSignalHandler() (chan os.Signal, chan struct{}) {
 		// Save state of all users
 		um.saveState()
 
+		// Stop Telegram bot
+		bot.Stop()
+
 		// Finish with background tasks
 		for {
 			if !um.Running {
@@ -36,5 +38,5 @@ func initSignalHandler() (chan os.Signal, chan struct{}) {
 		}
 	}()
 
-	return sigs, umDone
+	return umDone
 }

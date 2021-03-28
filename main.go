@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
 
 	macaron "gopkg.in/macaron.v1"
 	"gopkg.in/tucnak/telebot.v2"
@@ -25,14 +24,12 @@ var um *UserManager
 
 var tm *TokenMonitor
 
-var sigs chan os.Signal
-
 var umDone chan struct{}
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	sigs, umDone = initSignalHandler()
+	umDone = initSignalHandler()
 
 	initLangs()
 
