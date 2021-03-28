@@ -10,7 +10,6 @@ import (
 type Config struct {
 	Dev            bool     `json:"dev"`
 	Debug          bool     `json:"debug"`
-	Address        string   `json:"address"`
 	PublicKey      string   `json:"public_key"`
 	PrivateKey     string   `json:"private_key"`
 	TelegramAPIKey string   `json:"telegram_api_key"`
