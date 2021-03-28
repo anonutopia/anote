@@ -15,7 +15,6 @@ type Config struct {
 	PrivateKey     string   `json:"private_key"`
 	TelegramAPIKey string   `json:"telegram_api_key"`
 	Hostname       string   `json:"hostname"`
-	EmailAddress   string   `json:"email_address"`
 	PostgreSQL     string   `json:"postgre_sql"`
 	Exclude        []string `json:"exclude"`
 }
