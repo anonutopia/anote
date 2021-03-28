@@ -42,6 +42,11 @@ func (um *UserManager) createUser(m *tb.Message) {
 func (um *UserManager) getUser(m *tb.Message) *User {
 	u := &User{TelegramID: m.Sender.ID}
 	db.First(u, u)
+
+	u.checkMining()
+	u.addMined()
+	db.Save(u)
+
 	return u
 }
 
