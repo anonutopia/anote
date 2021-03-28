@@ -142,6 +142,9 @@ func (u *User) mine() {
 }
 
 func (u *User) checkMining() {
+	if u.MiningActivated == nil {
+		return
+	}
 	timeSince := time.Since(*u.MiningActivated).Hours()
 	if timeSince > float64(24) {
 		u.Mining = false
@@ -152,7 +155,7 @@ func (u *User) checkMining() {
 }
 
 func (u *User) addMined() {
-	if !u.Mining {
+	if !u.Mining || u.MiningActivated == nil {
 		return
 	}
 
