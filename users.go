@@ -73,6 +73,13 @@ func (um *UserManager) loadState() {
 	db.Find(&users)
 	for _, u := range users {
 		um.Users[u.ID] = u
+		if len(u.Code) == 0 {
+			u.Code = randString(10)
+		}
+		if len(u.TempCode) == 0 {
+			u.TempCode = randString(10)
+		}
+		db.Save(u)
 	}
 }
 
