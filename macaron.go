@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/caddyserver/certmagic"
 	"github.com/go-macaron/cache"
+	"github.com/go-macaron/captcha"
 	macaron "gopkg.in/macaron.v1"
 )
 
@@ -11,6 +12,7 @@ func initMacaron() *macaron.Macaron {
 
 	m.Use(cache.Cacher())
 	m.Use(macaron.Renderer())
+	m.Use(captcha.Captchaer())
 
 	if !conf.Dev {
 		certmagic.DefaultACME.Email = conf.EmailAddress
@@ -20,7 +22,10 @@ func initMacaron() *macaron.Macaron {
 		go m.Run("0.0.0.0", 5000)
 	}
 
-	m.Get("/check", checkView)
+	m.Get("/mine/:code", mineView)
+	m.Post("/mine/:code", mineViewPost)
+	m.Get("/withdraw/:code", withdrawView)
+	m.Post("/withdraw/:code", withdrawViewPost)
 
 	return m
 }

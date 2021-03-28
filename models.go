@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/anonutopia/gowaves"
@@ -33,6 +34,7 @@ type User struct {
 	Nickname        string `gorm:"size:255;uniqueIndex"`
 	Code            string `gorm:"size:255;uniqueIndex"`
 	UpdatedAddress  bool   `sql:"DEFAULT:false"`
+	TempCode        string `gorm:"size:255;uniqueIndex"`
 }
 
 func (u *User) getAddress() string {
@@ -109,4 +111,12 @@ func (u *User) isMiningStr() string {
 
 func (u *User) miningPowerStr() string {
 	return fmt.Sprintf("%.5f A/h", u.miningPower())
+}
+
+func (u *User) withdraw() {
+	log.Println("withdraw")
+}
+
+func (u *User) mine() {
+	log.Println("mine")
 }

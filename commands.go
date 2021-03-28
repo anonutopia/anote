@@ -52,8 +52,14 @@ func mineCommand(m *tb.Message) {
 		return
 	}
 
-	code := randString(10)
-	link := fmt.Sprintf("https://%s/mine/%s", conf.Hostname, code)
+	user.TempCode = randString(10)
+	err := db.Save(user).Error
+	for err != nil {
+		log.Println(err)
+		err = db.Save(user).Error
+	}
+
+	link := fmt.Sprintf("https://%s/mine/%s", conf.Hostname, user.TempCode)
 	msg := fmt.Sprintf(gotrans.T("mine"), link)
 
 	bot.Send(m.Sender, msg)
@@ -77,8 +83,14 @@ func withdrawCommand(m *tb.Message) {
 		return
 	}
 
-	code := randString(10)
-	link := fmt.Sprintf("https://%s/withdraw/%s", conf.Hostname, code)
+	user.TempCode = randString(10)
+	err := db.Save(user).Error
+	for err != nil {
+		log.Println(err)
+		err = db.Save(user).Error
+	}
+
+	link := fmt.Sprintf("https://%s/withdraw/%s", conf.Hostname, user.TempCode)
 	msg := fmt.Sprintf(gotrans.T("withdraw"), link)
 
 	bot.Send(m.Sender, msg)
