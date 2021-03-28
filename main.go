@@ -24,12 +24,10 @@ var um *UserManager
 
 var tm *TokenMonitor
 
-var umDone chan struct{}
-
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	umDone = initSignalHandler()
+	initSignalHandler()
 
 	initLangs()
 
@@ -53,7 +51,5 @@ func main() {
 
 	logTelegram("Anote daemon successfully started. 🚀")
 
-	go bot.Start()
-
-	<-umDone
+	bot.Start()
 }
