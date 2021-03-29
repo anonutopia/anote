@@ -97,8 +97,7 @@ func withdrawCommand(m *tb.Message) {
 }
 
 func statusCommand(m *tb.Message) {
-	um.checkNick(m)
-	user := um.getUser(m)
+	user := um.checkNick(m)
 
 	var cycle string
 	if user.MiningActivated != nil {

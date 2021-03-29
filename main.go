@@ -49,7 +49,18 @@ func main() {
 
 	initCommands()
 
-	logTelegram("Anote daemon successfully started. 🚀")
+	// logTelegram("Anote daemon successfully started. 🚀")
+
+	users := []*User{}
+	db.Find(&users)
+	counter := 0
+	for _, u := range users {
+		if u.MinedAnotes > 5000*int(SatInBTC) {
+			counter++
+			log.Printf("%s - %.8f", u.Address, float64(u.MinedAnotes)/float64(SatInBTC))
+		}
+	}
+	log.Println(counter)
 
 	bot.Start()
 }

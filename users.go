@@ -50,7 +50,7 @@ func (um *UserManager) getUser(m *tb.Message) *User {
 	return u
 }
 
-func (um *UserManager) checkNick(m *tb.Message) {
+func (um *UserManager) checkNick(m *tb.Message) *User {
 	user := um.getUser(m)
 	if user.Nickname != m.Sender.Username {
 		user.Nickname = m.Sender.Username
@@ -58,6 +58,7 @@ func (um *UserManager) checkNick(m *tb.Message) {
 			log.Println(err)
 		}
 	}
+	return user
 }
 
 func initUserManager() *UserManager {
