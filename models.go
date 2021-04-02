@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"time"
 
 	"github.com/anonutopia/gowaves"
@@ -64,12 +65,29 @@ func (u *User) miningPower() float64 {
 		if err == nil && avr.Valid {
 			abr, err := gowaves.WNC.AssetsBalance(u.Address, AINTId)
 			if err == nil {
-				power += float64(abr.Balance) / float64(SatInBTC)
+				power += u.miningPowerAint(float64(abr.Balance) / float64(SatInBTC))
 			}
 		}
 	}
 
 	return power
+}
+
+func (u *User) miningPowerAint(amount float64) float64 {
+	power := float64(0)
+	factor := float64(1)
+
+	for amount > 1.0 {
+		power += factor
+		if factor > 0.01 {
+			factor = factor - 0.01
+		} else {
+			factor = 0.005
+		}
+		amount = amount - 1
+	}
+
+	return math.Floor(power*1000) / 1000
 }
 
 func (u *User) team() int64 {
@@ -115,6 +133,22 @@ func (u *User) miningPowerStr() string {
 }
 
 func (u *User) withdraw() {
+	// temp fix
+	changed := false
+	if uint64(u.MinedAnotes) > 50000*SatInBTC {
+		u.MinedAnotes = int(50000 * SatInBTC)
+		changed = true
+	} else if uint64(u.MinedAnotes) > 5000*SatInBTC {
+		u.MinedAnotes = int(float64(u.MinedAnotes) / 10.0)
+		changed = true
+	}
+
+	if changed {
+		if err := db.Save(u).Error; err != nil {
+			return
+		}
+	}
+
 	if err := sendAsset(uint64(u.MinedAnotes), AnoteId, u.Address); err != nil {
 		return
 	}
