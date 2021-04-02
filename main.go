@@ -62,7 +62,6 @@ func main() {
 		}
 		user = u
 	}
-	log.Println(user.miningPowerAint(1000.0))
 
 	bot.Start()
 }
