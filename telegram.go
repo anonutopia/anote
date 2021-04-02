@@ -25,7 +25,7 @@ func initTelegramBot() *telebot.Bot {
 
 func logTelegram(message string) {
 	group := &telebot.Chat{ID: TelAnonOps}
-	if _, err := bot.Send(group, message); err != nil {
+	if _, err := bot.Send(group, message, tb.NoPreview); err != nil {
 		log.Println(err)
 	}
 }
@@ -37,7 +37,7 @@ func messageTelegram(message string, groupId int) {
 	} else {
 		group = &telebot.Chat{ID: int64(groupId)}
 	}
-	if _, err := bot.Send(group, message); err != nil {
+	if _, err := bot.Send(group, message, tb.NoPreview); err != nil {
 		log.Println(err)
 	}
 }
