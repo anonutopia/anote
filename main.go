@@ -54,13 +54,15 @@ func main() {
 	users := []*User{}
 	db.Find(&users)
 	counter := 0
-
+	var user *User
 	for _, u := range users {
 		if u.MinedAnotes > 5000*int(SatInBTC) {
 			counter++
 			log.Printf("%s - %.8f", u.Address, float64(u.MinedAnotes)/float64(SatInBTC))
 		}
+		user = u
 	}
+	log.Println(user.miningPowerAint(10.0))
 
 	bot.Start()
 }

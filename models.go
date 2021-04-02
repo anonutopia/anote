@@ -80,7 +80,7 @@ func (u *User) miningPowerAint(amount float64) float64 {
 	for amount > 1.0 {
 		power += factor
 		if factor > 0.01 {
-			factor = factor - 0.01
+			factor = factor - 0.05
 		} else {
 			factor = 0.005
 		}
