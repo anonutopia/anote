@@ -60,7 +60,7 @@ func (u *User) miningPower() float64 {
 		power *= 10
 	}
 
-	if len(u.Address) > 0 {
+	if len(u.Address) > 0 && !stringInSlice(u.Address, conf.Exclude) {
 		avr, err := gowaves.WNC.AddressValidate(u.Address)
 		if err == nil && avr.Valid {
 			abr, err := gowaves.WNC.AssetsBalance(u.Address, AINTId)
@@ -172,6 +172,8 @@ func (u *User) mine() {
 	u.LastAdd = &now
 	u.TempCode = randString(10)
 	db.Save(u)
+
+	messageTelegram(gotrans.T("startedMining"), u.TelegramID)
 	log.Println("mine")
 }
 

@@ -7,7 +7,7 @@ import (
 	macaron "gopkg.in/macaron.v1"
 )
 
-func initMacaron() *macaron.Macaron {
+func initMacaron() {
 	m := macaron.Classic()
 
 	m.Use(cache.Cacher())
@@ -20,6 +20,4 @@ func initMacaron() *macaron.Macaron {
 	m.Post("/withdraw/:code", withdrawViewPost)
 
 	go m.Run("0.0.0.0", Port)
-
-	return m
 }

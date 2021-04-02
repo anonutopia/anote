@@ -20,5 +20,6 @@
     "notRegistered": "You're not registered with Anonutopia. Please register by entering /register command and provide your <a href=\"https://wallet.anonutopia.com\">Anote Wallet</a> address.",
     "guest": "You're still a guest, please send /start command to the @AnoteRobot.",
     "withdraw": "To withdraw your Anotes, please click this link:\n\n%s",
-    "mine": "To start mining Anotes, please check daily mining code in @AnonShout channel and then click this link:\n\n%s"
+    "mine": "To start mining Anotes, please check daily mining code in @AnonShout channel and then click this link:\n\n%s",
+    "startedMining": "You have successfully started mining! 🚀"
 }

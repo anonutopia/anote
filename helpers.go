@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -21,6 +23,12 @@ func stringInSlice(a string, list []string) bool {
 }
 
 func sendAsset(amount uint64, assetId string, recipient string) error {
+	if conf.Dev || conf.Debug {
+		err := errors.New(fmt.Sprintf("Not sending (dev): %d - %s - %s", amount, assetId, recipient))
+		log.Println(err)
+		return err
+	}
+
 	var assetBytes []byte
 
 	// Create sender's public key from BASE58 string

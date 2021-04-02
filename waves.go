@@ -15,8 +15,7 @@ func (wm *WavesMonitor) start() {
 	}
 }
 
-func initWavesMonitor() *WavesMonitor {
+func initWavesMonitor() {
 	wm := &WavesMonitor{}
 	go wm.start()
-	return wm
 }

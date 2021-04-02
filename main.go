@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 
-	macaron "gopkg.in/macaron.v1"
 	"gopkg.in/tucnak/telebot.v2"
 	"gorm.io/gorm"
 )
@@ -14,11 +13,7 @@ var db *gorm.DB
 
 var pc *PriceClient
 
-var wm *WavesMonitor
-
 var bot *telebot.Bot
-
-var m *macaron.Macaron
 
 var um *UserManager
 
@@ -41,11 +36,11 @@ func main() {
 
 	tm = initTokenMonitor()
 
-	m = initMacaron()
+	initMacaron()
 
 	um = initUserManager()
 
-	wm = initWavesMonitor()
+	initWavesMonitor()
 
 	initCommands()
 
