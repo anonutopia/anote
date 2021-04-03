@@ -21,10 +21,11 @@ func (um *UserManager) createUser(m *tb.Message) {
 	}
 
 	u := &User{
-		TelegramID: m.Sender.ID,
-		Address:    code,
-		Nickname:   tNick,
-		Code:       code,
+		TelegramID:        m.Sender.ID,
+		Address:           code,
+		Nickname:          tNick,
+		Code:              code,
+		AnoteRobotStarted: true,
 	}
 
 	r := &User{}
@@ -84,16 +85,18 @@ func (um *UserManager) checkMiners() {
 				log.Println(err)
 			}
 
-			if u.team() >= 3 {
-				messageTelegram(msg, u.TelegramID)
-			} else {
-				minerMsg := strings.Replace(gotrans.T("minerWarning"), "\\n", "\n", -1)
-				messageTelegram(minerMsg, u.TelegramID)
-
-				go func(u *User) {
-					time.Sleep(time.Minute * 5)
+			if u.AnoteRobotStarted {
+				if u.team() >= 3 {
 					messageTelegram(msg, u.TelegramID)
-				}(u)
+				} else {
+					minerMsg := strings.Replace(gotrans.T("minerWarning"), "\\n", "\n", -1)
+					messageTelegram(minerMsg, u.TelegramID)
+
+					go func(u *User) {
+						time.Sleep(time.Minute * 5)
+						messageTelegram(msg, u.TelegramID)
+					}(u)
+				}
 			}
 		} else if u.MiningActivated == nil &&
 			(u.MiningWarning == nil || time.Since(*u.MiningWarning).Hours() >= float64(24)) &&
@@ -105,10 +108,12 @@ func (um *UserManager) checkMiners() {
 				log.Println(err)
 			}
 
-			msg := gotrans.T("miningWarningFirst")
-			msg += "\n\n"
-			msg += gotrans.T("purchaseHowto")
-			messageTelegram(msg, u.TelegramID)
+			if u.AnoteRobotStarted {
+				msg := gotrans.T("miningWarningFirst")
+				msg += "\n\n"
+				msg += gotrans.T("purchaseHowto")
+				messageTelegram(msg, u.TelegramID)
+			}
 		}
 	}
 }

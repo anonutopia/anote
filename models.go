@@ -22,21 +22,22 @@ type KeyValue struct {
 // User represents Telegram user
 type User struct {
 	gorm.Model
-	Address         string `gorm:"size:255;uniqueIndex"`
-	TelegramID      int    `gorm:"uniqueIndex"`
-	ReferralID      uint
-	Referral        *User
-	MiningActivated *time.Time `gorm:"index"`
-	MinedAnotes     int
-	Mining          bool `sql:"DEFAULT:false"`
-	LastWithdraw    *time.Time
-	Language        string `sql:"size:255;"`
-	MiningWarning   *time.Time
-	Nickname        string `gorm:"size:255;uniqueIndex"`
-	Code            string `gorm:"size:255;uniqueIndex"`
-	UpdatedAddress  bool   `sql:"DEFAULT:false"`
-	TempCode        string `gorm:"size:255;uniqueIndex"`
-	LastAdd         *time.Time
+	Address           string `gorm:"size:255;uniqueIndex"`
+	TelegramID        int    `gorm:"uniqueIndex"`
+	ReferralID        uint
+	Referral          *User
+	MiningActivated   *time.Time `gorm:"index"`
+	MinedAnotes       int
+	Mining            bool `sql:"DEFAULT:false"`
+	LastWithdraw      *time.Time
+	Language          string `sql:"size:255;"`
+	MiningWarning     *time.Time
+	Nickname          string `gorm:"size:255;uniqueIndex"`
+	Code              string `gorm:"size:255;uniqueIndex"`
+	UpdatedAddress    bool   `sql:"DEFAULT:false"`
+	TempCode          string `gorm:"size:255;uniqueIndex"`
+	LastAdd           *time.Time
+	AnoteRobotStarted bool `sql:"DEFAULT:false"`
 }
 
 func (u *User) getAddress() string {
