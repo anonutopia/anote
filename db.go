@@ -19,7 +19,7 @@ func initDb() *gorm.DB {
 	}
 
 	if err != nil {
-		log.Printf("[initDb] error: %s", err)
+		log.Println(err)
 	}
 
 	if err := db.AutoMigrate(&KeyValue{}, &User{}); err != nil {
