@@ -38,6 +38,7 @@ type User struct {
 	TempCode          *string `gorm:"size:255;uniqueIndex"`
 	LastAdd           *time.Time
 	AnoteRobotStarted bool `sql:"DEFAULT:false"`
+	FunderBotStarted  bool `sql:"DEFAULT:false"`
 }
 
 func (u *User) getAddress() string {
