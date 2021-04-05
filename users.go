@@ -16,6 +16,8 @@ func (um *UserManager) createUser(m *tb.Message) {
 	u := um.getUser(m)
 
 	if u.ID != 0 {
+		u.AnoteRobotStarted = true
+		db.Save(u)
 		return
 	}
 
