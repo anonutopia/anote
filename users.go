@@ -119,10 +119,12 @@ func (um *UserManager) checkMiners() {
 			if len(u.Nickname) == 0 {
 				if len(u.Code) > 0 {
 					u.Nickname = u.Code
+					u.TempCode = u.Code
 				} else {
 					code := randString(10)
 					u.Nickname = code
 					u.Code = code
+					u.TempCode = code
 				}
 			}
 
