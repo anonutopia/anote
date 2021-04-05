@@ -2,10 +2,8 @@ package main
 
 import (
 	"log"
-	"strings"
 	"time"
 
-	"github.com/bykovme/gotrans"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -80,65 +78,77 @@ func (um *UserManager) checkMiners() {
 	var users []*User
 	db.Find(&users)
 	for _, u := range users {
-		now := time.Now()
-		if u.MiningActivated != nil &&
-			u.MiningWarning != nil &&
-			time.Since(*u.MiningActivated).Hours() >= float64(24) &&
-			time.Since(*u.MiningWarning).Hours() >= float64(24) {
+		// now := time.Now()
 
-			msg := gotrans.T("miningWarning")
-			msg += "\n\n"
-			msg += gotrans.T("purchaseHowto")
-
-			u.MiningWarning = &now
-			u.Mining = false
-			if err := db.Save(&u).Error; err != nil {
-				log.Println(err)
-			}
-
-			if u.AnoteRobotStarted {
-				if u.team() >= 3 {
-					messageTelegram(msg, u.TelegramID)
-				} else {
-					minerMsg := strings.Replace(gotrans.T("minerWarning"), "\\n", "\n", -1)
-					messageTelegram(minerMsg, u.TelegramID)
-
-					go func(u *User) {
-						time.Sleep(time.Minute * 5)
-						messageTelegram(msg, u.TelegramID)
-					}(u)
+		if u.Mining {
+			if time.Since(*u.MiningActivated).Hours() >= float64(24) {
+				u.Mining = false
+				if err := db.Save(&u).Error; err != nil {
+					log.Println(err)
 				}
-			}
-		} else if u.MiningActivated == nil &&
-			(u.MiningWarning == nil || time.Since(*u.MiningWarning).Hours() >= float64(24)) &&
-			time.Since(u.CreatedAt).Hours() >= float64(24) {
-
-			u.MiningWarning = &now
-			u.Mining = false
-
-			if len(u.Nickname) == 0 {
-				if len(u.Code) > 0 {
-					u.Nickname = u.Code
-					u.TempCode = u.Code
-				} else {
-					code := randString(10)
-					u.Nickname = code
-					u.Code = code
-					u.TempCode = code
-				}
-			}
-
-			if err := db.Save(&u).Error; err != nil {
-				log.Println(err)
-			}
-
-			if u.AnoteRobotStarted {
-				msg := gotrans.T("miningWarningFirst")
-				msg += "\n\n"
-				msg += gotrans.T("purchaseHowto")
-				messageTelegram(msg, u.TelegramID)
 			}
 		}
+
+		// if u.MiningActivated != nil &&
+		// 	u.MiningWarning != nil &&
+		// 	time.Since(*u.MiningActivated).Hours() >= float64(24) &&
+		// 	time.Since(*u.MiningWarning).Hours() >= float64(24) {
+
+		// 	msg := gotrans.T("miningWarning")
+		// 	msg += "\n\n"
+		// 	msg += gotrans.T("purchaseHowto")
+
+		// 	u.MiningWarning = &now
+		// 	u.Mining = false
+		// 	if err := db.Save(&u).Error; err != nil {
+		// 		log.Println(err)
+		// 	}
+
+		// 	if u.AnoteRobotStarted {
+		// 		if u.team() >= 3 {
+		// 			messageTelegram(msg, u.TelegramID)
+		// 		} else {
+		// 			minerMsg := strings.Replace(gotrans.T("minerWarning"), "\\n", "\n", -1)
+		// 			messageTelegram(minerMsg, u.TelegramID)
+
+		// 			go func(u *User) {
+		// 				time.Sleep(time.Minute * 5)
+		// 				messageTelegram(msg, u.TelegramID)
+		// 			}(u)
+		// 		}
+		// 	}
+		// } else if u.MiningActivated == nil &&
+		// 	(u.MiningWarning == nil || time.Since(*u.MiningWarning).Hours() >= float64(24)) &&
+		// 	time.Since(u.CreatedAt).Hours() >= float64(24) {
+
+		// 	u.MiningWarning = &now
+		// 	u.Mining = false
+
+		// 	if len(u.Nickname) == 0 {
+		// 		if len(u.Code) > 0 {
+		// 			u.Nickname = u.Code
+		// 			u.TempCode = u.Code
+		// 		} else {
+		// 			code := randString(10)
+		// 			u.Nickname = code
+		// 			u.Code = code
+		// 			u.TempCode = code
+		// 		}
+		// 	}
+
+		// 	if err := db.Save(&u).Error; err != nil {
+		// 		log.Println(err)
+		// 	}
+
+		// 	if u.AnoteRobotStarted {
+		// 		msg := gotrans.T("miningWarningFirst")
+		// 		msg += "\n\n"
+		// 		msg += gotrans.T("purchaseHowto")
+		// 		messageTelegram(msg, u.TelegramID)
+		// 	}
+		// } else {
+		// 	logTelegram(fmt.Sprintf("%#v", u))
+		// }
 	}
 }
 

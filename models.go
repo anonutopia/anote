@@ -140,7 +140,7 @@ func (u *User) withdraw() {
 		u.MinedAnotes = int(50000 * SatInBTC)
 		changed = true
 	} else if uint64(u.MinedAnotes) > 5000*SatInBTC {
-		u.MinedAnotes = int(float64(u.MinedAnotes) / 10.0)
+		u.MinedAnotes = int(float64(u.MinedAnotes) / 2.0)
 		changed = true
 	}
 
