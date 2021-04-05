@@ -61,7 +61,7 @@ func mineCommand(m *tb.Message) {
 		err = db.Save(user).Error
 	}
 
-	link := fmt.Sprintf("https://%s/mine/%s", conf.Hostname, user.TempCode)
+	link := fmt.Sprintf("https://%s/mine/%s", conf.Hostname, *user.TempCode)
 	msg := fmt.Sprintf(gotrans.T("mine"), link)
 
 	bot.Send(m.Sender, msg)
@@ -94,7 +94,7 @@ func withdrawCommand(m *tb.Message) {
 		err = db.Save(user).Error
 	}
 
-	link := fmt.Sprintf("https://%s/withdraw/%s", conf.Hostname, user.TempCode)
+	link := fmt.Sprintf("https://%s/withdraw/%s", conf.Hostname, *user.TempCode)
 	msg := fmt.Sprintf(gotrans.T("withdraw"), link)
 
 	bot.Send(m.Sender, msg)
@@ -206,7 +206,7 @@ func referralCommand(m *tb.Message) {
 
 	bot.Send(m.Sender, gotrans.T("refTelegram"), tb.NoPreview)
 
-	msg = fmt.Sprintf("https://t.me/AnoteRobot?start=%s", user.Code)
+	msg = fmt.Sprintf("https://t.me/AnoteRobot?start=%s", *user.Code)
 	bot.Send(m.Sender, msg, tb.NoPreview)
 }
 
