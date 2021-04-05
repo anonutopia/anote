@@ -13,6 +13,12 @@ type UserManager struct {
 }
 
 func (um *UserManager) createUser(m *tb.Message) {
+	u := um.getUser(m)
+
+	if u.ID != 0 {
+		return
+	}
+
 	code := randString(10)
 	tNick := m.Sender.Username
 
@@ -20,17 +26,16 @@ func (um *UserManager) createUser(m *tb.Message) {
 		tNick = code
 	}
 
-	u := &User{
-		TelegramID:        m.Sender.ID,
-		Address:           code,
-		Nickname:          tNick,
-		Code:              code,
-		AnoteRobotStarted: true,
-	}
+	u.TelegramID = m.Sender.ID
+	u.Address = code
+	u.Nickname = tNick
+	u.Code = code
+	u.AnoteRobotStarted = true
+	u.MinedAnotes = int(SatInBTC)
+
+	db.Create(u)
 
 	r := &User{}
-
-	db.FirstOrCreate(u, u)
 
 	if err := db.Where("code = ?", m.Payload).First(r).Error; err != nil {
 		db.FirstOrCreate(u, u)
@@ -46,6 +51,10 @@ func (um *UserManager) createUser(m *tb.Message) {
 func (um *UserManager) getUser(m *tb.Message) *User {
 	u := &User{TelegramID: m.Sender.ID}
 	db.First(u, u)
+
+	if u.ID == 0 {
+		return u
+	}
 
 	u.checkMining()
 	u.addMined()
