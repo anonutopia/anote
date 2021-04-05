@@ -22,8 +22,8 @@ type KeyValue struct {
 // User represents Telegram user
 type User struct {
 	gorm.Model
-	Address           string `gorm:"size:255;uniqueIndex"`
-	TelegramID        int    `gorm:"uniqueIndex"`
+	Address           *string `gorm:"size:255;uniqueIndex"`
+	TelegramID        *int    `gorm:"uniqueIndex"`
 	ReferralID        uint
 	Referral          *User
 	MiningActivated   *time.Time `gorm:"index"`
@@ -32,17 +32,17 @@ type User struct {
 	LastWithdraw      *time.Time
 	Language          string `sql:"size:255;"`
 	MiningWarning     *time.Time
-	Nickname          string `gorm:"size:255;uniqueIndex"`
-	Code              string `gorm:"size:255;uniqueIndex"`
-	UpdatedAddress    bool   `sql:"DEFAULT:false"`
-	TempCode          string `gorm:"size:255;uniqueIndex"`
+	Nickname          *string `gorm:"size:255;uniqueIndex"`
+	Code              *string `gorm:"size:255;uniqueIndex"`
+	UpdatedAddress    bool    `sql:"DEFAULT:false"`
+	TempCode          *string `gorm:"size:255;uniqueIndex"`
 	LastAdd           *time.Time
 	AnoteRobotStarted bool `sql:"DEFAULT:false"`
 }
 
 func (u *User) getAddress() string {
-	if len(u.Address) > 0 && u.Address != u.Code {
-		return u.Address
+	if len(*u.Address) > 0 && u.Address != u.Code {
+		return *u.Address
 	}
 
 	return "no wallet address"
@@ -61,10 +61,10 @@ func (u *User) miningPower() float64 {
 		power *= 10
 	}
 
-	if len(u.Address) > 0 && !stringInSlice(u.Address, conf.Exclude) {
-		avr, err := gowaves.WNC.AddressValidate(u.Address)
+	if len(*u.Address) > 0 && !stringInSlice(*u.Address, conf.Exclude) {
+		avr, err := gowaves.WNC.AddressValidate(*u.Address)
 		if err == nil && avr.Valid {
-			abr, err := gowaves.WNC.AssetsBalance(u.Address, AINTId)
+			abr, err := gowaves.WNC.AssetsBalance(*u.Address, AINTId)
 			if err == nil {
 				power += u.miningPowerAint(float64(abr.Balance) / float64(SatInBTC))
 			}
@@ -110,7 +110,7 @@ func (u *User) teamActive() int64 {
 }
 
 func (u *User) status() string {
-	if len(u.Address) == 0 {
+	if len(*u.Address) == 0 {
 		return "Guest"
 	} else if u.team() >= 3 {
 		return "Miner"
@@ -150,12 +150,14 @@ func (u *User) withdraw() {
 		}
 	}
 
-	if err := sendAsset(uint64(u.MinedAnotes), AnoteId, u.Address); err != nil {
+	if err := sendAsset(uint64(u.MinedAnotes), AnoteId, *u.Address); err != nil {
 		return
 	}
 
+	rs := randString(10)
+
 	now := time.Now()
-	u.TempCode = randString(10)
+	u.TempCode = &rs
 	u.LastWithdraw = &now
 	u.MinedAnotes = 0
 	db.Save(u)
@@ -167,14 +169,16 @@ func (u *User) mine() {
 		return
 	}
 
+	rs := randString(10)
+
 	now := time.Now()
 	u.Mining = true
 	u.MiningActivated = &now
 	u.LastAdd = &now
-	u.TempCode = randString(10)
+	u.TempCode = &rs
 	db.Save(u)
 
-	messageTelegram(gotrans.T("startedMining"), u.TelegramID)
+	messageTelegram(gotrans.T("startedMining"), *u.TelegramID)
 	log.Println("mine")
 }
 

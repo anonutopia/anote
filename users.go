@@ -28,10 +28,10 @@ func (um *UserManager) createUser(m *tb.Message) {
 		tNick = code
 	}
 
-	u.TelegramID = m.Sender.ID
-	u.Address = code
-	u.Nickname = tNick
-	u.Code = code
+	u.TelegramID = &m.Sender.ID
+	u.Address = &code
+	u.Nickname = &tNick
+	u.Code = &code
 	u.AnoteRobotStarted = true
 	u.MinedAnotes = int(SatInBTC)
 
@@ -51,7 +51,7 @@ func (um *UserManager) createUser(m *tb.Message) {
 }
 
 func (um *UserManager) getUser(m *tb.Message) *User {
-	u := &User{TelegramID: m.Sender.ID}
+	u := &User{TelegramID: &m.Sender.ID}
 	db.First(u, u)
 
 	if u.ID == 0 {
@@ -67,8 +67,8 @@ func (um *UserManager) getUser(m *tb.Message) *User {
 
 func (um *UserManager) checkNick(m *tb.Message) *User {
 	user := um.getUser(m)
-	if user.Nickname != m.Sender.Username {
-		user.Nickname = m.Sender.Username
+	if *user.Nickname != m.Sender.Username {
+		user.Nickname = &m.Sender.Username
 		if err := db.Save(user).Error; err != nil {
 			log.Println(err)
 		}
@@ -98,14 +98,14 @@ func (um *UserManager) checkMiners() {
 
 			if u.AnoteRobotStarted {
 				if u.team() >= 3 {
-					messageTelegram(msg, u.TelegramID)
+					messageTelegram(msg, *u.TelegramID)
 				} else {
 					minerMsg := strings.Replace(gotrans.T("minerWarning"), "\\n", "\n", -1)
-					messageTelegram(minerMsg, u.TelegramID)
+					messageTelegram(minerMsg, *u.TelegramID)
 
 					go func(u *User) {
 						time.Sleep(time.Minute * 5)
-						messageTelegram(msg, u.TelegramID)
+						messageTelegram(msg, *u.TelegramID)
 					}(u)
 				}
 			}
@@ -125,7 +125,7 @@ func (um *UserManager) checkMiners() {
 			msg += gotrans.T("purchaseHowto")
 
 			if u.AnoteRobotStarted {
-				messageTelegram(msg, u.TelegramID)
+				messageTelegram(msg, *u.TelegramID)
 			}
 		}
 

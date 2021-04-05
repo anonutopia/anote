@@ -52,7 +52,9 @@ func mineCommand(m *tb.Message) {
 		return
 	}
 
-	user.TempCode = randString(10)
+	rs := randString(10)
+
+	user.TempCode = &rs
 	err := db.Save(user).Error
 	for err != nil {
 		log.Println(err)
@@ -83,7 +85,9 @@ func withdrawCommand(m *tb.Message) {
 		return
 	}
 
-	user.TempCode = randString(10)
+	rs := randString(10)
+
+	user.TempCode = &rs
 	err := db.Save(user).Error
 	for err != nil {
 		log.Println(err)
@@ -118,7 +122,7 @@ func statusCommand(m *tb.Message) {
 
 	status := fmt.Sprintf(
 		gotrans.T("status"),
-		user.Nickname,
+		*user.Nickname,
 		user.status(),
 		user.getAddress(),
 		user.isMiningStr(),
@@ -171,7 +175,7 @@ func saveRegisterReply(m *tb.Message) {
 				if user.Address != user.Code {
 					user.UpdatedAddress = true
 				}
-				user.Address = m.Text
+				user.Address = &m.Text
 				if err := db.Save(user).Error; err == nil {
 					bot.Send(m.Sender, gotrans.T("registered"))
 				} else {
