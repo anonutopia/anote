@@ -115,6 +115,17 @@ func (um *UserManager) checkMiners() {
 
 			u.MiningWarning = &now
 			u.Mining = false
+
+			if len(u.Nickname) == 0 {
+				if len(u.Code) > 0 {
+					u.Nickname = u.Code
+				} else {
+					code := randString(10)
+					u.Nickname = code
+					u.Code = code
+				}
+			}
+
 			if err := db.Save(&u).Error; err != nil {
 				log.Println(err)
 			}
