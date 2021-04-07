@@ -131,8 +131,8 @@ func (um *UserManager) checkMiners() {
 
 		if u.Mining {
 			if time.Since(*u.MiningActivated).Hours() >= float64(24) {
-				u.Mining = false
 				u.addMined()
+				u.Mining = false
 				if err := db.Save(&u).Error; err != nil {
 					log.Println(err)
 				}
