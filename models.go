@@ -160,6 +160,7 @@ func (u *User) withdraw() {
 	now := time.Now()
 	u.TempCode = &rs
 	u.LastWithdraw = &now
+	u.LastAdd = &now
 	u.MinedAnotes = 0
 	db.Save(u)
 	log.Println("withdraw")
