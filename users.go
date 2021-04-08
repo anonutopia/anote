@@ -64,7 +64,7 @@ func (um *UserManager) checkNick(m *tb.Message) *User {
 		user.Nickname = &m.Sender.Username
 		if err := db.Save(user).Error; err != nil {
 			log.Println(err)
-			logTelegram(err.Error())
+			// logTelegram(err.Error())
 		}
 	}
 	return user
