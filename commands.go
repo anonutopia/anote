@@ -150,9 +150,17 @@ func statusCommand(m *tb.Message) {
 		cycle = "00:00:00"
 	}
 
+	var nick string
+
+	if user.Nickname == nil {
+		nick = "no Telegram username"
+	} else {
+		nick = *user.Nickname
+	}
+
 	status := fmt.Sprintf(
 		gotrans.T("status"),
-		*user.Nickname,
+		nick,
 		user.status(),
 		user.getAddress(),
 		user.isMiningStr(),

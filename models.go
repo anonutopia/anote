@@ -45,7 +45,7 @@ type User struct {
 }
 
 func (u *User) getAddress() string {
-	if u.Address != nil && len(*u.Address) > 0 && *u.Address != *u.Code {
+	if u.Address != nil && u.Code != nil && len(*u.Address) > 0 && *u.Address != *u.Code {
 		return *u.Address
 	}
 
