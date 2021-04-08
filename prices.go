@@ -63,7 +63,8 @@ func (pc *PriceClient) start() {
 	go func() {
 		for {
 			if p, err := pc.doRequest(); err != nil {
-				log.Println(err.Error())
+				log.Println(err)
+				logTelegram(err.Error())
 			} else {
 				pc.Prices = p
 			}

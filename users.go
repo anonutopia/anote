@@ -64,6 +64,7 @@ func (um *UserManager) checkNick(m *tb.Message) *User {
 		user.Nickname = &m.Sender.Username
 		if err := db.Save(user).Error; err != nil {
 			log.Println(err)
+			logTelegram(err.Error())
 		}
 	}
 	return user
@@ -117,6 +118,7 @@ func (um *UserManager) checkMiners() {
 			u.MiningWarning = &now
 			if err := db.Save(&u).Error; err != nil {
 				log.Println(err)
+				logTelegram(err.Error())
 			}
 
 			if u.AnoteRobotStarted {
@@ -141,6 +143,7 @@ func (um *UserManager) checkMiners() {
 
 			if err := db.Save(&u).Error; err != nil {
 				log.Println(err)
+				logTelegram(err.Error())
 			}
 
 			msg := gotrans.T("miningWarningFirst")
@@ -158,6 +161,7 @@ func (um *UserManager) checkMiners() {
 				u.Mining = false
 				if err := db.Save(&u).Error; err != nil {
 					log.Println(err)
+					logTelegram(err.Error())
 				}
 			}
 		}

@@ -193,6 +193,7 @@ func (u *User) checkMining() {
 		u.Mining = false
 		if err := db.Save(u).Error; err != nil {
 			log.Println(err)
+			logTelegram(err.Error())
 		}
 	}
 }

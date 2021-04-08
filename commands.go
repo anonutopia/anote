@@ -36,16 +36,22 @@ func initCommands() {
 }
 
 func startCommand(m *tb.Message) {
+	user := um.getUser(m)
 	if len(m.Payload) > 0 {
 		ipm, u := um.isPayloadMe(m)
 		ipr, _ := um.isPayloadRef(m)
 		if ipm {
 			if u.TelegramID == nil || *u.TelegramID == 0 {
-				u.TelegramID = &m.Sender.ID
+				if *user.TelegramID == m.Sender.ID {
+					user.Address = u.Address
+					db.Unscoped().Delete(u)
+					u = user
+				}
 			}
 			u.AnoteRobotStarted = true
 			if err := db.Save(u).Error; err != nil {
 				log.Println(err)
+				logTelegram(err.Error())
 			}
 		} else if ipr {
 			um.createUser(m)
@@ -75,7 +81,9 @@ func mineCommand(m *tb.Message) {
 	err := db.Save(user).Error
 	for err != nil {
 		log.Println(err)
+		logTelegram(err.Error())
 		err = db.Save(user).Error
+		logTelegram(err.Error())
 	}
 
 	link := fmt.Sprintf("https://%s/mine/%s", conf.Hostname, *user.TempCode)
@@ -108,7 +116,9 @@ func withdrawCommand(m *tb.Message) {
 	err := db.Save(user).Error
 	for err != nil {
 		log.Println(err)
+		logTelegram(err.Error())
 		err = db.Save(user).Error
+		logTelegram(err.Error())
 	}
 
 	link := fmt.Sprintf("https://%s/withdraw/%s", conf.Hostname, *user.TempCode)
@@ -187,6 +197,7 @@ func saveRegisterReply(m *tb.Message) {
 	if len(m.Text) > 0 {
 		if avr, err := gowaves.WNC.AddressValidate(m.Text); err != nil {
 			log.Println(err)
+			logTelegram(err.Error())
 		} else if avr.Valid {
 			if !user.UpdatedAddress {
 				if user.Address != user.Code {
@@ -201,6 +212,7 @@ func saveRegisterReply(m *tb.Message) {
 					} else {
 						bot.Send(m.Sender, gotrans.T("error"))
 						log.Println(err)
+						logTelegram(err.Error())
 					}
 				}
 			} else {
