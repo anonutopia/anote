@@ -218,7 +218,7 @@ func referralCommand(m *tb.Message) {
 	user := um.getUser(m)
 	bot.Send(m.Sender, gotrans.T("refMessageTitle"))
 
-	msg := fmt.Sprintf(gotrans.T("refMessage"), user.Code, user.Code)
+	msg := fmt.Sprintf(gotrans.T("refMessage"), *user.Code, *user.Code)
 	bot.Send(m.Sender, msg, tb.NoPreview)
 
 	bot.Send(m.Sender, gotrans.T("refTelegram"), tb.NoPreview)

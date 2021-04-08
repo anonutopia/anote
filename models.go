@@ -42,7 +42,7 @@ type User struct {
 }
 
 func (u *User) getAddress() string {
-	if len(*u.Address) > 0 && u.Address != u.Code {
+	if u.Address != nil && len(*u.Address) > 0 && *u.Address != *u.Code {
 		return *u.Address
 	}
 
@@ -62,7 +62,7 @@ func (u *User) miningPower() float64 {
 		power *= 10
 	}
 
-	if len(*u.Address) > 0 && !stringInSlice(*u.Address, conf.Exclude) {
+	if u.Address != nil && len(*u.Address) > 0 && !stringInSlice(*u.Address, conf.Exclude) {
 		avr, err := gowaves.WNC.AddressValidate(*u.Address)
 		if err == nil && avr.Valid {
 			abr, err := gowaves.WNC.AssetsBalance(*u.Address, AINTId)
@@ -111,7 +111,7 @@ func (u *User) teamActive() int64 {
 }
 
 func (u *User) status() string {
-	if len(*u.Address) == 0 {
+	if u.Address == nil || len(*u.Address) == 0 {
 		return "Guest"
 	} else if u.team() >= 3 {
 		return "Miner"
