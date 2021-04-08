@@ -37,22 +37,18 @@ func initCommands() {
 
 func startCommand(m *tb.Message) {
 	if len(m.Payload) > 0 {
-		u := &User{TempCode: &m.Payload}
-		if err := db.First(u, u).Error; err != nil {
-			log.Println(err)
-		} else {
+		ipm, u := um.isPayloadMe(m)
+		ipr, _ := um.isPayloadRef(m)
+		if ipm {
 			if u.TelegramID == nil || *u.TelegramID == 0 {
 				u.TelegramID = &m.Sender.ID
-				u.AnoteRobotStarted = true
-				if err := db.Save(u).Error; err != nil {
-					log.Println(err)
-				}
-			} else {
-				u.AnoteRobotStarted = true
-				if err := db.Save(u).Error; err != nil {
-					log.Println(err)
-				}
 			}
+			u.AnoteRobotStarted = true
+			if err := db.Save(u).Error; err != nil {
+				log.Println(err)
+			}
+		} else if ipr {
+			um.createUser(m)
 		}
 	} else {
 		um.createUser(m)

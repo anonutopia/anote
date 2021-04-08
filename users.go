@@ -14,25 +14,18 @@ type UserManager struct {
 
 func (um *UserManager) createUser(m *tb.Message) {
 	u := um.getUser(m)
+	code := randString(10)
+
+	u.Code = &code
+	u.AnoteRobotStarted = true
 
 	if u.ID != 0 {
-		u.AnoteRobotStarted = true
 		db.Save(u)
 		return
 	}
 
-	code := randString(10)
-	tNick := m.Sender.Username
-
-	if len(tNick) == 0 {
-		tNick = code
-	}
-
+	u.Nickname = &m.Sender.Username
 	u.TelegramID = &m.Sender.ID
-	u.Address = &code
-	u.Nickname = &tNick
-	u.Code = &code
-	u.AnoteRobotStarted = true
 	u.MinedAnotes = int(SatInBTC)
 
 	db.Create(u)
@@ -74,6 +67,36 @@ func (um *UserManager) checkNick(m *tb.Message) *User {
 		}
 	}
 	return user
+}
+
+func (um *UserManager) isPayloadRef(m *tb.Message) (bool, *User) {
+	r := &User{}
+
+	if err := db.Where("code = ?", m.Payload).First(r).Error; err != nil {
+		if err := db.Where("nickname = ?", m.Payload).First(r).Error; err != nil {
+			return false, nil
+		}
+	}
+
+	if r.ID != 0 {
+		return true, r
+	}
+
+	return false, nil
+}
+
+func (um *UserManager) isPayloadMe(m *tb.Message) (bool, *User) {
+	u := &User{}
+
+	if err := db.Where("temp_code = ?", m.Payload).First(u).Error; err != nil {
+		return false, nil
+	}
+
+	if u.ID != 0 {
+		return true, u
+	}
+
+	return false, nil
 }
 
 func (um *UserManager) checkMiners() {
