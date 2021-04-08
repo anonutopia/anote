@@ -60,7 +60,7 @@ func (um *UserManager) getUser(m *tb.Message) *User {
 
 func (um *UserManager) checkNick(m *tb.Message) *User {
 	user := um.getUser(m)
-	if *user.Nickname != m.Sender.Username {
+	if user.Nickname != nil && *user.Nickname != m.Sender.Username {
 		user.Nickname = &m.Sender.Username
 		if err := db.Save(user).Error; err != nil {
 			log.Println(err)

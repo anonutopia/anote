@@ -210,7 +210,7 @@ func saveRegisterReply(m *tb.Message) {
 				if err := db.Save(user).Error; err == nil {
 					bot.Send(m.Sender, gotrans.T("registered"))
 				} else {
-					if strings.Contains(err.Error(), "UNIQUE") {
+					if strings.Contains(err.Error(), "UNIQUE") || strings.Contains(err.Error(), "unique") {
 						bot.Send(m.Sender, gotrans.T("addressUsed"))
 					} else {
 						bot.Send(m.Sender, gotrans.T("error"))
