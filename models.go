@@ -39,6 +39,9 @@ type User struct {
 	LastAdd           *time.Time
 	AnoteRobotStarted bool `sql:"DEFAULT:false"`
 	FunderBotStarted  bool `sql:"DEFAULT:false"`
+	AmountWaves       uint
+	AmountAhrk        uint
+	AmountAeur        uint
 }
 
 func (u *User) getAddress() string {

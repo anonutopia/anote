@@ -44,6 +44,9 @@ func startCommand(m *tb.Message) {
 			if u.TelegramID == nil || *u.TelegramID == 0 {
 				if *user.TelegramID == m.Sender.ID {
 					user.Address = u.Address
+					user.AmountWaves = u.AmountWaves
+					user.AmountAeur = u.AmountAeur
+					user.AmountAhrk = u.AmountAhrk
 					db.Unscoped().Delete(u)
 					u = user
 				}
