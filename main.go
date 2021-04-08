@@ -55,6 +55,12 @@ func main() {
 			counter++
 			log.Printf("%s - %.8f", *u.Address, float64(u.MinedAnotes)/float64(SatInBTC))
 		}
+
+		if u.Code == nil {
+			rs := randString(10)
+			u.Code = &rs
+			db.Save(u)
+		}
 	}
 
 	bot.Start()
