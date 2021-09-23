@@ -178,6 +178,6 @@ func (um *UserManager) start() {
 
 func initUserManager() *UserManager {
 	um := &UserManager{}
-	go um.start()
+	// go um.start()
 	return um
 }

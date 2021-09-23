@@ -14,24 +14,25 @@ import (
 var repMan *ReplyManager
 
 func initCommands() {
-	repMan = &ReplyManager{}
+	// repMan = &ReplyManager{}
 
-	bot.Handle("/start", startCommand)
-	bot.Handle("/mine", mineCommand)
-	bot.Handle("/withdraw", withdrawCommand)
-	bot.Handle("/status", statusCommand)
-	bot.Handle("/info", infoCommand)
-	bot.Handle("/register", registerCommand)
-	bot.Handle("/referral", referralCommand)
+	// bot.Handle("/start", startCommand)
+	// bot.Handle("/mine", mineCommand)
+	// bot.Handle("/withdraw", withdrawCommand)
+	// bot.Handle("/status", statusCommand)
+	// bot.Handle("/info", infoCommand)
+	// bot.Handle("/register", registerCommand)
+	// bot.Handle("/referral", referralCommand)
 
 	bot.Handle(tb.OnText, func(m *tb.Message) {
-		if m.IsReply() {
-			if repMan.containsRegister(m.ReplyTo.ID) {
-				saveRegisterReply(m)
-			}
-		} else {
-			unknownCommand(m)
-		}
+		// if m.IsReply() {
+		// 	if repMan.containsRegister(m.ReplyTo.ID) {
+		// 		saveRegisterReply(m)
+		// 	}
+		// } else {
+		// 	unknownCommand(m)
+		// }
+		suspendedCommand(m)
 	})
 }
 
@@ -253,4 +254,8 @@ func referralCommand(m *tb.Message) {
 func unknownCommand(m *tb.Message) {
 	um.checkNick(m)
 	bot.Send(m.Sender, gotrans.T("unknown"))
+}
+
+func suspendedCommand(m *tb.Message) {
+	bot.Send(m.Sender, gotrans.T("suspended"))
 }
