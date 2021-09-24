@@ -5,7 +5,7 @@ const (
 	SatInBTC = uint64(100000000)
 
 	// WavesNodeURL is an URL for Waves Node
-	WavesNodeURL = "https://nodes.wavesnodes.com"
+	WavesNodeURL = "https://nodes.kriptokuna.com"
 
 	// WavesMonitorTick interval in seconds
 	WavesMonitorTick = 10
